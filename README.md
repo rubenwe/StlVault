@@ -1,4 +1,4 @@
-# <img src="src/StlVault.App/Assets/Graphics/app-icon.png" width="45" valign="top" /> STL Vault
+# <img src="Assets/Graphics/app-icon.png" width="45" valign="top" /> STL Vault
 STL Vault is an open source 3d model viewer and organizer.
 Think of it as Lightroom, but for 3d printing.
 
