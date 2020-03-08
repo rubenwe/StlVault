@@ -25,7 +25,7 @@ This version is currently under development
   - [ ] Non-Destructive Editing
     - [ ] Scale (Resize)
     - [ ] Rotate
-  - [ ] Export for printing
+- [ ] Export for printing
 
 ### Version 2.0 (Q2 2020)
 - [ ] Automatic backups
@@ -33,16 +33,13 @@ This version is currently under development
   - [ ] Define folder structure based on tags
   - [ ] To local drives/folders
   - [ ] To cloud providers
-
 - [ ] Community tagging
   - [ ] Allow users to share tags
   - [ ] Allow users to consume tags
-
 - [ ] Handle multi part models
   - [ ] Loose collections of parts
   - [ ] Assemble to one model
   - [ ] Variation handling (for modular models)
-
 - [ ] Import more formats
   - [ ] .3mf
   - [ ] .fbx
