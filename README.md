@@ -13,9 +13,9 @@ Here's whats currently planned for STL Vault:
 This version is currently under development
 
 - [x] Import .stl files from folders
-  - [ ] Automatic rotation
-  - [ ] Automatic scaling
-  - [ ] Automatic tagging
+  - [x] Automatic tagging
+  - [x] Automatic rotation
+  - [x] Automatic scaling
 - [x] Generate previews for imported files
 - [x] Allow to search for tagged items
 - [x] Save previous searches
@@ -56,6 +56,10 @@ This version is currently under development
 
 
 ## Contributing
+For quick feedback or to chat with me directly, 
+you can join the [discord](https://discord.gg/Fd4n3v).
+
+If you want to interact here:
 
 ### You are an end user and ...
 
