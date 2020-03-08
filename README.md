@@ -54,7 +54,7 @@ This version is currently under development
 
 ## Contributing
 For quick feedback or to chat with me directly, 
-you can join the [discord](https://discord.gg/Fd4n3v).
+you can join the [discord](https://discord.gg/sexQM8R).
 
 If you want to interact here:
 
