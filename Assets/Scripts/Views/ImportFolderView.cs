@@ -1,11 +1,13 @@
 using System;
 using System.IO;
+using System.Windows.Forms;
 using DG.Tweening;
 using StlVault.AppModel.ViewModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using static StlVault.AppModel.ViewModels.FolderState;
+using Button = UnityEngine.UI.Button;
 
 #pragma warning disable 0649
 
@@ -27,6 +29,8 @@ namespace StlVault.Views
         {
             base.OnViewModelBound();
 
+            _button.Bind(ViewModel.SelectCommand);
+            
             _text.Bind(ViewModel.Path);
             ViewModel.Path.ValueChanged += OnPathOnValueChanged;
             void OnPathOnValueChanged(string s)

@@ -24,7 +24,7 @@ namespace StlVault.AppModel.ViewModels
 
         public async Task Initialize()
         {
-            var data = await _store.TryLoadAsync<CollectionsConfig>() ?? new CollectionsConfig();
+            var data = await _store.LoadAsyncOrDefault<CollectionsConfigFile>();
             foreach (var config in data)
             {
                 Collections.Add(new CollectionModel(config));

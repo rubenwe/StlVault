@@ -69,7 +69,7 @@ namespace StlVault.AppModel.ViewModels
 
         private async Task SaveAndRefreshAsync(List<SavedSearchConfig> searches)
         {
-            var fullConfig = new SavedSearchesConfig ( searches);
+            var fullConfig = new SavedSearchesConfigFile ( searches);
 
             await _store.StoreAsync(fullConfig);
 
@@ -92,13 +92,11 @@ namespace StlVault.AppModel.ViewModels
 
         public async Task Initialize()
         {
-            var loadResult = await _store.TryLoadAsync<SavedSearchesConfig>();
-            var config = loadResult ?? new SavedSearchesConfig();
-
+            var config = await _store.LoadAsyncOrDefault<SavedSearchesConfigFile>();
             RefreshItems(config);
         }
         
-        private void RefreshItems(SavedSearchesConfig savedSearches)
+        private void RefreshItems(SavedSearchesConfigFile savedSearches)
         {
             var searches = savedSearches
                 .OrderBy(s => s.Alias)

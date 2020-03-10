@@ -1,17 +1,12 @@
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using StlVault.AppModel;
 using StlVault.AppModel.ViewModels;
-using StlVault.Stl;
+using StlVault.Config;
+using StlVault.Util;
 using StlVault.Util.Messaging;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 #pragma warning disable 0649
 
@@ -33,10 +28,7 @@ namespace StlVault.Views
         [SerializeField] private AddImportFolderDialog _addImportFolderDialog;
         
         [Category("Misc")]
-        [SerializeField] private PreviewCam _previewCam;
-        
-        
-        private CancellationTokenSource _import;
+        [SerializeField] private PreviewBuilder _previewBuilder;
         
         private void Awake()
         {
@@ -50,10 +42,10 @@ namespace StlVault.Views
             
             IMessageRelay relay = aggregator;
             IConfigStore store = new AppDataConfigStore();
-            
-            // var folderManager = new ImportFolderManager(store);
-            
-            var library = new Library(store);
+
+            UpdateApplicationSettings(store);
+
+            var library = new Library(store, _previewBuilder);
             
             // Main View
             var searchViewModel = new SearchModel(library, relay);
@@ -85,8 +77,6 @@ namespace StlVault.Views
                 addSavedSearchViewModel,
                 addImportFolderViewModel);
 
-            RebuildPreviews(library.GetItemPreviewMetadata(new List<string>()));
-
             void BindViewModels()
             {
                 // Main View
@@ -101,7 +91,6 @@ namespace StlVault.Views
                 // Dialogs
                 _addImportFolderDialog.BindTo(addImportFolderViewModel);
                 _addSavedSearchDialog.BindTo(addSavedSearchViewModel);
-                
             }
             
             async Task InitializeViewModels()
@@ -114,46 +103,15 @@ namespace StlVault.Views
             }
         }
 
-        private async void RebuildPreviews(IReadOnlyList<ItemPreviewMetadata> itemMetaData)
+        private static void UpdateApplicationSettings(IConfigStore store)
         {
-            await Task.Delay(1);
-            
-            _import = new CancellationTokenSource();
-            var token = _import.Token;
-
-            var sw = Stopwatch.StartNew();
-            foreach (var item in itemMetaData)
+            var settings = store.LoadOrDefault<ApplicationSettings>();
+            foreach (var canvas in FindObjectsOfType<Canvas>())
             {
-                if (token.IsCancellationRequested) return;
-                if (File.Exists(item.PreviewImagePath)) continue;
-                
-                await BuildPreview(item);
+                canvas.scaleFactor = settings.UiScalePercent / 125f;
             }
-            
-            Debug.Log($"Finished import of {itemMetaData.Count} items in {sw.Elapsed.TotalSeconds}s.");
-        }
 
-        private void OnDestroy()
-        {
-            _import?.Cancel();
-        }
-
-        private async Task BuildPreview(ItemPreviewMetadata obj)
-        {
-            var sw = Stopwatch.StartNew();
-            var sb = new StringBuilder();
-            
-            var (mesh, hash) = await StlImporter.ImportMeshAsync(obj.StlFilePath);
-
-            sb.AppendLine($"Imported {obj.ItemName} - Took {sw.ElapsedMilliseconds}ms.");
-            sb.AppendLine($"Vertices: {mesh.vertexCount}, Hash: {hash}");
-            
-            var snapshot = _previewCam.GetSnapshot(mesh, obj.Rotation, 80);
-            File.WriteAllBytes(obj.PreviewImagePath, snapshot);
-                
-            Destroy(mesh);
-            
-            Debug.Log(sb.ToString());
+            UnityLogger.LogLevel = settings.LogLevel;
         }
     }
 }

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6114232839660154235}
   - component: {fileID: 6114232839660154234}
+  - component: {fileID: 533599020758815478}
   m_Layer: 0
   m_Name: PreviewCamera
   m_TagString: Untagged
@@ -49,6 +50,18 @@ MonoBehaviour:
   _meshFilter: {fileID: 6114232840580389280}
   _previewResolution: 1024
   _scaleFactor: 8
+--- !u!114 &533599020758815478
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6114232839660154233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1c85ab0e35f4d1b9b915e52db4a6a1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6114232840580389284
 GameObject:
   m_ObjectHideFlags: 0
@@ -77,7 +90,7 @@ Transform:
   m_GameObject: {fileID: 6114232840580389284}
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.17510067, y: 0.17510067, z: 0.17510067}
+  m_LocalScale: {x: 4, y: 4, z: 4}
   m_Children: []
   m_Father: {fileID: 6114232839660154235}
   m_RootOrder: 1

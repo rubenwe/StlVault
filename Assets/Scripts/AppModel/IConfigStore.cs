@@ -4,7 +4,8 @@ namespace StlVault.AppModel
 {
     internal interface IConfigStore
     {
-        Task<T> TryLoadAsync<T>() where T : class, new();
+        Task<T> LoadAsyncOrDefault<T>() where T : class, new();
+        T LoadOrDefault<T>() where T : class, new();
         Task StoreAsync<T>(T config);
     }
 }

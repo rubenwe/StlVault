@@ -9,28 +9,29 @@ namespace StlVault.Views
 {
     internal class AppDataConfigStore : IConfigStore
     {
-        public Task<T> TryLoadAsync<T>() where T : class, new()
+        public Task<T> LoadAsyncOrDefault<T>() where T : class, new()
         {
-            var jsonFileName = GetFileNameForConfig<T>();
+            return Task.Run(LoadOrDefault<T>);
+        }
 
-            return Task.Run(() =>
+        public T LoadOrDefault<T>() where T : class, new()
+        {
+            try
             {
-                try
-                {
-                    var text = File.ReadAllText(jsonFileName);
-                    return JsonConvert.DeserializeObject<T>(text);
-                }
-                catch
-                {
-                    return default;
-                }
-            });
+                var jsonFileName = GetFileNameForConfig<T>();
+                var text = File.ReadAllText(jsonFileName);
+                return JsonConvert.DeserializeObject<T>(text);
+            }
+            catch
+            {
+                return new T();
+            }
         }
 
         private static string GetFileNameForConfig<T>() 
         {
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var typeName = typeof(T).Name.Replace("Config", string.Empty);
+            var typeName = typeof(T).Name.Replace("ConfigFile", string.Empty);
             return Path.Combine(appData, "StlVault", "Config", typeName + ".json");
         }
 

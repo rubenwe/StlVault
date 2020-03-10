@@ -50,9 +50,7 @@ namespace StlVault.AppModel.ViewModels
 
         public async Task Initialize()
         {
-            var loadResult = await _store.TryLoadAsync<ImportFoldersConfig>();
-            var config = loadResult ?? new ImportFoldersConfig();
-
+            var config = await _store.LoadAsyncOrDefault<ImportFoldersConfigFile>();
             RefreshItems(config);
         }
         
@@ -61,7 +59,7 @@ namespace StlVault.AppModel.ViewModels
             .OrderBy(s => s.FullPath)
             .ToList();
         
-        private void RefreshItems(ImportFoldersConfig importFolders)
+        private void RefreshItems(ImportFoldersConfigFile importFolders)
         {
             var folders = importFolders
                 .OrderBy(s => s.FullPath)
@@ -90,7 +88,7 @@ namespace StlVault.AppModel.ViewModels
         
         private async Task SaveAndRefreshAsync(List<ImportFolderConfig> folders)
         {
-            var fullConfig = new ImportFoldersConfig ( folders);
+            var fullConfig = new ImportFoldersConfigFile ( folders);
 
             await _store.StoreAsync(fullConfig);
 

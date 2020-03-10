@@ -1368,8 +1368,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 462767768}
   m_HandleRect: {fileID: 462767767}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.9999764
+  m_Value: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3244,8 +3244,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2133190152}
   m_HandleRect: {fileID: 2133190151}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 0.9999591
+  m_Value: 1
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -5088,7 +5088,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000030517578}
+  m_AnchoredPosition: {x: 0, y: 0.000015258789}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1028885762
@@ -5219,8 +5219,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1825598947}
   m_HandleRect: {fileID: 1825598946}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.99997616
+  m_Value: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -6435,18 +6435,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1198231550}
   m_CullTransparentMesh: 0
---- !u!114 &1209935046 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6114232839660154234, guid: b4ab2a9f0fdfab54fbbceb212c92ef94,
-    type: 3}
-  m_PrefabInstance: {fileID: 6114232840866924988}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abce2cdf322a4d31983ff1e275562247, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1258635452
 GameObject:
   m_ObjectHideFlags: 0
@@ -7486,7 +7474,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000061035156}
+  m_AnchoredPosition: {x: 0, y: 0.000061035156}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1420935334
@@ -7571,7 +7559,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000061035156}
+  m_AnchoredPosition: {x: 0, y: -0.000030517578}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1466299069
@@ -9872,7 +9860,7 @@ MonoBehaviour:
   _itemsView: {fileID: 698302324}
   _addSavedSearchDialog: {fileID: 1064647097}
   _addImportFolderDialog: {fileID: 2113215018}
-  _previewCam: {fileID: 1209935046}
+  _previewBuilder: {fileID: 6114232840866924989}
 --- !u!114 &1923759258
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11971,28 +11959,20 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6114232840580389280, guid: b4ab2a9f0fdfab54fbbceb212c92ef94,
-        type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 6114232840580389285, guid: b4ab2a9f0fdfab54fbbceb212c92ef94,
-        type: 3}
-      propertyPath: m_LocalScale.x
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 6114232840580389285, guid: b4ab2a9f0fdfab54fbbceb212c92ef94,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 6114232840580389285, guid: b4ab2a9f0fdfab54fbbceb212c92ef94,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 4
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b4ab2a9f0fdfab54fbbceb212c92ef94, type: 3}
+--- !u!114 &6114232840866924989 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 533599020758815478, guid: b4ab2a9f0fdfab54fbbceb212c92ef94,
+    type: 3}
+  m_PrefabInstance: {fileID: 6114232840866924988}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1c85ab0e35f4d1b9b915e52db4a6a1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &6115956441322099617
 MonoBehaviour:
   m_ObjectHideFlags: 0

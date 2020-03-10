@@ -2,7 +2,7 @@
 
 namespace StlVault.Config
 {
-    public class CollectionsConfig : List<CollectionConfig>
+    internal class KnownItemsConfigFile : List<ItemInfo>
     {
     }
 }

@@ -2,7 +2,6 @@ using DG.Tweening;
 using StlVault.AppModel.ViewModels;
 using StlVault.Util.Commands;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 #pragma warning disable 0649
