@@ -97,7 +97,7 @@ namespace StlVault.Views
             {
                 await library.InitializeAsync();
                 
-                await savedSearchesViewModel.Initialize();
+                await savedSearchesViewModel.InitializeAsync();
                 await importFoldersViewModel.Initialize();
                 await collectionsViewModel.Initialize();
             }

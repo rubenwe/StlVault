@@ -90,7 +90,7 @@ namespace StlVault.AppModel.ViewModels
             }
         }
 
-        public async Task Initialize()
+        public async Task InitializeAsync()
         {
             var config = await _store.LoadAsyncOrDefault<SavedSearchesConfigFile>();
             RefreshItems(config);
