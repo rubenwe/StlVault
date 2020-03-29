@@ -14,7 +14,9 @@
     "precompiledReferences": [
         "nunit.framework.dll",
         "Castle.Core.dll",
-        "Moq.dll"
+        "Moq.dll",
+        "System.Buffers.dll",
+        "System.Memory.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

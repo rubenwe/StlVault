@@ -1,22 +1,14 @@
-﻿using Moq;
+﻿using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using JetBrains.Annotations;
 using NUnit.Framework;
-using StlVault.Util.FileSystem;
+using StlVault.Util.Messaging;
 
 namespace StlVault.Tests
 {
     public class LibraryTests
     {
-        [Test]
-        public void NewFileShouldBeAddedToLibrary()
-        {
-            var fs = Mock.Of<FileSystem>();
-        }
-
-        [Test]
-        public void NewFolderShouldBeAddedToLibrary()
-        {
-        }
-
         [Test]
         public void MovedFileShouldBeRemovedFromOldFolder()
         {
@@ -32,11 +24,7 @@ namespace StlVault.Tests
         {
         }
 
-        [Test]
-        public void DeletingFileShouldRemoveFromLibrary()
-        {
-        }
-
+      
         [Test]
         public void PreviewImagesOfDeletedFilesShouldBeCleanedUp()
         {

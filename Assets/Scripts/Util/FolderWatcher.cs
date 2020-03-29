@@ -3,7 +3,7 @@ using System.IO;
 
 namespace StlVault.Util
 {
-    internal sealed class FolderWatcher : IDisposable
+    internal sealed class FolderWatcher : IFolderWatcher, IDisposable
     {
         private readonly FileSystemWatcher _watcher;
         

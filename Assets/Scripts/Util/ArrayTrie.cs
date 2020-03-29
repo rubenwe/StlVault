@@ -13,12 +13,13 @@ namespace StlVault.Util
         
         internal class Node
         {
-            public bool IsTerminal;
+            public int Occurrences;
+            public bool IsTerminal => Occurrences > 0;
             public (char, Node)[] Children;
 
             public Node(ReadOnlySpan<char> word)
             {
-                if (word.IsEmpty) IsTerminal = true;
+                if (word.IsEmpty) Occurrences = 1;
                 else Children = new[] {(word[0], new Node(word.Slice(1)))};
             }
         }
@@ -59,14 +60,19 @@ namespace StlVault.Util
             }
             
             // No early exit: either return false because word was known...
-            if (current.IsTerminal) return false;
+            if (current.IsTerminal)
+            {
+                current.Occurrences++;
+                return false;
+            }
             
             // ... or set terminal if we added a shorter, unknown word
-            return current.IsTerminal = true;
+            current.Occurrences = 1;
+            return true;
         }
 
         [PublicAPI, SuppressMessage("ReSharper", "ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator")]
-        public IEnumerable<string> Find(string start)
+        public IEnumerable<(string word, int occurrences)> Find(string start)
         {
             // Walk down the trie to the subtree of words starting with "start"
             var current = _head;
@@ -76,19 +82,19 @@ namespace StlVault.Util
             }
 
             // Current might already be a stored word => return that
-            if (current.IsTerminal) yield return start;
+            if (current.IsTerminal) yield return (start, current.Occurrences);
 
             // From here on out, we need to build a word -> fill start of buffer
             var buffer = new char[_maxLength];
             start.AsSpan().CopyTo(buffer);
 
-            foreach (var word in SearchTerminalNodes(current, buffer, start.Length))
+            foreach (var result in SearchTerminalNodes(current, buffer, start.Length))
             {
-                yield return word;
+                yield return result;
             }
         }
         
-        private static IEnumerable<string> SearchTerminalNodes(Node node, char[] buffer, int position)
+        private static IEnumerable<(string word, int occurrences)> SearchTerminalNodes(Node node, char[] buffer, int position)
         {
             if (node.Children == null) yield break;
 
@@ -98,7 +104,7 @@ namespace StlVault.Util
 
                 if (childNode.IsTerminal)
                 {
-                    yield return new string(buffer, 0, position + 1);
+                    yield return (new string(buffer, 0, position + 1), childNode.Occurrences);
                 }
 
                 foreach (var word in SearchTerminalNodes(childNode, buffer, position + 1))

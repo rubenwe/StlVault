@@ -63,6 +63,14 @@ namespace StlVault.Views
             BindViewModels();
             await InitializeViewModels();
             
+            var folderConfigs = await store.LoadAsyncOrDefault<ImportFoldersConfigFile>();
+            foreach (var folderConfig in folderConfigs)
+            {
+                folderConfig.AutoTagMode = AutoTagMode.ExplodeSubDirPath;
+                var importFolder = new ImportFolder(folderConfig, new FolderFileSystem(folderConfig.FullPath), new AppDataKnownItemStore(), library);
+                await importFolder.InitializeAsync();
+            }
+            
             aggregator.Subscribe(
                 // Main View
                 searchViewModel,
@@ -95,8 +103,6 @@ namespace StlVault.Views
             
             async Task InitializeViewModels()
             {
-                await library.InitializeAsync();
-                
                 await savedSearchesViewModel.InitializeAsync();
                 await importFoldersViewModel.Initialize();
                 await collectionsViewModel.Initialize();

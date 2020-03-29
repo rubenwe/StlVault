@@ -37,7 +37,7 @@ namespace StlVault.Tests
         [Test]
         public void SavedSearchesShouldBeRestoredFromConfig()
         {
-            AsyncTestUtil.Run(async () =>
+            TestUtils.Run(async () =>
             {
                 var model = await InitializeModel();
 
@@ -50,7 +50,7 @@ namespace StlVault.Tests
         [Test]
         public void SelectingSearchShouldSendChangeMessage()
         {
-            AsyncTestUtil.Run(async () =>
+            TestUtils.Run(async () =>
             {
                 var model = await InitializeModel();
 

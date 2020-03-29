@@ -24,5 +24,14 @@ namespace StlVault.Config
         {
             return new ConfigVector3(rot.x, rot.y, rot.z);
         }
+
+        public (int x, int y, int z) GetRoundedValues()
+        {
+            return (
+                Mathf.RoundToInt(x),
+                Mathf.RoundToInt(y),
+                Mathf.RoundToInt(z)
+            );
+        }
     }
 }
