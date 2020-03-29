@@ -14,16 +14,16 @@ namespace StlVault.Services
         private static readonly ILogger Logger = UnityLogger.Instance;
         private static readonly char[] Separators = {'_', '-', ' ', '.', '(', ')', '+'};
         private static readonly char[] Digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-
+        
         private readonly Dictionary<string, ItemPreviewMetadata> _metaData =
             new Dictionary<string, ItemPreviewMetadata>();
 
-        private readonly IConfigStore _store;
         private readonly ArrayTrie _trie = new ArrayTrie();
+        private readonly IPreviewBuilder _builder;
 
-        public Library(IConfigStore store, IPreviewBuilder builder)
+        public Library(IPreviewBuilder builder)
         {
-            _store = store;
+            _builder = builder;
         }
 
         private static bool IsOnBlackList(string tag) => tag == "repaired" || tag == "stl";
@@ -41,7 +41,7 @@ namespace StlVault.Services
             lock (_metaData)
             {
                 var importFiles = filesToImport
-                    .Select(file => new ItemPreviewMetadata(file, GenerateTags(file), folderConfig))
+                    .Select(file => new ItemPreviewMetadata(file, GenerateTags(folderConfig, file), folderConfig))
                     .ToList();
 
                 foreach (var fileData in importFiles)
@@ -63,36 +63,36 @@ namespace StlVault.Services
             }
 
             await Task.Delay(2000);
+        }
+        
+        private static IReadOnlyList<string> GenerateTags(ImportFolderConfig folderConfig, string fullFilePath)
+        {
+            var rootPath = folderConfig.FullPath;
+            var subDir = fullFilePath.Substring(rootPath.Length);
+            var fileName = Path.GetFileNameWithoutExtension(fullFilePath);
 
-            IReadOnlyList<string> GenerateTags(string fullFilePath)
+            return BuildDumbTags(GetTagGenerationString(folderConfig.AutoTagMode))
+                .Append("folder: " + rootPath.ToLowerInvariant())
+                .ToList();
+
+            string GetTagGenerationString(AutoTagMode mode)
             {
-                var rootPath = folderConfig.FullPath;
-                var subDir = fullFilePath.Substring(rootPath.Length);
-                var fileName = Path.GetFileNameWithoutExtension(fullFilePath);
-
-                return BuildDumbTags(GetTagGenerationString(folderConfig.AutoTagMode))
-                    .Append("folder: " + rootPath.ToLowerInvariant())
-                    .ToList();
-
-                string GetTagGenerationString(AutoTagMode mode)
+                switch (mode)
                 {
-                    switch (mode)
-                    {
-                        case AutoTagMode.ExplodeAbsolutePath: return fullFilePath;
-                        case AutoTagMode.ExplodeSubDirPath: return subDir;
-                        case AutoTagMode.ExplodeFileName: return fileName;
-                        default: return string.Empty;
-                    }
+                    case AutoTagMode.ExplodeAbsolutePath: return fullFilePath;
+                    case AutoTagMode.ExplodeSubDirPath: return subDir;
+                    case AutoTagMode.ExplodeFileName: return fileName;
+                    default: return string.Empty;
                 }
             }
-
-            IEnumerable<string> BuildDumbTags(string file)
-            {
-                return file?.Split(Path.DirectorySeparatorChar)
-                    .SelectMany(name => name.Trim().Split(Separators, StringSplitOptions.RemoveEmptyEntries))
-                    .Select(tag => tag.Trim().ToLowerInvariant().Trim(Digits))
-                    .Where(tag => tag.Length > 2 && !IsOnBlackList(tag));
-            }
+        }
+        
+        private static IEnumerable<string> BuildDumbTags(string file)
+        {
+            return file?.Split(Path.DirectorySeparatorChar)
+                .SelectMany(name => name.Trim().Split(Separators, StringSplitOptions.RemoveEmptyEntries))
+                .Select(tag => tag.Trim().ToLowerInvariant().Trim(Digits))
+                .Where(tag => tag.Length > 2 && !IsOnBlackList(tag));
         }
 
         public Task RemoveRangeAsync(ImportFolderConfig folder, IReadOnlyCollection<string> filesToRemove)

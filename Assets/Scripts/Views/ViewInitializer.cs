@@ -45,7 +45,7 @@ namespace StlVault.Views
 
             UpdateApplicationSettings(store);
 
-            var library = new Library(store, _previewBuilder);
+            var library = new Library(_previewBuilder);
             var factory = new ImportFolderFactory(new AppDataKnownItemStore(), library);
 
             // Main View
