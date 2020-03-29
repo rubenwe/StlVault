@@ -4,10 +4,11 @@ using Moq;
 using NUnit.Framework;
 using StlVault.AppModel;
 using StlVault.AppModel.Messages;
-using StlVault.AppModel.ViewModels;
 using StlVault.Config;
+using StlVault.Services;
 using StlVault.Util.Commands;
 using StlVault.Util.Messaging;
+using StlVault.ViewModels;
 
 namespace StlVault.Tests
 {

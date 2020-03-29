@@ -2,7 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace StlVault.Util.Commands {
+namespace StlVault.Util.Commands
+{
     /// <summary>
     /// Watches a task and raises property-changed notifications when the task completes.
     /// </summary>
@@ -67,6 +68,7 @@ namespace StlVault.Util.Commands {
                 propertyChanged(this, PropertyChangedEventArgsCache.Get("Status"));
                 propertyChanged(this, PropertyChangedEventArgsCache.Get("IsSuccessfullyCompleted"));
             }
+
             propertyChanged(this, PropertyChangedEventArgsCache.Get("IsCompleted"));
             propertyChanged(this, PropertyChangedEventArgsCache.Get("IsNotCompleted"));
         }

@@ -1,5 +1,5 @@
-using StlVault.AppModel.ViewModels;
 using StlVault.Util.Collections;
+using StlVault.ViewModels;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,7 +15,7 @@ namespace StlVault.Views
         protected override void OnViewModelBound()
         {
             base.OnViewModelBound();
-            
+
             _addButton.Bind(ViewModel.AddImportFolderCommand);
         }
     }

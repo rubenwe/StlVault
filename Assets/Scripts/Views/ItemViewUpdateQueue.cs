@@ -17,7 +17,7 @@ namespace StlVault.Views
                 return true;
             }
         }
-        
+
         private void Update()
         {
             _slotFree = true;

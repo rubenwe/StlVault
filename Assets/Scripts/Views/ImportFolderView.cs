@@ -1,13 +1,12 @@
 using System;
 using System.IO;
-using System.Windows.Forms;
 using DG.Tweening;
-using StlVault.AppModel.ViewModels;
+using StlVault.Services;
+using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static StlVault.AppModel.ViewModels.FolderState;
-using Button = UnityEngine.UI.Button;
+using static StlVault.Services.FolderState;
 
 #pragma warning disable 0649
 
@@ -19,52 +18,59 @@ namespace StlVault.Views
         [SerializeField] private Button _button;
         [SerializeField] private Image _icon;
 
-        [Header("Icons")]
-        [SerializeField] private Sprite _okSprite;
+        [Header("Icons")] [SerializeField] private Sprite _okSprite;
         [SerializeField] private Sprite _refreshingSprite;
-        
-        private Tween _tween;
 
         protected override void OnViewModelBound()
         {
             base.OnViewModelBound();
 
             _button.Bind(ViewModel.SelectCommand);
-            
+
             _text.Bind(ViewModel.Path);
             ViewModel.Path.ValueChanged += OnPathOnValueChanged;
+
             void OnPathOnValueChanged(string s)
             {
                 _stopTrimming = false;
                 _lastTrimmingResult = null;
             }
 
-            ViewModel.FolderState.ValueChanged += UpdateStateIcon;
+            ViewModel.FolderState.OnMainThread().ValueChanged += UpdateStateIcon;
             UpdateStateIcon(ViewModel.FolderState);
         }
 
         private void UpdateStateIcon(FolderState state)
         {
-            _tween.Kill();
-            
+            _icon.DOKill(false);
+
+            if (Time.time > 0.2f)
+            {
+                _icon.rectTransform.DOPunchScale(-0.7f * Vector3.one, 0.3f, 10, 0.5f)
+                    .OnKill(() => _icon.rectTransform.localScale = Vector3.one);
+            }
+
             switch (state)
             {
                 case Ok:
                     _icon.sprite = _okSprite;
                     return;
-                
+
                 case Refreshing:
                     _icon.sprite = _refreshingSprite;
-                    _tween = _icon.rectTransform
-                        .DORotate(new Vector3(0, 360, 0), 1f)
-                        .SetLoops(-1, LoopType.Incremental)
-                        .OnKill(() => _icon.rectTransform.rotation = Quaternion.identity);
-                    break;
+                    var color = _icon.color;
+
+                    _icon.DOColor(new Color(1f, 1f, 0.6f, 1f), 0.7f)
+                        .SetLoops(-1, LoopType.Yoyo)
+                        .OnKill(() => _icon.color = color);
+
+                    return;
             }
         }
 
         private string _lastTrimmingResult;
         private bool _stopTrimming;
+
         private void Update()
         {
             if (_stopTrimming) return;

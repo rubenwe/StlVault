@@ -1,6 +1,6 @@
 using DG.Tweening;
-using StlVault.AppModel.ViewModels;
 using StlVault.Util.Commands;
+using StlVault.ViewModels;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,12 +9,12 @@ using UnityEngine.UI;
 namespace StlVault.Views
 {
     [RequireComponent(typeof(CanvasGroup))]
-    internal abstract class DialogView<T> : ViewBase<T> where T : class, IDialogViewModel
+    internal abstract class DialogView<T> : ViewBase<T> where T : class, IDialogModel
     {
         private const float FadeDuration = 0.25f;
         [SerializeField] private Button _okButton;
         [SerializeField] private Button _cancelButton;
-        
+
         private Tween _fade;
         private CanvasGroup _canvasGroup;
         private Transform _panel;
@@ -24,7 +24,7 @@ namespace StlVault.Views
             _canvasGroup = GetComponent<CanvasGroup>();
             _panel = transform.GetChild(0);
         }
-        
+
         protected override void OnViewModelPropertyChanged(string propertyName)
         {
             if (propertyName != nameof(ViewModel.Shown)) return;
@@ -56,7 +56,7 @@ namespace StlVault.Views
             _okButton.Bind(ViewModel.AcceptCommand);
             _cancelButton.Bind(ViewModel.CancelCommand);
             _panel.localScale = Vector3.zero;
-            
+
             gameObject.SetActive(false);
         }
 
@@ -65,7 +65,7 @@ namespace StlVault.Views
             if (!ViewModel.Shown) return;
             if (Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Return))
             {
-                if(!HandleAcceptKey()) ViewModel.AcceptCommand.Execute();
+                if (!HandleAcceptKey()) ViewModel.AcceptCommand.Execute();
             }
 
             if (Input.GetKeyDown(KeyCode.Escape))

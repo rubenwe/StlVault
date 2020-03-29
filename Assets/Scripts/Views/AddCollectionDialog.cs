@@ -1,4 +1,4 @@
-using StlVault.AppModel.ViewModels;
+using StlVault.ViewModels;
 
 namespace StlVault.Views
 {

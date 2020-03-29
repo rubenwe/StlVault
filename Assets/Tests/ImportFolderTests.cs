@@ -5,6 +5,7 @@ using Moq;
 using NUnit.Framework;
 using StlVault.AppModel;
 using StlVault.Config;
+using StlVault.Services;
 using StlVault.Util.FileSystem;
 
 namespace StlVault.Tests

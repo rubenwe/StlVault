@@ -32,10 +32,12 @@ namespace StlVault.Views
             _source?.Cancel();
             _source = new CancellationTokenSource();
             var token = _source.Token;
-            
+
             if (args.Action == NotifyCollectionChangedAction.Reset) await DestroyAndRecreateAllItems(token);
-            else if (args.Action == NotifyCollectionChangedAction.Add) await AddNewItems(args.NewItems.OfType<TChildModel>().ToList(), token);
-            else if (args.Action == NotifyCollectionChangedAction.Remove) await RemoveOldItems(args.OldItems.OfType<TChildModel>().ToHashSet(), token);
+            else if (args.Action == NotifyCollectionChangedAction.Add)
+                await AddNewItems(args.NewItems.OfType<TChildModel>().ToList(), token);
+            else if (args.Action == NotifyCollectionChangedAction.Remove)
+                await RemoveOldItems(args.OldItems.OfType<TChildModel>().ToHashSet(), token);
         }
 
         private async Task AddNewItems(IReadOnlyList<TChildModel> newViewModels, CancellationToken token)
@@ -61,7 +63,7 @@ namespace StlVault.Views
         {
             var children = _itemsContainer.Cast<Transform>().ToList();
             await children.ChunkedForEach(child => Destroy(child.gameObject), token);
-            
+
             await AddNewItems(Items, token);
         }
     }

@@ -6,7 +6,8 @@ namespace StlVault.Util.Messaging
 {
     public class MessageAggregator : IMessageRelay
     {
-        private readonly Dictionary<Type, List<WeakReference<object>>> _receivers = new Dictionary<Type, List<WeakReference<object>>>();
+        private readonly Dictionary<Type, List<WeakReference<object>>> _receivers =
+            new Dictionary<Type, List<WeakReference<object>>>();
 
         public void Subscribe(params IMessageReceiver[] subscribers)
         {
@@ -24,7 +25,7 @@ namespace StlVault.Util.Messaging
                 }
             }
         }
-        
+
         public void Subscribe<TMessage>(IMessageReceiver<TMessage> subscriber)
         {
             Subscribe(typeof(TMessage), subscriber);
@@ -51,15 +52,14 @@ namespace StlVault.Util.Messaging
             lock (_receivers)
             {
                 if (!_receivers.TryGetValue(typeof(TMessage), out var references)) return;
-                
+
                 foreach (var reference in references)
                 {
-                    if (!reference.TryGetTarget(out var receiver) 
+                    if (!reference.TryGetTarget(out var receiver)
                         || ReferenceEquals(sender, receiver)
                         || !(receiver is IMessageReceiver<TMessage> typedReceiver)) continue;
-                    
+
                     typedReceiver.Receive(message);
-                    
                 }
             }
         }

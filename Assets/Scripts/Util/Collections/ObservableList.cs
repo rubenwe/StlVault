@@ -8,12 +8,15 @@ using NotifyCollectionChangedEventHandler = System.Collections.Specialized.Notif
 
 namespace StlVault.Util.Collections
 {
-    public class ObservableList<T> 
+    public class ObservableList<T>
         : ObservableCollection<T>, IReadOnlyObservableList<T>
     {
         private int _massUpdateScopeCount;
-        public ObservableList() {}
-        
+
+        public ObservableList()
+        {
+        }
+
         public ObservableList(IEnumerable<T> list)
             : base(list)
         {

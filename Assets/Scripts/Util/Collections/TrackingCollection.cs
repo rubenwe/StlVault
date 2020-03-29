@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using JetBrains.Annotations;
@@ -31,7 +30,8 @@ namespace StlVault.Util.Collections
         {
             if (sourceItems == null) throw new ArgumentNullException(nameof(sourceItems));
 
-            _createTargetItemFunc = createTargetItemFunc ?? throw new ArgumentNullException(nameof(createTargetItemFunc));
+            _createTargetItemFunc =
+                createTargetItemFunc ?? throw new ArgumentNullException(nameof(createTargetItemFunc));
             sourceItems.CollectionChanged += SourceItemsOnCollectionChanged;
             _targetItemsWrapper = new ReadOnlyObservableCollectionWrapper<TTo, TTo>(_targetItems);
 
@@ -93,7 +93,7 @@ namespace StlVault.Util.Collections
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)_targetItemsWrapper).GetEnumerator();
+            return ((IEnumerable) _targetItemsWrapper).GetEnumerator();
         }
 
         public int Count => _targetItemsWrapper.Count;

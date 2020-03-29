@@ -1,5 +1,5 @@
-using StlVault.AppModel.ViewModels;
 using StlVault.Util.Collections;
+using StlVault.ViewModels;
 
 namespace StlVault.Views
 {

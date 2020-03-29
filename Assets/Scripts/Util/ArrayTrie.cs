@@ -10,7 +10,7 @@ namespace StlVault.Util
     {
         private readonly Node _head = new Node(ReadOnlySpan<char>.Empty);
         private int _maxLength;
-        
+
         internal class Node
         {
             public int Occurrences;
@@ -23,7 +23,7 @@ namespace StlVault.Util
                 else Children = new[] {(word[0], new Node(word.Slice(1)))};
             }
         }
-        
+
         [PublicAPI]
         public bool Insert(string word) => Insert(word.AsSpan());
 
@@ -31,7 +31,7 @@ namespace StlVault.Util
         public bool Insert(ReadOnlySpan<char> word)
         {
             if (word.IsEmpty) ThrowHelper.CantStoreEmptyWord(nameof(word));
-            
+
             _maxLength = Math.Max(_maxLength, word.Length);
 
             var current = _head;
@@ -39,7 +39,7 @@ namespace StlVault.Util
             {
                 var startChar = word[0];
                 var restOfWord = word.Slice(1);
-                
+
                 // No children? Create array and store chars
                 if (current.Children == null)
                 {
@@ -58,14 +58,14 @@ namespace StlVault.Util
                 current = childNode;
                 word = restOfWord;
             }
-            
+
             // No early exit: either return false because word was known...
             if (current.IsTerminal)
             {
                 current.Occurrences++;
                 return false;
             }
-            
+
             // ... or set terminal if we added a shorter, unknown word
             current.Occurrences = 1;
             return true;
@@ -93,8 +93,9 @@ namespace StlVault.Util
                 yield return result;
             }
         }
-        
-        private static IEnumerable<(string word, int occurrences)> SearchTerminalNodes(Node node, char[] buffer, int position)
+
+        private static IEnumerable<(string word, int occurrences)> SearchTerminalNodes(Node node, char[] buffer,
+            int position)
         {
             if (node.Children == null) yield break;
 
@@ -113,7 +114,7 @@ namespace StlVault.Util
                 }
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool FindChild((char, Node)[] data, char search, out Node node)
         {

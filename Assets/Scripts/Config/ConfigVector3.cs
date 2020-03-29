@@ -19,7 +19,7 @@ namespace StlVault.Config
         {
             return new Vector3(rot.x, rot.y, rot.z);
         }
-        
+
         public static implicit operator ConfigVector3(Vector3 rot)
         {
             return new ConfigVector3(rot.x, rot.y, rot.z);

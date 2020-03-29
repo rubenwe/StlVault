@@ -11,7 +11,8 @@ namespace StlVault.Util
         /// <summary>
         /// The underlying dictionary. This instance is its own mutex.
         /// </summary>
-        private readonly Dictionary<string, PropertyChangedEventArgs> _cache = new Dictionary<string, PropertyChangedEventArgs>();
+        private readonly Dictionary<string, PropertyChangedEventArgs> _cache =
+            new Dictionary<string, PropertyChangedEventArgs>();
 
         /// <summary>
         /// Private constructor to prevent other instances.

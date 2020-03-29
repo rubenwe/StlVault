@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using StlVault.AppModel;
-using StlVault.AppModel.ViewModels;
 using StlVault.Config;
-using StlVault.Util;
+using StlVault.Services;
+using StlVault.Util.Logging;
 using StlVault.Util.Messaging;
+using StlVault.ViewModels;
 using UnityEngine;
 
 #pragma warning disable 0649
@@ -14,22 +14,22 @@ namespace StlVault.Views
 {
     public class ViewInitializer : MonoBehaviour
     {
-        [Category("Main Menu")]
-        [SerializeField] private ImportFoldersView _importFoldersView;
+        [Category("Main Menu")] [SerializeField]
+        private ImportFoldersView _importFoldersView;
+
         [SerializeField] private SavedSearchesView _savedSearchesView;
         [SerializeField] private CollectionsView _collectionsView;
 
-        [Category("Main Area")]
-        [SerializeField] private SearchView _searchView;
+        [Category("Main Area")] [SerializeField]
+        private SearchView _searchView;
+
         [SerializeField] private ItemsView _itemsView;
 
-        [Category("Dialogs")] 
-        [SerializeField] private AddSavedSearchDialog _addSavedSearchDialog;
+        [Category("Dialogs")] [SerializeField] private AddSavedSearchDialog _addSavedSearchDialog;
         [SerializeField] private AddImportFolderDialog _addImportFolderDialog;
-        
-        [Category("Misc")]
-        [SerializeField] private PreviewBuilder _previewBuilder;
-        
+
+        [Category("Misc")] [SerializeField] private PreviewBuilder _previewBuilder;
+
         private void Awake()
         {
             Texture.allowThreadedTextureCreation = true;
@@ -39,48 +39,42 @@ namespace StlVault.Views
         private async void Start()
         {
             var aggregator = new MessageAggregator();
-            
+
             IMessageRelay relay = aggregator;
             IConfigStore store = new AppDataConfigStore();
 
             UpdateApplicationSettings(store);
 
             var library = new Library(store, _previewBuilder);
-            
+            var factory = new ImportFolderFactory(new AppDataKnownItemStore(), library);
+
             // Main View
             var searchViewModel = new SearchModel(library, relay);
             var itemsViewModel = new ItemsModel(library);
-            
+
             // Main Menu
-            var importFoldersViewModel = new ImportFoldersModel(store, relay);
+            var importFoldersViewModel = new ImportFoldersModel(store, factory, relay);
             var savedSearchesViewModel = new SavedSearchesModel(store, relay);
             var collectionsViewModel = new CollectionsModel(store, relay);
-            
+
             // Dialogs
             var addSavedSearchViewModel = new AddSavedSearchModel(relay);
             var addImportFolderViewModel = new AddImportFolderModel(relay);
-            
+
             BindViewModels();
             await InitializeViewModels();
-            
-            var folderConfigs = await store.LoadAsyncOrDefault<ImportFoldersConfigFile>();
-            foreach (var folderConfig in folderConfigs)
-            {
-                folderConfig.AutoTagMode = AutoTagMode.ExplodeSubDirPath;
-                var importFolder = new ImportFolder(folderConfig, new FolderFileSystem(folderConfig.FullPath), new AppDataKnownItemStore(), library);
-                await importFolder.InitializeAsync();
-            }
-            
+
+
             aggregator.Subscribe(
                 // Main View
                 searchViewModel,
                 itemsViewModel,
-                    
+
                 // Main Menu
                 importFoldersViewModel,
                 savedSearchesViewModel,
                 collectionsViewModel,
-                    
+
                 // Dialogs
                 addSavedSearchViewModel,
                 addImportFolderViewModel);
@@ -90,21 +84,21 @@ namespace StlVault.Views
                 // Main View
                 _searchView.BindTo(searchViewModel);
                 _itemsView.BindTo(itemsViewModel);
-                
+
                 // Main Menu
                 _importFoldersView.BindTo(importFoldersViewModel);
                 _savedSearchesView.BindTo(savedSearchesViewModel);
                 _collectionsView.BindTo(collectionsViewModel);
-                
+
                 // Dialogs
                 _addImportFolderDialog.BindTo(addImportFolderViewModel);
                 _addSavedSearchDialog.BindTo(addSavedSearchViewModel);
             }
-            
+
             async Task InitializeViewModels()
             {
                 await savedSearchesViewModel.InitializeAsync();
-                await importFoldersViewModel.Initialize();
+                await importFoldersViewModel.InitializeAsync();
                 await collectionsViewModel.Initialize();
             }
         }

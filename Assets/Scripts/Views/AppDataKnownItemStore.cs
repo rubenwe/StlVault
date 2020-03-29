@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using StlVault.AppModel;
+using StlVault.Services;
 
 namespace StlVault.Views
 {

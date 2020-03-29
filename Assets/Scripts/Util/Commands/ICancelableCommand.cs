@@ -1,4 +1,5 @@
-namespace StlVault.Util.Commands {
+namespace StlVault.Util.Commands
+{
     public interface ICancelableCommand : IAsyncCommand
     {
         IAsyncCommand CancelCommand { get; }

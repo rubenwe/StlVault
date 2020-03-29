@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using INotifyCollectionChanged = System.Collections.Specialized.INotifyCollectionChanged;
 

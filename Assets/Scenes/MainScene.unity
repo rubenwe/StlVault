@@ -1368,8 +1368,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 462767768}
   m_HandleRect: {fileID: 462767767}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.99990815
+  m_Value: 0
+  m_Size: 0.99972945
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3245,7 +3245,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 2133190151}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.9998426
+  m_Size: 0.99953693
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3702,6 +3702,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_sharedMaterial
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5932940139344426689, guid: cc6827286671b8349ab14ddf376fd783,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cc6827286671b8349ab14ddf376fd783, type: 3}
@@ -5088,7 +5093,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.00018310547}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1028885762
@@ -5220,7 +5225,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1825598946}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999083
+  m_Size: 0.99972963
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -7474,7 +7479,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00021362305}
+  m_AnchoredPosition: {x: 0, y: 0.000030517578}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1420935334
@@ -7559,7 +7564,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.00010681152}
+  m_AnchoredPosition: {x: 0, y: -0.0000076293945}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1466299069
@@ -9738,6 +9743,7 @@ GameObject:
   - component: {fileID: 1923759259}
   - component: {fileID: 1923759258}
   - component: {fileID: 1923759260}
+  - component: {fileID: 1923759261}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -9896,6 +9902,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ffe14d6cfbb943deab1e91b6e78b5d43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1923759261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1923759252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c484913265461a967662dec59996c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1936100060
@@ -11884,6 +11902,11 @@ PrefabInstance:
       propertyPath: m_padding
       value: 1.25
       objectReference: {fileID: 0}
+    - target: {fileID: 5932940139344426689, guid: cc6827286671b8349ab14ddf376fd783,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cc6827286671b8349ab14ddf376fd783, type: 3}
 --- !u!224 &5416623839801609059 stripped
@@ -12591,6 +12614,11 @@ PrefabInstance:
       propertyPath: m_sharedMaterial
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 3538121618472853702, guid: b37fb2371b16cdb4ea33eb5b97ad92bb,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7016373226888299337, guid: b37fb2371b16cdb4ea33eb5b97ad92bb,
         type: 3}
       propertyPath: m_Navigation.m_Mode
@@ -12786,6 +12814,11 @@ PrefabInstance:
       propertyPath: m_sharedMaterial
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 7016373227507706175, guid: b37fb2371b16cdb4ea33eb5b97ad92bb,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8443796714932669665, guid: b37fb2371b16cdb4ea33eb5b97ad92bb,
         type: 3}
       propertyPath: m_Navigation.m_Mode
@@ -12820,6 +12853,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_sharedMaterial
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8972415205312958148, guid: b37fb2371b16cdb4ea33eb5b97ad92bb,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b37fb2371b16cdb4ea33eb5b97ad92bb, type: 3}

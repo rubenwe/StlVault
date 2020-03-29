@@ -158,7 +158,8 @@ namespace StlVault.Util.Commands
         /// </summary>
         /// <param name="asyncAction">The asynchronous code to execute.</param>
         /// <param name="defaultResult">The default "result" value for the task while it is not yet complete.</param>
-        public static NotifyTask<TResult> Create<TResult>(Func<Task<TResult>> asyncAction, TResult defaultResult = default(TResult))
+        public static NotifyTask<TResult> Create<TResult>(Func<Task<TResult>> asyncAction,
+            TResult defaultResult = default(TResult))
         {
             return Create(asyncAction(), defaultResult);
         }

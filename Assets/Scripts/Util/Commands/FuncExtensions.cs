@@ -1,6 +1,6 @@
 using System;
 
-namespace StlVault.Util.Commands 
+namespace StlVault.Util.Commands
 {
     internal static class FuncExtensions
     {

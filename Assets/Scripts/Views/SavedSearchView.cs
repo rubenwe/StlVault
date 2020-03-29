@@ -1,5 +1,5 @@
-using StlVault.AppModel.ViewModels;
 using StlVault.Util.Commands;
+using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

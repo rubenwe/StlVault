@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using StlVault.AppModel;
-using StlVault.Util;
+using StlVault.Services;
+using StlVault.Util.Logging;
 
 namespace StlVault.Views
 {
@@ -28,7 +28,7 @@ namespace StlVault.Views
             }
         }
 
-        private static string GetFileNameForConfig<T>() 
+        private static string GetFileNameForConfig<T>()
         {
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var typeName = typeof(T).Name.Replace("ConfigFile", string.Empty);
@@ -38,7 +38,7 @@ namespace StlVault.Views
         public Task StoreAsync<T>(T config)
         {
             var jsonFileName = GetFileNameForConfig<T>();
-            
+
             return Task.Run(() =>
             {
                 try
@@ -48,7 +48,7 @@ namespace StlVault.Views
                     var json = JsonConvert.SerializeObject(config, Formatting.Indented);
                     File.WriteAllText(jsonFileName, json);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     UnityLogger.Instance.Error("Could not write settings to {0}: {1}", jsonFileName, ex.Message);
                 }
