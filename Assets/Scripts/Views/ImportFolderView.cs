@@ -6,13 +6,13 @@ using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static StlVault.Services.FolderState;
+using static StlVault.Services.FileSourceState;
 
 #pragma warning disable 0649
 
 namespace StlVault.Views
 {
-    internal class ImportFolderView : ViewBase<ImportFolderModel>
+    internal class ImportFolderView : ViewBase<FileSourceModel>
     {
         [SerializeField] private TMP_Text _text;
         [SerializeField] private Button _button;
@@ -36,11 +36,11 @@ namespace StlVault.Views
                 _lastTrimmingResult = null;
             }
 
-            ViewModel.FolderState.OnMainThread().ValueChanged += UpdateStateIcon;
-            UpdateStateIcon(ViewModel.FolderState);
+            ViewModel.State.OnMainThread().ValueChanged += UpdateStateIcon;
+            UpdateStateIcon(ViewModel.State);
         }
 
-        private void UpdateStateIcon(FolderState state)
+        private void UpdateStateIcon(FileSourceState state)
         {
             _icon.DOKill(false);
 

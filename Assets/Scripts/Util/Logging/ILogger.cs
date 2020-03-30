@@ -12,7 +12,7 @@ namespace StlVault.Util.Logging
 
         [StringFormatMethod("message")]
         void Info(string message, params object[] args);
-
+        
         [StringFormatMethod("message")]
         void Warn(string message, params object[] args);
 

@@ -7,18 +7,19 @@ namespace StlVault.Services
 {
     internal class ImportFolderFactory : IImportFolderFactory
     {
-        [NotNull] private readonly IKnownItemStore _store;
-        [NotNull] private readonly ILibrary _library;
+        [NotNull] private readonly IFileSourceSubscriber _subscriber;
 
-        public ImportFolderFactory([NotNull] IKnownItemStore store, [NotNull] ILibrary library)
+        public ImportFolderFactory([NotNull] IFileSourceSubscriber subscriber)
         {
-            _store = store ?? throw new ArgumentNullException(nameof(store));
-            _library = library ?? throw new ArgumentNullException(nameof(library));
+            _subscriber = subscriber ?? throw new ArgumentNullException(nameof(subscriber));
         }
 
-        public ImportFolder Create(ImportFolderConfig folderConfig)
+        public IImportFolder Create(ImportFolderConfig folderConfig)
         {
-            return new ImportFolder(folderConfig, new FolderFileSystem(folderConfig.FullPath), _store, _library);
+            var folder = new ImportFolder(folderConfig, new FolderFileSystem(folderConfig.FullPath));
+            folder.Subscribe(_subscriber);
+            
+            return folder;
         }
     }
 }

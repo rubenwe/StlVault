@@ -7,7 +7,6 @@ namespace StlVault.Config
     {
         None = 0b000,
         ExplodeFileName = 0b001,
-        ExplodeSubDirPath = 0b011,
-        ExplodeAbsolutePath = 0b111,
+        ExplodeResourcePath = 0b011
     }
 }

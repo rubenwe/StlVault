@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using JetBrains.Annotations;
 using StlVault.Config;
@@ -7,14 +8,10 @@ using UnityEngine;
 
 namespace StlVault.Services
 {
+    [DebuggerDisplay("{" + nameof(ItemName) + "}")]
     internal class ItemPreviewMetadata : ITagged
     {
-        private readonly ImportFolderConfig _folderConfig;
-
-        public string ImportFolderPath => _folderConfig.FullPath;
-        public Vector3? Scale => _folderConfig.Scale;
-        public Vector3? Rotation => _folderConfig.Rotation;
-
+        public Vector3 Rotation { get; }
         public string StlFilePath { get; }
         public string ItemName { get; }
         public string PreviewImagePath { get; }
@@ -22,12 +19,10 @@ namespace StlVault.Services
 
         public ItemPreviewMetadata(
             [NotNull] string stlFilePath,
-            [NotNull] IReadOnlyList<string> tags,
-            [NotNull] ImportFolderConfig folderConfig)
+            [NotNull] IReadOnlyList<string> tags)
         {
             if (tags == null) throw new ArgumentNullException(nameof(tags));
-            _folderConfig = folderConfig ?? throw new ArgumentNullException(nameof(folderConfig));
-
+            
             StlFilePath = stlFilePath ?? throw new ArgumentNullException(nameof(stlFilePath));
             ItemName = GetItemName(stlFilePath);
             PreviewImagePath = Path.ChangeExtension(stlFilePath, ".jpg");

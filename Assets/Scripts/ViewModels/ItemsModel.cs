@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using StlVault.AppModel.Messages;
@@ -11,8 +12,11 @@ namespace StlVault.ViewModels
 {
     internal class ItemsModel : ModelBase, IMessageReceiver<SearchChangedMessage>
     {
-        private readonly ObservableList<ItemModel> _items = new ObservableList<ItemModel>();
+        private readonly TrackingCollection<ItemPreviewMetadata, ItemModel> _items 
+            = new TrackingCollection<ItemPreviewMetadata, ItemModel>(CreateModel);
+        
         private readonly ILibrary _library;
+        private IEnumerable<string> _currentSearchTags = Enumerable.Empty<string>();
 
         public IReadOnlyObservableList<ItemModel> Items => _items;
 
@@ -23,15 +27,14 @@ namespace StlVault.ViewModels
 
         public void Receive(SearchChangedMessage message)
         {
+            if (message.SearchTags.SequenceEqual(_currentSearchTags)) return;
+            _currentSearchTags = message.SearchTags ?? Enumerable.Empty<string>();
+            
             var data = _library.GetItemPreviewMetadata(message.SearchTags);
-            using (_items.EnterMassUpdate())
-            {
-                _items.Clear();
-                _items.AddRange(data.Select(CreateModel));
-            }
+            _items.SetSource(data);
         }
 
-        private ItemModel CreateModel(ItemPreviewMetadata metadata)
+        private static ItemModel CreateModel(ItemPreviewMetadata metadata)
         {
             return new ItemModel
             {

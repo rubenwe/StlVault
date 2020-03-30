@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace StlVault.Util.FileSystem
 {
@@ -33,6 +34,12 @@ namespace StlVault.Util.FileSystem
                     RelativePath = file.Substring(_rootPath.Length).Trim(Path.DirectorySeparatorChar)
                 };
             }
+        }
+
+        public Task<byte[]> ReadAllBytesAsync(string filePath)
+        {
+            var path = Path.Combine(_rootPath, filePath);
+            return Task.Run(() => File.ReadAllBytes(path));
         }
 
         private static DateTime Max(DateTime first, DateTime second) => first > second ? first : second;

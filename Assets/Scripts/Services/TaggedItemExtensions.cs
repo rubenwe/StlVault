@@ -5,7 +5,7 @@ namespace StlVault.Services
 {
     internal static class TaggedItemExtensions
     {
-        internal static IReadOnlyList<T> Matching<T>(this ICollection<T> items, IEnumerable<string> filter)
+        internal static IReadOnlyList<T> Matching<T>(this IReadOnlyCollection<T> items, IEnumerable<string> filter)
             where T : ITagged
         {
             var lowerFilter = filter.Select(f => f.ToLowerInvariant()).ToList();

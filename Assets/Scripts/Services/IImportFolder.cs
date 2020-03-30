@@ -1,14 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
-using StlVault.Config;
-using StlVault.Util;
-
-namespace StlVault.Services
+﻿namespace StlVault.Services
 {
-    internal interface IImportFolder : IDisposable
+    internal interface IImportFolder : IFileSource
     {
-        Task InitializeAsync();
-        BindableProperty<FolderState> FolderState { get; }
-        ImportFolderConfig Config { get; }
     }
 }

@@ -4,6 +4,6 @@ namespace StlVault.Services
 {
     internal interface IImportFolderFactory
     {
-        ImportFolder Create(ImportFolderConfig folderConfig);
+        IImportFolder Create(ImportFolderConfig folderConfig);
     }
 }

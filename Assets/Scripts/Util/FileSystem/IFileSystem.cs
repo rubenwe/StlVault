@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace StlVault.Util.FileSystem
@@ -10,5 +11,6 @@ namespace StlVault.Util.FileSystem
 
         bool FileExists(string filePath);
         IEnumerable<IFileInfo> GetFiles(string pattern, bool recursive);
+        Task<byte[]> ReadAllBytesAsync(string filePath);
     }
 }

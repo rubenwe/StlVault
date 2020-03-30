@@ -23,7 +23,7 @@ namespace StlVault.ViewModels
         [NotNull] private readonly IMessageRelay _relay;
         [NotNull] private readonly IImportFolderFactory _importFolderFactory;
 
-        public ObservableList<ImportFolderModel> Folders { get; } = new ObservableList<ImportFolderModel>();
+        public ObservableList<FileSourceModel> Folders { get; } = new ObservableList<FileSourceModel>();
         public ICommand AddImportFolderCommand { get; }
 
         public ImportFoldersModel(
@@ -45,17 +45,17 @@ namespace StlVault.ViewModels
             {
                 FullPath = Path.GetFullPath(message.FolderPath),
                 ScanSubDirectories = message.ScanSubDirectories,
-                Tags = message.Tags.OrderBy(tag => tag).Distinct().ToList(),
+                AdditionalTags = message.Tags.OrderBy(tag => tag).Distinct().ToList(),
                 Rotation = message.RotateOnImport ? message.Rotation : (Vector3?) null,
                 Scale = message.ScaleOnImport ? message.Scale : (Vector3?) null,
-                AutoTagMode = AutoTagMode.ExplodeSubDirPath
+                AutoTagMode = AutoTagMode.ExplodeResourcePath
             };
 
             var folder = _importFolderFactory.Create(newConfig);
 
             var folders = SavedFolders
                 .Append(folder)
-                .OrderBy(f => f.Config.FullPath)
+                .OrderBy(f => f.DisplayName)
                 .ToList();
 
             await SaveAndRefreshAsync(folders);
@@ -69,7 +69,7 @@ namespace StlVault.ViewModels
             var refreshTasks = new List<Task>();
             foreach (var folderConfig in folderConfigs)
             {
-                folderConfig.AutoTagMode = AutoTagMode.ExplodeSubDirPath;
+                folderConfig.AutoTagMode = AutoTagMode.ExplodeResourcePath;
 
                 var importFolder = _importFolderFactory.Create(folderConfig);
                 folders.Add(importFolder);
@@ -82,15 +82,16 @@ namespace StlVault.ViewModels
         }
 
         private List<IImportFolder> SavedFolders => Folders
-            .Select(model => model.ImportFolder)
-            .OrderBy(folder => folder.Config.FullPath)
+            .Select(model => model.FileSource)
+            .OfType<IImportFolder>()
+            .OrderBy(folder => folder.DisplayName)
             .ToList();
 
         private void RefreshItems(List<IImportFolder> importFolders)
         {
             var folders = importFolders
-                .OrderBy(folder => folder.Config.FullPath)
-                .Select(folder => new ImportFolderModel(folder, LoadItem, EditItem, DeleteItem));
+                .OrderBy(folder => folder.DisplayName)
+                .Select(folder => new FileSourceModel(folder, LoadItem, EditItem, DeleteItem));
 
             using (Folders.EnterMassUpdate())
             {
@@ -98,17 +99,17 @@ namespace StlVault.ViewModels
                 Folders.AddRange(folders);
             }
 
-            void LoadItem(ImportFolderModel item) =>
+            void LoadItem(FileSourceModel item) =>
                 _relay.Send(this, new SearchChangedMessage {SearchTags = new[] {"Folder: " + item.Path}});
 
-            void EditItem(ImportFolderModel item)
+            void EditItem(FileSourceModel item)
             {
             }
 
-            async void DeleteItem(ImportFolderModel item)
+            async void DeleteItem(FileSourceModel item)
             {
                 var currentFolders = SavedFolders;
-                var importFolder = item.ImportFolder;
+                var importFolder = (ImportFolder) item.FileSource;
 
                 currentFolders.Remove(importFolder);
                 importFolder.Dispose();
@@ -119,7 +120,7 @@ namespace StlVault.ViewModels
 
         private async Task SaveAndRefreshAsync(List<IImportFolder> folders)
         {
-            var fullConfig = new ImportFoldersConfigFile(folders.Select(f => f.Config));
+            var fullConfig = new ImportFoldersConfigFile(folders.Select(f => f.Config).OfType<ImportFolderConfig>());
             await _store.StoreAsync(fullConfig);
 
             RefreshItems(folders);

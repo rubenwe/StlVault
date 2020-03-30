@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows.Input;
 using StlVault.Util;
+using StlVault.Util.Collections;
 using StlVault.Util.Commands;
 using StlVault.Util.Unity;
 using TMPro;
@@ -82,6 +83,11 @@ namespace StlVault.Views
         public static BindableProperty<T> OnMainThread<T>(this BindableProperty<T> property)
         {
             return new GuiThreadQueuedProperty<T>(property);
+        }
+
+        public static IReadOnlyObservableList<T> OnMainThread<T>(this IReadOnlyObservableList<T> list)
+        {
+            return new GuiThreadQueuedReadOnlyObservableList<T>(list);
         }
     }
 }

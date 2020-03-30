@@ -1,6 +1,6 @@
 namespace StlVault.Services
 {
-    internal enum FolderState
+    internal enum FileSourceState
     {
         Ok,
         Refreshing

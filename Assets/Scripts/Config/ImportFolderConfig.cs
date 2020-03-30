@@ -1,15 +1,13 @@
 using System.Collections.Generic;
+using StlVault.Services;
 
 namespace StlVault.Config
 {
-    public class ImportFolderConfig
+    internal class ImportFolderConfig : FileSourceConfig
     {
+        public AutoTagMode AutoTagMode { get; set; }
+        public List<string> AdditionalTags { get; set; }
         public string FullPath { get; set; }
         public bool ScanSubDirectories { get; set; }
-
-        public AutoTagMode AutoTagMode { get; set; }
-        public List<string> Tags { get; set; }
-        public ConfigVector3? Scale { get; set; }
-        public ConfigVector3? Rotation { get; set; }
     }
 }

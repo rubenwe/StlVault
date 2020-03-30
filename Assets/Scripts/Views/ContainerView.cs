@@ -25,7 +25,7 @@ namespace StlVault.Views
 
         protected abstract IReadOnlyObservableList<TChildModel> Items { get; }
 
-        protected override void OnViewModelBound() => Items.CollectionChanged += UpdateDisplayedItems;
+        protected override void OnViewModelBound() => Items.OnMainThread().CollectionChanged += UpdateDisplayedItems;
 
         protected async void UpdateDisplayedItems(object sender, NotifyCollectionChangedEventArgs args)
         {
