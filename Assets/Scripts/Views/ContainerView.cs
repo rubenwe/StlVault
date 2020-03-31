@@ -64,7 +64,7 @@ namespace StlVault.Views
             var children = _itemsContainer.Cast<Transform>().ToList();
             await children.ChunkedForEach(child => Destroy(child.gameObject), token);
 
-            await AddNewItems(Items, token);
+            await AddNewItems(Items.ToList(), token);
         }
     }
 }

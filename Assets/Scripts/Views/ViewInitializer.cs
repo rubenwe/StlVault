@@ -28,7 +28,7 @@ namespace StlVault.Views
         [Category("Dialogs")] [SerializeField] private AddSavedSearchDialog _addSavedSearchDialog;
         [SerializeField] private AddImportFolderDialog _addImportFolderDialog;
 
-        [Category("Misc")] [SerializeField] private PreviewBuilder _previewBuilder;
+        [Category("Misc")] [SerializeField] private PreviewCam _previewBuilder;
 
         private void Awake()
         {
@@ -41,29 +41,31 @@ namespace StlVault.Views
             var aggregator = new MessageAggregator();
 
             IMessageRelay relay = aggregator;
-            IConfigStore store = new AppDataConfigStore();
+            IConfigStore configStore = new AppDataConfigStore();
+            IPreviewImageStore previewStore = new AppDataPreviewImageStore();
+            
+            UpdateApplicationSettings(configStore);
 
-            UpdateApplicationSettings(store);
-
-            var library = new Library(_previewBuilder);
+            var library = new Library(configStore, _previewBuilder, previewStore);
             var factory = new ImportFolderFactory(library);
 
             // Main View
             var searchViewModel = new SearchModel(library, relay);
-            var itemsViewModel = new ItemsModel(library);
+            var itemsViewModel = new ItemsModel(library, previewStore);
 
             // Main Menu
-            var importFoldersViewModel = new ImportFoldersModel(store, factory, relay);
-            var savedSearchesViewModel = new SavedSearchesModel(store, relay);
-            var collectionsViewModel = new CollectionsModel(store, relay);
+            var importFoldersViewModel = new ImportFoldersModel(configStore, factory, relay);
+            var savedSearchesViewModel = new SavedSearchesModel(configStore, relay);
+            var collectionsViewModel = new CollectionsModel(configStore, relay);
 
             // Dialogs
             var addSavedSearchViewModel = new AddSavedSearchModel(relay);
             var addImportFolderViewModel = new AddImportFolderModel(relay);
 
             BindViewModels();
-            await InitializeViewModels();
 
+            await library.InitializeAsync();
+            await InitializeViewModels();
 
             aggregator.Subscribe(
                 // Main View
@@ -111,6 +113,7 @@ namespace StlVault.Views
                 canvas.scaleFactor = settings.UiScalePercent / 125f;
             }
 
+            FindObjectOfType<LogLevelSettings>().LogLevel = settings.LogLevel;
             UnityLogger.LogLevel = settings.LogLevel;
         }
     }

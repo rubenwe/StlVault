@@ -6,21 +6,28 @@ using StlVault.Util.Collections;
 
 namespace StlVault.Services
 {
-    internal sealed class PreviewList : ObservableList<ItemPreviewMetadata>, IPreviewList
+    internal sealed class PreviewList : ObservableList<PreviewInfo>, IPreviewList
     {
         [NotNull] private readonly Action<PreviewList> _disposeCallback;
-        [NotNull] private readonly Func<IReadOnlyCollection<ItemPreviewMetadata>, IReadOnlyCollection<ItemPreviewMetadata>> _filter;
+        [NotNull] private readonly Func<IReadOnlyCollection<PreviewInfo>, IReadOnlyCollection<PreviewInfo>> _filter;
 
-        public PreviewList([NotNull] Action<PreviewList> disposeCallback, [NotNull] Func<IReadOnlyCollection<ItemPreviewMetadata>, IReadOnlyCollection<ItemPreviewMetadata>> filter)
+        public PreviewList([NotNull] Action<PreviewList> disposeCallback, [NotNull] Func<IReadOnlyCollection<PreviewInfo>, IReadOnlyCollection<PreviewInfo>> filter)
         {
             _disposeCallback = disposeCallback ?? throw new ArgumentNullException(nameof(disposeCallback));
             _filter = filter ?? throw new ArgumentNullException(nameof(filter));
         }
 
-        public void AddFiltered(IReadOnlyCollection<ItemPreviewMetadata> metadata)
+        public void AddFiltered(IReadOnlyCollection<PreviewInfo> previewInfos)
         {
-            var filtered = _filter.Invoke(metadata);
+            var filtered = _filter.Invoke(previewInfos);
             AddRange(filtered);
+        }
+
+        public void AddFiltered(PreviewInfo previewInfo)
+        {
+            var array = new[] {previewInfo};
+            var filtered = _filter.Invoke(array);
+            if (filtered.Count == 1) Add(previewInfo);
         }
 
         public void Dispose()
@@ -28,7 +35,7 @@ namespace StlVault.Services
             _disposeCallback.Invoke(this);
         }
 
-        public void RemoveRange(HashSet<ItemPreviewMetadata> itemsToRemove)
+        public void RemoveRange(HashSet<PreviewInfo> itemsToRemove)
         {
             using (EnterMassUpdate())
             {

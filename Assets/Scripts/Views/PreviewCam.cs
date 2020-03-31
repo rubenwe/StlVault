@@ -1,10 +1,13 @@
+using System.Threading.Tasks;
+using StlVault.Services;
+using StlVault.Util.Unity;
 using UnityEngine;
 
 #pragma warning disable 0649
 
 namespace StlVault.Views
 {
-    internal class PreviewCam : MonoBehaviour
+    internal class PreviewCam : MonoBehaviour, IPreviewBuilder
     {
         [SerializeField] private Camera _camera;
         [SerializeField] private MeshFilter _meshFilter;
@@ -22,7 +25,7 @@ namespace StlVault.Views
             _texture2D = new Texture2D(_previewResolution, _previewResolution, TextureFormat.RGB24, false);
         }
 
-        public byte[] GetSnapshot(Mesh mesh, Vector3? objRotation, int quality)
+        private byte[] GetSnapshot(Mesh mesh, Vector3? objRotation, int quality)
         {
             if (objRotation != null)
             {
@@ -58,6 +61,18 @@ namespace StlVault.Views
             }
 
             return max;
+        }
+
+        public Task<byte[]> GetPreviewImageDataAsync(Mesh mesh, Vector3? objRotation)
+        {
+            var tcs = new TaskCompletionSource<byte[]>();
+            GuiCallbackQueue.Enqueue(() =>
+            {
+                var data = GetSnapshot(mesh, objRotation, 70);
+                tcs.SetResult(data);
+            });
+
+            return tcs.Task;
         }
     }
 }

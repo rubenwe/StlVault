@@ -14,7 +14,7 @@ namespace StlVault.Services
         public static IReadOnlyList<string> GenerateTags(ImportFolderConfig folderConfig, string resourcePath)
         {
             var rootPath = folderConfig.FullPath;
-            var subDir = resourcePath.Substring(rootPath.Length);
+            var subDir = Path.GetDirectoryName(resourcePath);
             var fileName = Path.GetFileNameWithoutExtension(resourcePath);
 
             return BuildDumbTags(GetTagGenerationString(folderConfig.AutoTagMode))

@@ -66,19 +66,17 @@ namespace StlVault.ViewModels
         {
             var folderConfigs = await _store.LoadAsyncOrDefault<ImportFoldersConfigFile>();
             var folders = new List<IImportFolder>();
-            var refreshTasks = new List<Task>();
+            
             foreach (var folderConfig in folderConfigs)
             {
                 folderConfig.AutoTagMode = AutoTagMode.ExplodeResourcePath;
 
                 var importFolder = _importFolderFactory.Create(folderConfig);
                 folders.Add(importFolder);
-                refreshTasks.Add(importFolder.InitializeAsync());
+                _ = importFolder.InitializeAsync();
             }
 
             RefreshItems(folders);
-
-            await Task.WhenAll(refreshTasks);
         }
 
         private List<IImportFolder> SavedFolders => Folders

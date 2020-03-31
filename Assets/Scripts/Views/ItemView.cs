@@ -1,6 +1,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using DG.Tweening;
 using StlVault.ViewModels;
 using TMPro;
@@ -11,7 +12,7 @@ using UnityEngine.UI;
 
 namespace StlVault.Views
 {
-    public class ItemView : ViewBase<ItemModel>
+    internal class ItemView : ViewBase<FilePreviewModel>
     {
         private static readonly Rect PreviewRect = new Rect(Vector2.zero, new Vector2(1024, 1024));
         private static readonly Vector2 Pivot = 0.5f * Vector2.one;
@@ -52,7 +53,7 @@ namespace StlVault.Views
 
             try
             {
-                var bytes = await WaitForFileAndRead(token);
+                var bytes = await ViewModel.LoadPreviewAsync();
                 if (bytes == null) return;
 
                 await GetSlot(token);
@@ -73,25 +74,13 @@ namespace StlVault.Views
             }
         }
 
-        private Task<byte[]> WaitForFileAndRead(CancellationToken token)
-        {
-            return Task.Run(async () =>
-            {
-                while (!File.Exists(ViewModel.PreviewImagePath))
-                {
-                    if (token.IsCancellationRequested) return null;
-                    await Task.Delay(100);
-                }
-
-                return File.ReadAllBytes(ViewModel.PreviewImagePath);
-            }, token);
-        }
-
         private static async Task GetSlot(CancellationToken token)
         {
             while (!ItemViewUpdateQueue.ConsumeSlot())
             {
                 if (token.IsCancellationRequested) return;
+                
+                // ReSharper disable once MethodSupportsCancellation
                 await Task.Delay(1);
             }
         }

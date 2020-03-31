@@ -17,7 +17,7 @@ namespace StlVault.Services
 {
     internal sealed class ImportFolder : FileSourceBase, IImportFolder
     {
-        private readonly Dictionary<string, KnownItemInfo> _knownFiles = new Dictionary<string, KnownItemInfo>();
+        private readonly Dictionary<string, IFileInfo> _knownFiles = new Dictionary<string, IFileInfo>();
         
         [CanBeNull] private IFolderWatcher _watcher;
         [NotNull] private readonly Timer _timer;
@@ -37,13 +37,10 @@ namespace StlVault.Services
             _timer.Elapsed += TimerOnElapsed;
         }
 
-        public override Task InitializeAsync()
+        public override async Task InitializeAsync()
         {
-            return Task.Run(async () =>
-            {
-                await RescanItemsAsync(true);
-                InitializeWatcher();
-            });
+            await RescanItemsAsync(true);
+            await InitializeWatcherAsync();
         }
 
         public override Task<byte[]> GetFileBytesAsync(string resourcePath)
@@ -57,45 +54,50 @@ namespace StlVault.Services
         }
 
         private volatile bool _rescanRunning;
-        private string GetFullPath(string relativePath) => Path.Combine(_config.FullPath, relativePath);
-        private string GetFullPath(IFileInfo item) => GetFullPath(item.RelativePath);
+        
         private async Task RescanItemsAsync(bool initializing = false)
         {
             if (_rescanRunning) return;
             _rescanRunning = true;
             
             State.Value = Refreshing;
-
-            var matchedFiles = _fileSystem.GetFiles(SupportedFilePattern, _config.ScanSubDirectories)
-                .ToDictionary(item => item.RelativePath);
-
-            var importFiles = new HashSet<string>();
+            
+            var importFiles = new HashSet<IFileInfo>();
             var removeFiles = new HashSet<string>();
-            foreach (var (filePath, fileInfo) in matchedFiles)
-            {
-                // New files
-                if (!_knownFiles.ContainsKey(filePath))
-                {
-                    importFiles.Add(GetFullPath(filePath));
-                    _knownFiles[filePath] = new KnownItemInfo(fileInfo);
-                }
-                // Files that have changed
-                else if (_knownFiles.TryGetValue(filePath, out var known) && known.LastChange != fileInfo.LastChange)
-                {
-                    removeFiles.Add(GetFullPath(known));
-                    importFiles.Add(GetFullPath(filePath));
-                    _knownFiles[filePath] = new KnownItemInfo(fileInfo);
-                }
-            }
 
-            // Missing files
-            var missingFiles = _knownFiles.Keys.Where(filePath => !matchedFiles.ContainsKey(filePath)).ToList();
-            foreach (var filePath in missingFiles)
+            await Task.Run(() =>
             {
-                removeFiles.Add(GetFullPath(filePath));
-                _knownFiles.Remove(filePath);
-            }
+                var matchedFiles = _fileSystem
+                    .GetFiles(SupportedFilePattern, _config.ScanSubDirectories)
+                    .ToDictionary(item => item.Path);
 
+                foreach (var (filePath, fileInfo) in matchedFiles)
+                {
+                    // New files
+                    if (!_knownFiles.ContainsKey(filePath))
+                    {
+                        importFiles.Add(fileInfo);
+                        _knownFiles[filePath] = fileInfo;
+                    }
+                    // Files that have changed
+                    else if (_knownFiles.TryGetValue(filePath, out var known) &&
+                             known.LastChange != fileInfo.LastChange)
+                    {
+                        removeFiles.Add(known.Path);
+                        importFiles.Add(fileInfo);
+                        _knownFiles[filePath] = fileInfo;
+                    }
+                }
+
+                // Missing files
+                var missingFiles = _knownFiles.Keys.Where(filePath => !matchedFiles.ContainsKey(filePath)).ToList();
+                foreach (var filePath in missingFiles)
+                {
+                    removeFiles.Add(filePath);
+                    _knownFiles.Remove(filePath);
+                }
+            });
+            
             if (initializing)
             {
                 await Subscriber.OnInitializeAsync(this, importFiles);
@@ -110,13 +112,16 @@ namespace StlVault.Services
             _rescanRunning = false;
         }
         
-        private void InitializeWatcher()
+        private async Task InitializeWatcherAsync()
         {
             if (_watcher == null)
             {
-                _watcher = _fileSystem.CreateWatcher(SupportedFilePattern, _config.ScanSubDirectories);
-                _watcher.FileAdded += WatcherOnFileAdded;
-                _watcher.FileRemoved += WatcherOnFileRemoved;
+                await Task.Run(() =>
+                {
+                    _watcher = _fileSystem.CreateWatcher(SupportedFilePattern, _config.ScanSubDirectories);
+                    _watcher.FileAdded += WatcherOnFileAdded;
+                    _watcher.FileRemoved += WatcherOnFileRemoved;
+                });
             }
         }
 

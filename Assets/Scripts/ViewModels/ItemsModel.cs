@@ -12,17 +12,18 @@ namespace StlVault.ViewModels
 {
     internal class ItemsModel : ModelBase, IMessageReceiver<SearchChangedMessage>
     {
-        private readonly TrackingCollection<ItemPreviewMetadata, ItemModel> _items 
-            = new TrackingCollection<ItemPreviewMetadata, ItemModel>(CreateModel);
+        [NotNull] private readonly ILibrary _library;
+        [NotNull] private readonly IPreviewImageStore _previewImageStore;
+        [NotNull] private readonly TrackingCollection<PreviewInfo, FilePreviewModel> _items;
+        [NotNull] private IEnumerable<string> _currentSearchTags = Enumerable.Empty<string>();
         
-        private readonly ILibrary _library;
-        private IEnumerable<string> _currentSearchTags = Enumerable.Empty<string>();
+        public IReadOnlyObservableList<FilePreviewModel> Items => _items;
 
-        public IReadOnlyObservableList<ItemModel> Items => _items;
-
-        public ItemsModel([NotNull] ILibrary library)
+        public ItemsModel([NotNull] ILibrary library, [NotNull] IPreviewImageStore previewImageStore)
         {
             _library = library ?? throw new ArgumentNullException(nameof(library));
+            _previewImageStore = previewImageStore ?? throw new ArgumentNullException(nameof(previewImageStore));
+            _items = new TrackingCollection<PreviewInfo, FilePreviewModel>(CreateModel);
         }
 
         public void Receive(SearchChangedMessage message)
@@ -34,12 +35,12 @@ namespace StlVault.ViewModels
             _items.SetSource(data);
         }
 
-        private static ItemModel CreateModel(ItemPreviewMetadata metadata)
+        private FilePreviewModel CreateModel(PreviewInfo info)
         {
-            return new ItemModel
+            return new FilePreviewModel(_previewImageStore)
             {
-                Name = metadata.ItemName,
-                PreviewImagePath = metadata.PreviewImagePath,
+                Name = info.FileName,
+                FileHash = info.FileHash,
                 InFavorites = false,
                 InSelection = false
             };

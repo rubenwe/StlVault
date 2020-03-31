@@ -9,11 +9,8 @@ namespace StlVault.Util.Stl
 {
     public static class StlImporter
     {
-        public static async Task<(Mesh mesh, string fileHash)> ImportMeshAsync(string path, bool centerVertices = true)
+        public static async Task<(Mesh mesh, string fileHash)> ImportMeshAsync(string fileName, byte[] fileBytes, bool centerVertices = true)
         {
-            var fileName = Path.GetFileNameWithoutExtension(path) ?? throw new ArgumentException(nameof(path));
-
-            var fileBytes = await Task.Run(() => File.ReadAllBytes(path)).Timed("Reading file {0}", fileName);
             var isBinary = BinaryStl.IsBinary(fileBytes);
 
             Task<string> ComputeHash()

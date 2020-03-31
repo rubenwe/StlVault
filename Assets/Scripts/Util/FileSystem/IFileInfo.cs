@@ -4,7 +4,7 @@ namespace StlVault.Util.FileSystem
 {
     internal interface IFileInfo
     {
-        string RelativePath { get; }
+        string Path { get; }
         DateTime LastChange { get; }
     }
 }

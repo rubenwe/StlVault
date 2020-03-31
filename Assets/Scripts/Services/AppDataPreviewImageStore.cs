@@ -19,11 +19,12 @@ namespace StlVault.Services
             }
         }
 
-        private static string GetFileName(string fileHash, ConfigVector3 rotation)
+        private static string GetFileName(string fileHash)
         {
-            var (x, y, z) = rotation.GetRoundedValues();
-            var fileName = $"{fileHash}_{x}_{y}_{z}.jpg";
+            // var (x, y, z) = rotation.GetRoundedValues();
+            // var fileName = $"{fileHash}_{x}_{y}_{z}.jpg";
 
+            var fileName = $"{fileHash}.jpg";
             foreach (var illegal in Path.GetInvalidFileNameChars())
             {
                 fileName = fileName.Replace(illegal, '-');
@@ -32,9 +33,9 @@ namespace StlVault.Services
             return Path.Combine(PreviewImagePath, fileName);
         }
 
-        public async Task<byte[]> GetPreviewImageForItemAsync(string fileHash, ConfigVector3 rotation)
+        public async Task<byte[]> LoadPreviewAsync(string fileHash)
         {
-            var fileName = GetFileName(fileHash, rotation);
+            var fileName = GetFileName(fileHash);
             return await Task.Run(ReadImageBytes);
 
             byte[] ReadImageBytes()
@@ -50,9 +51,9 @@ namespace StlVault.Services
             }
         }
 
-        public async Task StorePreviewImageForItemAsync(string fileHash, byte[] imageData, ConfigVector3 rotation)
+        public async Task StorePreviewAsync(string fileHash, byte[] imageData)
         {
-            var fileName = GetFileName(fileHash, rotation);
+            var fileName = GetFileName(fileHash);
             await Task.Run(StoreImageBytes);
 
             void StoreImageBytes()

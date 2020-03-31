@@ -6,11 +6,11 @@ namespace StlVault.Util.Logging
 {
     public class LogLevelSettings : MonoBehaviour
     {
-        [SerializeField] private LogLevel _logLevel;
+        [SerializeField] public LogLevel LogLevel;
 
         private void Update()
         {
-            UnityLogger.LogLevel = _logLevel;
+            UnityLogger.LogLevel = LogLevel;
         }
     }
 }
