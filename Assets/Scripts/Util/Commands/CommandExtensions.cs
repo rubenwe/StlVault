@@ -23,7 +23,7 @@ namespace StlVault.Util.Commands
 
         public static void OnCanExecuteChanged(this ICommand command)
         {
-            if(command is ICanExecuteChange ce) ce.OnCanExecuteChanged();
+            if (command is ICanExecuteChange ce) ce.OnCanExecuteChanged();
             else throw new NotSupportedException("Can't update ExecuteChanged on non ICanExecuteChange commands!");
         }
     }

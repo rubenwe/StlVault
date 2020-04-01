@@ -12,7 +12,8 @@ namespace StlVault.Util.Commands
         private readonly Func<bool> _canExecuteFunc;
 
         public DelegateCommand(Action executeAction) : this(null, executeAction)
-        { }
+        {
+        }
 
         public DelegateCommand(Func<bool> canExecuteFunc, Action executeAction)
         {

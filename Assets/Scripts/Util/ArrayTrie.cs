@@ -10,27 +10,34 @@ namespace StlVault.Util
     {
         private readonly Node _head = new Node(ReadOnlySpan<char>.Empty);
         private int _maxLength;
-        
+
         internal class Node
         {
-            public bool IsTerminal;
+            public int Occurrences;
+            public bool IsTerminal => Occurrences > 0;
             public (char, Node)[] Children;
 
             public Node(ReadOnlySpan<char> word)
             {
-                if (word.IsEmpty) IsTerminal = true;
+                if (word.IsEmpty) Occurrences = 1;
                 else Children = new[] {(word[0], new Node(word.Slice(1)))};
             }
         }
-        
+
         [PublicAPI]
         public bool Insert(string word) => Insert(word.AsSpan());
-
+        
+        [PublicAPI]
+        public void Insert(IReadOnlyCollection<string> tags)
+        {
+            foreach (var tag in tags) Insert(tag);
+        }
+        
         [PublicAPI]
         public bool Insert(ReadOnlySpan<char> word)
         {
             if (word.IsEmpty) ThrowHelper.CantStoreEmptyWord(nameof(word));
-            
+
             _maxLength = Math.Max(_maxLength, word.Length);
 
             var current = _head;
@@ -38,7 +45,7 @@ namespace StlVault.Util
             {
                 var startChar = word[0];
                 var restOfWord = word.Slice(1);
-                
+
                 // No children? Create array and store chars
                 if (current.Children == null)
                 {
@@ -57,16 +64,21 @@ namespace StlVault.Util
                 current = childNode;
                 word = restOfWord;
             }
-            
+
             // No early exit: either return false because word was known...
-            if (current.IsTerminal) return false;
-            
+            if (current.IsTerminal)
+            {
+                current.Occurrences++;
+                return false;
+            }
+
             // ... or set terminal if we added a shorter, unknown word
-            return current.IsTerminal = true;
+            current.Occurrences = 1;
+            return true;
         }
 
         [PublicAPI, SuppressMessage("ReSharper", "ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator")]
-        public IEnumerable<string> Find(string start)
+        public IEnumerable<(string word, int occurrences)> Find(string start)
         {
             // Walk down the trie to the subtree of words starting with "start"
             var current = _head;
@@ -76,19 +88,20 @@ namespace StlVault.Util
             }
 
             // Current might already be a stored word => return that
-            if (current.IsTerminal) yield return start;
+            if (current.IsTerminal) yield return (start, current.Occurrences);
 
             // From here on out, we need to build a word -> fill start of buffer
             var buffer = new char[_maxLength];
             start.AsSpan().CopyTo(buffer);
 
-            foreach (var word in SearchTerminalNodes(current, buffer, start.Length))
+            foreach (var result in SearchTerminalNodes(current, buffer, start.Length))
             {
-                yield return word;
+                yield return result;
             }
         }
-        
-        private static IEnumerable<string> SearchTerminalNodes(Node node, char[] buffer, int position)
+
+        private static IEnumerable<(string word, int occurrences)> SearchTerminalNodes(Node node, char[] buffer,
+            int position)
         {
             if (node.Children == null) yield break;
 
@@ -98,7 +111,7 @@ namespace StlVault.Util
 
                 if (childNode.IsTerminal)
                 {
-                    yield return new string(buffer, 0, position + 1);
+                    yield return (new string(buffer, 0, position + 1), childNode.Occurrences);
                 }
 
                 foreach (var word in SearchTerminalNodes(childNode, buffer, position + 1))
@@ -107,7 +120,7 @@ namespace StlVault.Util
                 }
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool FindChild((char, Node)[] data, char search, out Node node)
         {

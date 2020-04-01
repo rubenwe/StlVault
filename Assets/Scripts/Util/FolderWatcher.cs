@@ -1,14 +1,15 @@
 using System;
 using System.IO;
+using StlVault.Util.FileSystem;
 
 namespace StlVault.Util
 {
-    internal sealed class FolderWatcher : IDisposable
+    internal sealed class FolderWatcher : IFolderWatcher
     {
         private readonly FileSystemWatcher _watcher;
-        
+
         public event EventHandler<string> FileAdded;
-        public event EventHandler<string> FileRemoved; 
+        public event EventHandler<string> FileRemoved;
 
         public FolderWatcher(string path, string filter, bool includeSubdirectories = true)
         {
@@ -22,7 +23,7 @@ namespace StlVault.Util
                                | NotifyFilters.Size
                                | NotifyFilters.FileName
             };
-            
+
             _watcher.Changed += OnFileSystemEvent;
             _watcher.Created += OnFileSystemEvent;
             _watcher.Renamed += OnFileSystemEvent;
@@ -39,11 +40,11 @@ namespace StlVault.Util
                 case WatcherChangeTypes.Created:
                     FileAdded?.Invoke(this, e.FullPath);
                     break;
-                
+
                 case WatcherChangeTypes.Deleted:
                     FileRemoved?.Invoke(this, e.FullPath);
                     break;
-                
+
                 case WatcherChangeTypes.Changed:
                     FileRemoved?.Invoke(this, e.FullPath);
                     if (File.Exists(e.FullPath))

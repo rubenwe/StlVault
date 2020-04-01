@@ -5,7 +5,18 @@ namespace StlVault.Util
     internal class BindableProperty<T>
     {
         private T _value;
-        public event Action<T> ValueChanged;
+        public virtual event Action<T> ValueChanged;
+
+        public Func<T, T> TransformValue { private get; set; }
+
+        public BindableProperty()
+        {
+        }
+
+        public BindableProperty(T value)
+        {
+            _value = value;
+        }
 
         public T Value
         {
@@ -16,19 +27,14 @@ namespace StlVault.Util
                 {
                     value = TransformValue(value);
                 }
-                
+
                 if (Equals(value, _value)) return;
-                
+
                 _value = value;
                 ValueChanged?.Invoke(value);
             }
         }
 
-        public Func<T, T> TransformValue { private get; set; }
-        
-        public static implicit operator T(BindableProperty<T> item)
-        {
-            return item.Value;
-        }
+        public static implicit operator T(BindableProperty<T> item) => item.Value;
     }
 }

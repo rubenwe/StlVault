@@ -4,8 +4,8 @@ using System.Linq;
 
 namespace StlVault.Util.Collections
 {
-    internal class ReadOnlyObservableCollectionWrapper<TBase, TDerived> 
-        : ReadOnlyObservableCollection<TDerived>, IReadOnlyObservableCollection<TBase> 
+    internal class ReadOnlyObservableCollectionWrapper<TBase, TDerived>
+        : ReadOnlyObservableCollection<TDerived>, IReadOnlyObservableCollection<TBase>
         where TDerived : TBase
     {
         public ReadOnlyObservableCollectionWrapper(ObservableCollection<TDerived> list) : base(list)
@@ -20,12 +20,14 @@ namespace StlVault.Util.Collections
 
     public class ReadOnlyObservableCollectionWrapper
     {
-        public static IReadOnlyObservableCollection<TBase> Create<TBase, TDerived>(IEnumerable<TDerived> items) where TDerived : TBase
+        public static IReadOnlyObservableCollection<TBase> Create<TBase, TDerived>(IEnumerable<TDerived> items)
+            where TDerived : TBase
         {
             return new ReadOnlyObservableCollectionWrapper<TBase, TDerived>(new ObservableCollection<TDerived>(items));
         }
 
-        public static IReadOnlyObservableCollection<TBase> Create<TBase, TDerived>(ObservableCollection<TDerived> items) where TDerived : TBase
+        public static IReadOnlyObservableCollection<TBase> Create<TBase, TDerived>(ObservableCollection<TDerived> items)
+            where TDerived : TBase
         {
             return new ReadOnlyObservableCollectionWrapper<TBase, TDerived>(items);
         }

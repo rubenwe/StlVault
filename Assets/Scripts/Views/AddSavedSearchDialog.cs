@@ -1,4 +1,4 @@
-using StlVault.AppModel.ViewModels;
+using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -17,7 +17,7 @@ namespace StlVault.Views
         {
             _eventSystem = EventSystem.current;
         }
-        
+
         protected override void OnViewModelBound()
         {
             base.OnViewModelBound();

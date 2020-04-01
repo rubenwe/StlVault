@@ -1,4 +1,4 @@
-using StlVault.AppModel.ViewModels;
+using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,11 +11,11 @@ namespace StlVault.Views
     {
         [SerializeField] private Button _button;
         [SerializeField] private TMP_Text _text;
-        
+
         protected override void OnViewModelBound()
         {
             base.OnViewModelBound();
-            
+
             _text.Bind(ViewModel.Name);
         }
     }

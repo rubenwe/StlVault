@@ -24,7 +24,7 @@ namespace StlVault.Util.Commands
             : this(_ => executeFunc(), canExecuteFunc.Wrap())
         {
         }
-        
+
         public bool CanExecute(object parameter)
         {
             return !IsExecuting && (_canExecuteFunc?.Invoke(parameter) ?? true);
@@ -41,7 +41,7 @@ namespace StlVault.Util.Commands
             // consumers of the property changed and can execute changed events.
             var tcs = new TaskCompletionSource<object>();
             _execution = NotifyingTaskWrapper.Create(DoExecuteAsync(tcs.Task, _executeFunc, parameter));
-            
+
             NotifyExecuteChange(true);
 
             tcs.SetResult(null);

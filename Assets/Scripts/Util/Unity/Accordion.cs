@@ -21,7 +21,7 @@ namespace StlVault.Util.Unity
         [SerializeField] private Orientation _orientation;
         [SerializeField] private bool _startExpanded = true;
         [SerializeField] private float _slideDuration = 1f;
-        
+
         private bool _isExpanded;
         private float _initialSize;
         private Tween _tween;
@@ -46,7 +46,7 @@ namespace StlVault.Util.Unity
                 ? _panel.flexibleWidth
                 : _panel.flexibleHeight;
         }
-      
+
         private void TogglePanel()
         {
             if (_tween != null && _tween.IsActive() && !_tween.IsComplete())
@@ -55,10 +55,14 @@ namespace StlVault.Util.Unity
             }
 
             var targetState = _isExpanded ? 0 : _initialSize;
-            
-            if (_orientation == Horizontal) _tween = DOTween.To(() => _panel.flexibleWidth, v => _panel.flexibleWidth = v, targetState, _slideDuration);
-            if (_orientation == Vertical) _tween = DOTween.To(() => _panel.flexibleHeight, v => _panel.flexibleHeight = v, targetState, _slideDuration);
-            
+
+            if (_orientation == Horizontal)
+                _tween = DOTween.To(() => _panel.flexibleWidth, v => _panel.flexibleWidth = v, targetState,
+                    _slideDuration);
+            if (_orientation == Vertical)
+                _tween = DOTween.To(() => _panel.flexibleHeight, v => _panel.flexibleHeight = v, targetState,
+                    _slideDuration);
+
             _isExpanded = !_isExpanded;
         }
     }

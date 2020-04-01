@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using JetBrains.Annotations;
@@ -18,24 +17,48 @@ namespace StlVault.Util.Collections
     /// <typeparam name="TFrom">The type of the source items.</typeparam>
     /// <typeparam name="TTo">The type of the the target items to create.</typeparam>
     /// <seealso cref="IReadOnlyObservableCollection{T}" />
-    public class TrackingCollection<TFrom, TTo> : IReadOnlyObservableCollection<TTo>
+    public class TrackingCollection<TFrom, TTo> : IReadOnlyObservableList<TTo>
     {
+        [CanBeNull] private IReadOnlyObservableCollection<TFrom> _sourceItems;
+        
         private readonly Func<TFrom, TTo> _createTargetItemFunc;
         private readonly Dictionary<TFrom, TTo> _lookup = new Dictionary<TFrom, TTo>();
-        private readonly ObservableCollection<TTo> _targetItems = new ObservableCollection<TTo>();
+        private readonly ObservableList<TTo> _targetItems = new ObservableList<TTo>();
         private readonly IReadOnlyObservableCollection<TTo> _targetItemsWrapper;
 
+        public TrackingCollection([NotNull] Func<TFrom, TTo> createTargetItemFunc) : this(null, createTargetItemFunc) {}
+        
         public TrackingCollection(
-            [NotNull] IReadOnlyObservableCollection<TFrom> sourceItems,
+            [CanBeNull] IReadOnlyObservableCollection<TFrom> sourceItems,
             [NotNull] Func<TFrom, TTo> createTargetItemFunc)
         {
-            if (sourceItems == null) throw new ArgumentNullException(nameof(sourceItems));
-
+            _sourceItems = sourceItems;
             _createTargetItemFunc = createTargetItemFunc ?? throw new ArgumentNullException(nameof(createTargetItemFunc));
-            sourceItems.CollectionChanged += SourceItemsOnCollectionChanged;
             _targetItemsWrapper = new ReadOnlyObservableCollectionWrapper<TTo, TTo>(_targetItems);
 
-            AddNewItems(sourceItems);
+            if (sourceItems != null) SetSource(sourceItems);
+        }
+
+        public void SetSource([NotNull] IReadOnlyObservableCollection<TFrom> newSource)
+        {
+            if (newSource == null) throw new ArgumentNullException(nameof(newSource));
+
+            using (_targetItems.EnterMassUpdate())
+            {
+                if (_sourceItems != null)
+                {
+                    _sourceItems.CollectionChanged -= SourceItemsOnCollectionChanged;
+                    if (_sourceItems is IDisposable disposable) disposable.Dispose();
+                }
+
+                _sourceItems = newSource;
+                _sourceItems.CollectionChanged += SourceItemsOnCollectionChanged;
+                
+                _targetItems.Clear();
+                _lookup.Clear();
+                
+                AddNewItems(newSource);
+            }
         }
 
         private void SourceItemsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -52,13 +75,11 @@ namespace StlVault.Util.Collections
                 case NotifyCollectionChangedAction.Remove:
                     RemoveOldItems(oldSourceItems);
                     break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    break;
                 case NotifyCollectionChangedAction.Reset:
+                    SetSource((IReadOnlyObservableCollection<TFrom>) sender);
                     break;
+                case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -66,23 +87,29 @@ namespace StlVault.Util.Collections
 
         private void RemoveOldItems(IEnumerable<TFrom> oldSourceItems)
         {
-            foreach (var oldSourceItem in oldSourceItems)
+            using (_targetItems.EnterMassUpdate())
             {
-                if (_lookup.TryGetValue(oldSourceItem, out var oldTargetItem))
+                foreach (var oldSourceItem in oldSourceItems)
                 {
-                    _targetItems.Remove(oldTargetItem);
-                    _lookup.Remove(oldSourceItem);
+                    if (_lookup.TryGetValue(oldSourceItem, out var oldTargetItem))
+                    {
+                        _targetItems.Remove(oldTargetItem);
+                        _lookup.Remove(oldSourceItem);
+                    }
                 }
             }
         }
 
         private void AddNewItems(IEnumerable<TFrom> newSourceItems)
         {
-            foreach (var newSourceItem in newSourceItems)
+            using (_targetItems.EnterMassUpdate())
             {
-                var newTargetItem = _createTargetItemFunc(newSourceItem);
-                _targetItems.Add(newTargetItem);
-                _lookup[newSourceItem] = newTargetItem;
+                foreach (var newSourceItem in newSourceItems)
+                {
+                    var newTargetItem = _createTargetItemFunc(newSourceItem);
+                    _targetItems.Add(newTargetItem);
+                    _lookup[newSourceItem] = newTargetItem;
+                }
             }
         }
 
@@ -93,7 +120,7 @@ namespace StlVault.Util.Collections
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)_targetItemsWrapper).GetEnumerator();
+            return ((IEnumerable) _targetItemsWrapper).GetEnumerator();
         }
 
         public int Count => _targetItemsWrapper.Count;
@@ -109,5 +136,7 @@ namespace StlVault.Util.Collections
             add => _targetItemsWrapper.CollectionChanged += value;
             remove => _targetItemsWrapper.CollectionChanged -= value;
         }
+
+        public TTo this[int index] => _targetItems[index];
     }
 }

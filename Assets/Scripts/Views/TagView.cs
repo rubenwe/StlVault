@@ -1,10 +1,7 @@
-using System;
 using System.Collections;
 using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Options;
-using StlVault.AppModel.ViewModels;
 using StlVault.Util.Commands;
+using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,7 +16,7 @@ namespace StlVault.Views
     internal class TagView : ViewBase<TagModel>
     {
         private const float TagFadeDuration = 0.2f;
-        
+
         private HorizontalLayoutGroup _layoutGroup;
         private ContentSizeFitter _contentFitter;
         private Button _button;
@@ -35,21 +32,21 @@ namespace StlVault.Views
             _layoutGroup = GetComponent<HorizontalLayoutGroup>();
             _contentFitter = GetComponent<ContentSizeFitter>();
         }
-        
+
         protected override void OnViewModelBound()
         {
             _layoutGroup.enabled = true;
             _contentFitter.enabled = true;
             _text.text = ViewModel.Text;
             _button.onClick.AddListener(OnButtonClick);
-            
+
             StartCoroutine(DisableFitter());
         }
 
         private void Start()
         {
             _parentTransform = transform.parent.GetComponent<RectTransform>();
-            
+
             _rect = GetComponent<RectTransform>();
             _rect.localScale = Vector3.zero;
             _tween = _rect.DOScale(Vector3.one, TagFadeDuration);
@@ -64,7 +61,7 @@ namespace StlVault.Views
         public void OnButtonClick()
         {
             _tween?.Kill();
-            
+
             var sequence = DOTween.Sequence();
             var tweenSize = _rect
                 .DOScale(Vector2.zero, TagFadeDuration)
@@ -89,10 +86,9 @@ namespace StlVault.Views
         private IEnumerator DisableFitter()
         {
             yield return new WaitForEndOfFrame();
-            
+
             _layoutGroup.enabled = false;
             _contentFitter.enabled = false;
         }
-        
     }
 }

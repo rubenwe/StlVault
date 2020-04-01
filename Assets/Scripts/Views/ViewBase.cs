@@ -10,13 +10,13 @@ namespace StlVault.Views
         public void BindTo(T viewModel)
         {
             Debug.Assert(gameObject.activeInHierarchy, "GameObjects should be active while binding!");
-            
+
             ViewModel = viewModel;
             ViewModel.PropertyChanged += ViewModelOnPropertyChanged;
-            
+
             OnViewModelBound();
         }
-        
+
         public void Unbind()
         {
             ViewModel.PropertyChanged -= ViewModelOnPropertyChanged;
@@ -24,12 +24,20 @@ namespace StlVault.Views
 
             OnViewModelUnbound();
         }
-        
-        private void ViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs e) 
+
+        private void ViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs e)
             => OnViewModelPropertyChanged(e.PropertyName);
 
-        protected virtual void OnViewModelPropertyChanged(string propertyName) { }
-        protected virtual void OnViewModelBound() {}
-        protected virtual void OnViewModelUnbound() { }
+        protected virtual void OnViewModelPropertyChanged(string propertyName)
+        {
+        }
+
+        protected virtual void OnViewModelBound()
+        {
+        }
+
+        protected virtual void OnViewModelUnbound()
+        {
+        }
     }
 }

@@ -10,13 +10,17 @@ namespace StlVault.Util.Unity
             public const int X = 0;
             public const int Y = 1;
         }
-        
+
         [SerializeField] protected float _spacing = 0;
-         
+
         /// <summary>
         /// The spacing to use between layout elements in the layout group.
         /// </summary>
-        public float Spacing { get => _spacing; set => SetProperty(ref _spacing, value); }
+        public float Spacing
+        {
+            get => _spacing;
+            set => SetProperty(ref _spacing, value);
+        }
 
         /// <summary>
         /// Called by the layout system. Also see ILayoutElement
@@ -26,7 +30,7 @@ namespace StlVault.Util.Unity
             base.CalculateLayoutInputHorizontal();
             CalcAlongAxis(Axis.X);
         }
-        
+
         /// <summary>
         /// Called by the layout system. Also see ILayoutElement
         /// </summary>
@@ -34,7 +38,7 @@ namespace StlVault.Util.Unity
         {
             CalcAlongAxis(Axis.Y);
         }
-        
+
         private void CalcAlongAxis(int axis)
         {
             var panelWidth = rectTransform.rect.size[Axis.X];
@@ -48,15 +52,15 @@ namespace StlVault.Util.Unity
 
                 var rowHeight = 0f;
                 var rowWidth = 0f;
-                
+
                 foreach (var child in rectChildren)
                 {
-                    var sizeDelta  = child.sizeDelta;
+                    var sizeDelta = child.sizeDelta;
                     var localScale = child.localScale;
-                    
-                    var width  = sizeDelta[Axis.X] * localScale[Axis.X];
+
+                    var width = sizeDelta[Axis.X] * localScale[Axis.X];
                     var height = sizeDelta[Axis.Y] * localScale[Axis.Y];
-                    
+
                     if (rowWidth + width + Spacing > panelWidth - padding.horizontal)
                     {
                         totalHeight += rowHeight + Spacing;
@@ -73,12 +77,12 @@ namespace StlVault.Util.Unity
                 SetLayoutInputForAxis(totalHeight, totalHeight, 0, Axis.Y);
             }
         }
-        
+
         public override void SetLayoutHorizontal()
         {
             SetAlongAxis(Axis.X);
         }
-        
+
         public override void SetLayoutVertical()
         {
             SetAlongAxis(Axis.Y);
@@ -90,7 +94,7 @@ namespace StlVault.Util.Unity
 
             var panelWidth = rectTransform.rect.size[Axis.X];
             var availableWidth = panelWidth - pad.horizontal;
-            
+
             float xOffset = pad.left;
             float yOffset = pad.top;
             float rowHeight = 0;
@@ -99,8 +103,8 @@ namespace StlVault.Util.Unity
             {
                 var sizeDelta = child.sizeDelta;
                 var localScale = child.localScale;
-                
-                var scaledChildWidth  = sizeDelta[Axis.X] * localScale[Axis.X];
+
+                var scaledChildWidth = sizeDelta[Axis.X] * localScale[Axis.X];
                 var scaledChildHeight = sizeDelta[Axis.Y] * localScale[Axis.Y];
 
                 if (xOffset + scaledChildWidth + Spacing > availableWidth)

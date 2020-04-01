@@ -2,7 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace StlVault.Util.Commands {
+namespace StlVault.Util.Commands
+{
     public interface IAsyncExecution : INotifyPropertyChanged
     {
         /// <summary>

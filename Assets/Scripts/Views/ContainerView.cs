@@ -25,17 +25,19 @@ namespace StlVault.Views
 
         protected abstract IReadOnlyObservableList<TChildModel> Items { get; }
 
-        protected override void OnViewModelBound() => Items.CollectionChanged += UpdateDisplayedItems;
+        protected override void OnViewModelBound() => Items.OnMainThread().CollectionChanged += UpdateDisplayedItems;
 
         protected async void UpdateDisplayedItems(object sender, NotifyCollectionChangedEventArgs args)
         {
             _source?.Cancel();
             _source = new CancellationTokenSource();
             var token = _source.Token;
-            
+
             if (args.Action == NotifyCollectionChangedAction.Reset) await DestroyAndRecreateAllItems(token);
-            else if (args.Action == NotifyCollectionChangedAction.Add) await AddNewItems(args.NewItems.OfType<TChildModel>().ToList(), token);
-            else if (args.Action == NotifyCollectionChangedAction.Remove) await RemoveOldItems(args.OldItems.OfType<TChildModel>().ToHashSet(), token);
+            else if (args.Action == NotifyCollectionChangedAction.Add)
+                await AddNewItems(args.NewItems.OfType<TChildModel>().ToList(), token);
+            else if (args.Action == NotifyCollectionChangedAction.Remove)
+                await RemoveOldItems(args.OldItems.OfType<TChildModel>().ToHashSet(), token);
         }
 
         private async Task AddNewItems(IReadOnlyList<TChildModel> newViewModels, CancellationToken token)
@@ -61,8 +63,8 @@ namespace StlVault.Views
         {
             var children = _itemsContainer.Cast<Transform>().ToList();
             await children.ChunkedForEach(child => Destroy(child.gameObject), token);
-            
-            await AddNewItems(Items, token);
+
+            await AddNewItems(Items.ToList(), token);
         }
     }
 }

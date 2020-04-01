@@ -30,7 +30,8 @@ namespace StlVault.Util.Commands
 
         public CancelableCommand(Func<CancellationToken, Task> executeFunc, Func<bool> canExecuteFunc)
             : this((_, token) => executeFunc(token), canExecuteFunc.Wrap())
-        {}
+        {
+        }
 
         public CancelableCommand(Func<object, CancellationToken, Task> executeFunc, Func<object, bool> canExecuteFunc)
         {

@@ -1,5 +1,5 @@
-using StlVault.AppModel.ViewModels;
 using StlVault.Util.Commands;
+using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,7 +13,7 @@ namespace StlVault.Views
     {
         private Button _button;
         private TMP_Text _text;
-        
+
         private void Awake()
         {
             _button = GetComponent<Button>();

@@ -1,15 +1,15 @@
+using System.Collections.Specialized;
 using System.Linq;
 using DG.Tweening;
-using StlVault.AppModel.ViewModels;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
 using StlVault.Util.Unity;
+using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static UnityEngine.KeyCode;
-using NotifyCollectionChangedEventArgs = System.Collections.Specialized.NotifyCollectionChangedEventArgs;
 
 #pragma warning disable 0649
 
@@ -23,7 +23,7 @@ namespace StlVault.Views
         [SerializeField] private TMP_InputField _searchInputField;
         [SerializeField] private Transform _autocompleteContainer;
         [SerializeField] private Transform _autocompleteParent;
-        
+
         private EventSystem _eventSystem;
         private WrapGroup _wrapGroup;
 
@@ -43,22 +43,22 @@ namespace StlVault.Views
             ViewModel.AutoCompletionSuggestions.CollectionChanged += AutoCompletionSuggestionsChanged;
             _searchInputField.onEndEdit.AddListener(OnSearchEditEnd);
         }
-        
+
         protected override void OnViewModelPropertyChanged(string propertyName)
         {
             if (propertyName != nameof(ViewModel.CurrentSearchInput)) return;
             _searchInputField.text = ViewModel.CurrentSearchInput;
         }
-        
+
         private bool IsSelected => _eventSystem.currentSelectedGameObject == _searchInputField.gameObject;
         private bool ContainsNoText => string.IsNullOrEmpty(_searchInputField.text);
         private bool _wasEmptyBeforeFrame = true;
-        
+
         private void Update()
         {
             ViewModel.CurrentSearchInput = _searchInputField.text;
             if (IsSelected) OnSelected();
-            else if(IsShortCutActive) SelectSearchField();
+            else if (IsShortCutActive) SelectSearchField();
 
             _wasEmptyBeforeFrame = ContainsNoText;
         }
@@ -83,7 +83,7 @@ namespace StlVault.Views
         private void RemoveLastTag()
         {
             if (_itemsContainer.childCount == 0) return;
-            
+
             var child = _itemsContainer.GetChild(_itemsContainer.childCount - 1);
             var tagView = child.GetComponent<TagView>();
             tagView.OnButtonClick();
@@ -111,28 +111,31 @@ namespace StlVault.Views
         private void SearchedTagsChanged(object sender, NotifyCollectionChangedEventArgs args)
         {
             _itemsContainer.gameObject.SetActive(true);
-            
+
             var hasTags = ViewModel.SearchedTags.Any();
             var fadeIn = _itemsContainer.childCount == 0 && hasTags;
             var fadeOut = _itemsContainer.childCount != 0 && !hasTags;
-            
+
             UpdateDisplayedItems(sender, args);
 
             if (fadeIn)
             {
-                DOTween.To(() => _wrapGroup.padding.bottom, value => _wrapGroup.padding.bottom = value, 25, PanelFadeDuration);
+                DOTween.To(() => _wrapGroup.padding.bottom, value => _wrapGroup.padding.bottom = value, 25,
+                    PanelFadeDuration);
                 DOTween.To(() => _wrapGroup.Spacing, value => _wrapGroup.Spacing = value, 15, PanelFadeDuration);
-            } 
+            }
             else if (fadeOut)
             {
-                var doPadding = DOTween.To(() => _wrapGroup.padding.bottom, value => _wrapGroup.padding.bottom = value, 0, PanelFadeDuration);
-                var doSpacing = DOTween.To(() => _wrapGroup.Spacing, value => _wrapGroup.Spacing = value, 0, PanelFadeDuration);
-                
+                var doPadding = DOTween.To(() => _wrapGroup.padding.bottom, value => _wrapGroup.padding.bottom = value,
+                    0, PanelFadeDuration);
+                var doSpacing = DOTween.To(() => _wrapGroup.Spacing, value => _wrapGroup.Spacing = value, 0,
+                    PanelFadeDuration);
+
                 DOTween.Sequence()
                     .Join(doPadding).Join(doSpacing)
                     .AppendCallback(() => _itemsContainer.gameObject.SetActive(false));
             }
-            
+
             SelectSearchField();
         }
 
@@ -145,9 +148,9 @@ namespace StlVault.Views
 
             var hasSuggestions = ViewModel.AutoCompletionSuggestions.Any();
             _autocompleteParent.gameObject.SetActive(hasSuggestions);
-            
+
             if (!hasSuggestions) return;
-            
+
             foreach (var suggestion in ViewModel.AutoCompletionSuggestions)
             {
                 var suggestionView = Instantiate(_suggestionPrefab, _autocompleteContainer);
