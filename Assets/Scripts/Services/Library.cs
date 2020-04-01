@@ -9,6 +9,7 @@ using JetBrains.Annotations;
 using StlVault.Config;
 using StlVault.Util;
 using StlVault.Util.FileSystem;
+using StlVault.Util.Messaging;
 using StlVault.Util.Stl;
 using UnityEngine;
 
@@ -117,24 +118,21 @@ namespace StlVault.Services
 
         private async Task ImportBatched(IFileSource source, List<IFileInfo> itemsForImport, Dictionary<string, ImportedFileInfo> currentSourceFiles)
         {
-            var processors = Parallelism;
-            var tasks = new Task[processors];
-            var batchedCount = Mathf.Max(itemsForImport.Count - processors, 0);
-            
-            for (var i = 0; i < batchedCount; i += processors)
+            var current = 0;
+            var tasks = new Task[Parallelism];
+            for (var i = 0; i < tasks.Length; i++)
             {
-                for (var j = 0; j < processors; j++)
+                tasks[i] = Task.Run(async () =>
                 {
-                    tasks[j] = ImportFile(source, itemsForImport[i + j], currentSourceFiles);
-                }
-
-                await Task.WhenAll(tasks);
+                    int next;
+                    while ((next = Interlocked.Increment(ref current)) < itemsForImport.Count)
+                    {
+                        await ImportFile(source, itemsForImport[next], currentSourceFiles);
+                    }
+                });
             }
-
-            for (var i = batchedCount; i < itemsForImport.Count; i++)
-            {
-                await ImportFile(source, itemsForImport[i], currentSourceFiles);
-            }
+            
+            await Task.WhenAll(tasks);
         }
 
         private async Task ImportFile(
