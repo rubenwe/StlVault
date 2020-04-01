@@ -9,6 +9,7 @@ using JetBrains.Annotations;
 using StlVault.Config;
 using StlVault.Util;
 using StlVault.Util.FileSystem;
+using StlVault.Util.Logging;
 using static StlVault.Constants;
 using static StlVault.Services.FileSourceState;
 using Timer = System.Timers.Timer;
@@ -39,7 +40,7 @@ namespace StlVault.Services
 
         public override async Task InitializeAsync()
         {
-            await RescanItemsAsync(true);
+            await RescanItemsAsync();
             await InitializeWatcherAsync();
         }
 
@@ -55,57 +56,57 @@ namespace StlVault.Services
 
         private volatile bool _rescanRunning;
         
-        private async Task RescanItemsAsync(bool initializing = false)
+        private async Task RescanItemsAsync()
         {
             if (_rescanRunning) return;
             _rescanRunning = true;
             
             State.Value = Refreshing;
             
-            var importFiles = new HashSet<IFileInfo>();
-            var removeFiles = new HashSet<string>();
-
-            await Task.Run(() =>
+            try
             {
-                var matchedFiles = _fileSystem
-                    .GetFiles(SupportedFilePattern, _config.ScanSubDirectories)
-                    .ToDictionary(item => item.Path);
-
-                foreach (var (filePath, fileInfo) in matchedFiles)
+                var importFiles = new HashSet<IFileInfo>();
+                var removeFiles = new HashSet<string>();
+                
+                await Task.Run(() =>
                 {
-                    // New files
-                    if (!_knownFiles.ContainsKey(filePath))
-                    {
-                        importFiles.Add(fileInfo);
-                        _knownFiles[filePath] = fileInfo;
-                    }
-                    // Files that have changed
-                    else if (_knownFiles.TryGetValue(filePath, out var known) &&
-                             known.LastChange != fileInfo.LastChange)
-                    {
-                        removeFiles.Add(known.Path);
-                        importFiles.Add(fileInfo);
-                        _knownFiles[filePath] = fileInfo;
-                    }
-                }
+                    var matchedFiles = _fileSystem
+                        .GetFiles(SupportedFilePattern, _config.ScanSubDirectories)
+                        .ToDictionary(item => item.Path);
 
-                // Missing files
-                var missingFiles = _knownFiles.Keys.Where(filePath => !matchedFiles.ContainsKey(filePath)).ToList();
-                foreach (var filePath in missingFiles)
-                {
-                    removeFiles.Add(filePath);
-                    _knownFiles.Remove(filePath);
-                }
-            });
-            
-            if (initializing)
-            {
-                await Subscriber.OnInitializeAsync(this, importFiles);
+                    foreach (var (filePath, fileInfo) in matchedFiles)
+                    {
+                        // New files
+                        if (!_knownFiles.ContainsKey(filePath))
+                        {
+                            importFiles.Add(fileInfo);
+                            _knownFiles[filePath] = fileInfo;
+                        }
+                        // Files that have changed
+                        else if (_knownFiles.TryGetValue(filePath, out var known) &&
+                                 known.LastChange != fileInfo.LastChange)
+                        {
+                            removeFiles.Add(known.Path);
+                            importFiles.Add(fileInfo);
+                            _knownFiles[filePath] = fileInfo;
+                        }
+                    }
+
+                    // Missing files
+                    var missingFiles = _knownFiles.Keys.Where(filePath => !matchedFiles.ContainsKey(filePath)).ToList();
+                    foreach (var filePath in missingFiles)
+                    {
+                        removeFiles.Add(filePath);
+                        _knownFiles.Remove(filePath);
+                    }
+                });
+
+                if (removeFiles.Any()) await Subscriber.OnItemsRemovedAsync(this, removeFiles);
+                if (importFiles.Any()) await Subscriber.OnItemsAddedAsync(this, importFiles);
             }
-            else
+            catch (Exception ex)
             {
-                await Subscriber.OnItemsRemovedAsync(this, removeFiles);
-                await Subscriber.OnItemsAddedAsync(this, importFiles);
+                UnityLogger.Instance.Error(ex.Message);
             }
 
             State.Value = Ok;

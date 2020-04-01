@@ -9,6 +9,12 @@ namespace StlVault.Views
 {
     internal class AppDataConfigStore : IConfigStore
     {
+        private static class Lock<T>
+        {
+            // ReSharper disable once StaticMemberInGenericType
+            public static readonly object SyncRoot = new object();
+        }
+        
         public Task<T> LoadAsyncOrDefault<T>() where T : class, new()
         {
             return Task.Run(LoadOrDefault<T>);
@@ -19,7 +25,13 @@ namespace StlVault.Views
             try
             {
                 var jsonFileName = GetFileNameForConfig<T>();
-                var text = File.ReadAllText(jsonFileName);
+                
+                string text;
+                lock (Lock<T>.SyncRoot)
+                {
+                    text = File.ReadAllText(jsonFileName);
+                }
+                
                 return JsonConvert.DeserializeObject<T>(text);
             }
             catch
@@ -46,7 +58,10 @@ namespace StlVault.Views
                     var dir = Path.GetDirectoryName(jsonFileName) ?? Throw();
                     Directory.CreateDirectory(dir);
                     var json = JsonConvert.SerializeObject(config, Formatting.Indented);
-                    File.WriteAllText(jsonFileName, json);
+                    lock (Lock<T>.SyncRoot)
+                    {
+                        File.WriteAllText(jsonFileName, json);
+                    }
                 }
                 catch (Exception ex)
                 {

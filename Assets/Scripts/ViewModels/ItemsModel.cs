@@ -39,7 +39,7 @@ namespace StlVault.ViewModels
         {
             return new FilePreviewModel(_previewImageStore)
             {
-                Name = info.FileName,
+                Name = info.ItemName,
                 FileHash = info.FileHash,
                 InFavorites = false,
                 InSelection = false

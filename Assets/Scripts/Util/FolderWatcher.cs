@@ -4,7 +4,7 @@ using StlVault.Util.FileSystem;
 
 namespace StlVault.Util
 {
-    internal sealed class FolderWatcher : IFolderWatcher, IDisposable
+    internal sealed class FolderWatcher : IFolderWatcher
     {
         private readonly FileSystemWatcher _watcher;
 

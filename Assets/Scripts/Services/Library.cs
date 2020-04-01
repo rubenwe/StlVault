@@ -1,26 +1,31 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using StlVault.Util;
 using StlVault.Util.FileSystem;
 using StlVault.Util.Stl;
+using UnityEngine;
 
 namespace StlVault.Services
 {
     internal class Library : ILibrary, ITagIndex, IFileSourceSubscriber
     {
+        private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private readonly List<PreviewList> _previewStreams = new List<PreviewList>();
-        private readonly Dictionary<string, PreviewInfo> _metaData = new Dictionary<string, PreviewInfo>();
-
-        [NotNull] private readonly ArrayTrie _trie = new ArrayTrie();
-        [NotNull] private readonly IPreviewBuilder _previewBuilder;
-        [NotNull] private readonly IConfigStore _configStore;
-        [NotNull] private readonly IPreviewImageStore _previewStore;
-
+        private MetaData _metaData;
         private KnownFiles _knownFiles;
+        
+        [NotNull] private readonly IConfigStore _configStore;
+        [NotNull] private readonly IPreviewBuilder _previewBuilder;
+        [NotNull] private readonly IPreviewImageStore _previewStore;
+        [NotNull] private readonly ArrayTrie _trie = new ArrayTrie();
+
+        public ushort Parallelism { get; set; } = 1;
         
         public Library(
             [NotNull] IConfigStore configStore,
@@ -34,139 +39,207 @@ namespace StlVault.Services
         
         public IPreviewList GetItemPreviewMetadata(IReadOnlyList<string> filters)
         {
-            lock (_metaData)
-            {
-                var previewList = new PreviewList(
-                    list => _previewStreams.Remove(list), 
-                    items =>  items.Matching(filters));
-
-                _previewStreams.Add(previewList);
-
-                previewList.AddFiltered(_metaData.Values);
-
-                return previewList;
-            }
+            var previewList = new PreviewList(
+                list => WriteLocked(() => _previewStreams.Remove(list)), 
+                items =>  items.Matching(filters));
+            
+            ReadLocked(() => previewList.AddFiltered(_metaData.Values));
+            WriteLocked(() => _previewStreams.Add(previewList));
+            
+            return previewList;
         }
 
+        /// <summary>
+        /// Called during initial creation of scene graph.
+        /// Must finish before others can access it.
+        /// </summary>
+        [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
         public async Task InitializeAsync()
         {
-            _knownFiles = await _configStore.LoadAsyncOrDefault<KnownFiles>();
-        }
-      
-        public IOrderedEnumerable<TagSearchResult> GetRecommendations(IEnumerable<string> currentFilters, string search)
-        {
-            var known = new HashSet<string>(currentFilters);
+            _metaData = await _configStore.LoadAsyncOrDefault<MetaData>();
+            _knownFiles =  await _configStore.LoadAsyncOrDefault<KnownFiles>();
 
-            lock (_trie)
+            foreach (var (hash, previewInfo) in _metaData)
             {
-                return _trie.Find(search.ToLowerInvariant())
-                    .Select(rec => new TagSearchResult(rec.word, rec.occurrences))
-                    .Where(result => result.MatchingItemCount > 0)
-                    .Where(result => !known.Contains(result.SearchTag))
-                    .OrderByDescending(result => result.MatchingItemCount);
+                previewInfo.FileHash = hash;
+                foreach (var tag in previewInfo.Tags)
+                {
+                    _trie.Insert(tag);
+                }
+            }
+
+            foreach (var items in _knownFiles.Values)
+            foreach (var (itemPath, info) in items)
+            {
+                info.Path = itemPath;
             }
         }
-
-        public async Task OnInitializeAsync(IFileSource source, IReadOnlyCollection<IFileInfo> files)
+      
+        public IReadOnlyList<TagSearchResult> GetRecommendations(IEnumerable<string> currentFilters, string search)
         {
-            await ImportAsync(source, files);
+            List<TagSearchResult> recommendations = null;
+            
+            ReadLocked(() =>
+            {
+                var known = new HashSet<string>(currentFilters);
+                
+                recommendations = _trie.Find(search.ToLowerInvariant())
+                    .Select(rec => new TagSearchResult(rec.word, _metaData.Values.Matching(known.Append(rec.word)).Count))
+                    .Where(result => result.MatchingItemCount > 0)
+                    .Where(result => !known.Contains(result.SearchTag))
+                    .OrderByDescending(result => result.MatchingItemCount)
+                    .ToList();
+            });
+
+            return recommendations;
         }
 
         public async Task OnItemsAddedAsync(IFileSource source, IReadOnlyCollection<IFileInfo> addedFiles)
-        { 
-            await ImportAsync(source, addedFiles);
+        {
+            if (addedFiles?.Any() != true) return;
+            
+            List<IFileInfo> itemsForImport = null;
+            Dictionary<string, ImportedFileInfo> currentSourceFiles = null;
+            
+            ReadLocked(() =>
+            {
+                currentSourceFiles = _knownFiles[source.DisplayName];
+                itemsForImport = addedFiles.Where(file => 
+                        !currentSourceFiles.TryGetValue(file.Path, out var info) || 
+                        info.LastChange != file.LastChange)
+                    .ToList();
+            });
+
+            await ImportBatched(source, itemsForImport, currentSourceFiles);
+            await StoreChangesAsync();
         }
-        
+
+        private async Task ImportBatched(IFileSource source, List<IFileInfo> itemsForImport, Dictionary<string, ImportedFileInfo> currentSourceFiles)
+        {
+            var processors = Parallelism;
+            var tasks = new Task[processors];
+            var batchedCount = Mathf.Max(itemsForImport.Count - processors, 0);
+            
+            for (var i = 0; i < batchedCount; i += processors)
+            {
+                for (var j = 0; j < processors; j++)
+                {
+                    tasks[j] = ImportFile(source, itemsForImport[i + j], currentSourceFiles);
+                }
+
+                await Task.WhenAll(tasks);
+            }
+
+            for (var i = batchedCount; i < itemsForImport.Count; i++)
+            {
+                await ImportFile(source, itemsForImport[i], currentSourceFiles);
+            }
+        }
+
+        private async Task ImportFile(
+            IFileSource source,
+            IFileInfo file,
+            Dictionary<string, ImportedFileInfo> currentSourceFiles)
+        {
+            var fileName = Path.GetFileName(file.Path);
+            if (fileName == null) return;
+
+            var fileBytes = await source
+                .GetFileBytesAsync(file.Path)
+                .Timed("Reading file {0}", fileName);
+
+            var (mesh, hash) = await StlImporter
+                .ImportMeshAsync(fileName, fileBytes)
+                .Timed("Imported {0}", fileName);
+
+            var previewData = await _previewBuilder
+                .GetPreviewImageDataAsync(mesh, source.Config.Rotation)
+                .Timed("Building preview for {0}", fileName);
+
+            StlImporter.Destroy(mesh);
+
+            await _previewStore.StorePreviewAsync(hash, previewData);
+
+            var tags = source.GetTags(file.Path);
+            var previewInfo = new PreviewInfo(fileName, hash, tags.ToHashSet());
+
+            WriteLocked(() =>
+            {
+                _trie.Insert(tags);
+                _metaData[hash] = previewInfo;
+                currentSourceFiles[file.Path] = new ImportedFileInfo(file, hash);
+                _previewStreams.ForEach(stream => stream.AddFiltered(previewInfo));
+            });
+        }
+
         public async Task OnItemsRemovedAsync(IFileSource source, IReadOnlyCollection<string> removedItems)
         {
-            
-            UnImport(removedItems);
-
-            await Task.Delay(50);
-        }
-
-        private void UnImport(IReadOnlyCollection<string> removedItems)
-        {
-            var itemsToRemove = new HashSet<PreviewInfo>();
-            lock (_metaData)
+            WriteLocked(() =>
             {
+                var itemsToRemove = new HashSet<PreviewInfo>();
+                var currentSourceFiles = _knownFiles[source.DisplayName];
+                
                 foreach (var removedItem in removedItems)
                 {
-                    if (_metaData.TryGetValue(removedItem, out var data))
+                    if (currentSourceFiles.TryGetValue(removedItem, out var info))
                     {
-                        itemsToRemove.Add(data);
-                        _metaData.Remove(removedItem);
+                        if (_metaData.TryGetValue(info.Hash, out var data))
+                        {
+                            itemsToRemove.Add(data);
+                            _metaData.Remove(data.FileHash);
+                            currentSourceFiles.Remove(removedItem);
+                        }
                     }
                 }
-            }
             
-            _previewStreams.ForEach(stream => stream.RemoveRange(itemsToRemove));
+                _previewStreams.ForEach(stream => stream.RemoveRange(itemsToRemove));
+            });
+
+            await StoreChangesAsync();
         }
 
-        private async Task ImportAsync(IFileSource source, IReadOnlyCollection<IFileInfo> addedFiles)
+        private async Task StoreChangesAsync()
         {
-            var knownFiles = _knownFiles[source.DisplayName]
-                .ToDictionary(info => info.Path);
-
-            var itemsForImport = addedFiles
-                .Where(file => !knownFiles.TryGetValue(file.Path, out var info) || new BasicFileInfo(file) != info)
-                .Select(file => file.Path)
-                .ToList();
-
-            foreach (var filePath in itemsForImport)
+            await Task.Run(() =>
             {
-                var fileName = Path.GetFileName(filePath);
-                if (fileName == null) continue;
-                
-                var fileBytes = await source
-                    .GetFileBytesAsync(filePath)
-                    .Timed("Reading file {0}", fileName);
-                
-                var (mesh, hash) = await StlImporter
-                    .ImportMeshAsync(fileName, fileBytes)
-                    .Timed("Imported {0}", fileName);
-
-                var previewData = await _previewBuilder
-                    .GetPreviewImageDataAsync(mesh, source.Config.Rotation)
-                    .Timed("Building preview for {0}", fileName);
-
-                await _previewStore.StorePreviewAsync(hash, previewData);
-
-                var tags = source.GetTags(filePath);
-                var previewInfo = new PreviewInfo(fileName, hash, tags);
-                
-                lock (_trie)
+                try
                 {
-                    foreach (var tag in tags)
-                    {
-                        _trie.Insert(tag);
-                    }
+                    _lock.EnterReadLock();
+                    var t1 = _configStore.StoreAsync(_knownFiles);
+                    var t2 = _configStore.StoreAsync(_metaData);
+                    Task.WhenAll(t1, t2).Wait();
                 }
-
-                lock (_metaData)
+                finally
                 {
-                    _metaData[$"{source.DisplayName}:{filePath}"] = previewInfo;
+                    _lock.ExitReadLock();
                 }
-                
-                _previewStreams.ForEach(stream => stream.AddFiltered(previewInfo));
+            });
+        }
+
+        private void WriteLocked(Action writingAction)
+        {
+            try
+            {
+                _lock.EnterWriteLock();
+                writingAction.Invoke();
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
             }
         }
-    }
 
-    internal class KnownFiles : Dictionary<string, HashSet<BasicFileInfo>>
-    {
-        public new HashSet<BasicFileInfo> this[string sourceId]
+        private void ReadLocked(Action readingAction)
         {
-            get
+            try
             {
-                if (!TryGetValue(sourceId, out var list))
-                {
-                    list = this[sourceId] = new HashSet<BasicFileInfo>();
-                }
-
-                return list;
+                _lock.EnterReadLock();
+                readingAction.Invoke();
             }
-            private set => base[sourceId] = value;
+            finally
+            {
+                _lock.ExitReadLock();
+            }
         }
     }
 }

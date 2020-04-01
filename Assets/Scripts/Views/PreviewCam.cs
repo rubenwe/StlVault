@@ -65,7 +65,7 @@ namespace StlVault.Views
 
         public Task<byte[]> GetPreviewImageDataAsync(Mesh mesh, Vector3? objRotation)
         {
-            var tcs = new TaskCompletionSource<byte[]>();
+            var tcs = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
             GuiCallbackQueue.Enqueue(() =>
             {
                 var data = GetSnapshot(mesh, objRotation, 70);

@@ -5,6 +5,6 @@ namespace StlVault.Services
 {
     public interface ITagIndex
     {
-        IOrderedEnumerable<TagSearchResult> GetRecommendations(IEnumerable<string> currentFilters, string search);
+        IReadOnlyList<TagSearchResult> GetRecommendations(IEnumerable<string> currentFilters, string search);
     }
 }

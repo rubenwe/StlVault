@@ -13,16 +13,17 @@ using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
 using StlVault.Util.Messaging;
+using StlVault.Views;
 using UnityEngine;
 
 namespace StlVault.ViewModels
 {
-    internal class ImportFoldersModel : ModelBase, IMessageReceiver<AddImportFolderMessage>
+    internal sealed class ImportFoldersModel : ModelBase, IMessageReceiver<AddImportFolderMessage>
     {
         [NotNull] private readonly IConfigStore _store;
         [NotNull] private readonly IMessageRelay _relay;
         [NotNull] private readonly IImportFolderFactory _importFolderFactory;
-
+        
         public ObservableList<FileSourceModel> Folders { get; } = new ObservableList<FileSourceModel>();
         public ICommand AddImportFolderCommand { get; }
 
@@ -122,6 +123,15 @@ namespace StlVault.ViewModels
             await _store.StoreAsync(fullConfig);
 
             RefreshItems(folders);
+        }
+
+        ~ImportFoldersModel()
+        {
+            // Kill file watcher
+            foreach (var folder in Folders.Select(model => model.FileSource).OfType<IImportFolder>())
+            {
+                folder.Dispose();
+            }
         }
     }
 }

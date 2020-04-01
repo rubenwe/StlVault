@@ -17,8 +17,10 @@ namespace StlVault.Views
         [SerializeField] private TMP_Text _text;
         [SerializeField] private Button _button;
         [SerializeField] private Image _icon;
+        [SerializeField] private Color _highlightColor = new Color(1f, 1f, 0.6f, 1f);
 
-        [Header("Icons")] [SerializeField] private Sprite _okSprite;
+        [Header("Icons")] 
+        [SerializeField] private Sprite _okSprite;
         [SerializeField] private Sprite _refreshingSprite;
 
         protected override void OnViewModelBound()
@@ -27,6 +29,9 @@ namespace StlVault.Views
 
             _button.Bind(ViewModel.SelectCommand);
 
+            ViewModel.State.OnMainThread().ValueChanged += UpdateStateIcon;
+            UpdateStateIcon(ViewModel.State);
+            
             _text.Bind(ViewModel.Path);
             ViewModel.Path.ValueChanged += OnPathOnValueChanged;
 
@@ -35,36 +40,35 @@ namespace StlVault.Views
                 _stopTrimming = false;
                 _lastTrimmingResult = null;
             }
-
-            ViewModel.State.OnMainThread().ValueChanged += UpdateStateIcon;
-            UpdateStateIcon(ViewModel.State);
         }
 
         private void UpdateStateIcon(FileSourceState state)
         {
-            _icon.DOKill(false);
+            if (_icon == null) return;
+            
+            // Kill all animations
+            _icon.DOKill();
 
+            // Skip strong animations on startup
             if (Time.time > 0.2f)
             {
                 _icon.rectTransform.DOPunchScale(-0.7f * Vector3.one, 0.3f, 10, 0.5f)
                     .OnKill(() => _icon.rectTransform.localScale = Vector3.one);
             }
 
-            switch (state)
+            if (state == Ok)
             {
-                case Ok:
-                    _icon.sprite = _okSprite;
-                    return;
-
-                case Refreshing:
-                    _icon.sprite = _refreshingSprite;
-                    var color = _icon.color;
-
-                    _icon.DOColor(new Color(1f, 1f, 0.6f, 1f), 0.7f)
-                        .SetLoops(-1, LoopType.Yoyo)
-                        .OnKill(() => _icon.color = color);
-
-                    return;
+                _icon.sprite = _okSprite;
+            }
+            else if (state == Refreshing)
+            {
+                _icon.sprite = _refreshingSprite;
+                
+                // Cycle highlight/default color and reset when done
+                var color = _icon.color;
+                _icon.DOColor(_highlightColor, duration: 0.7f)
+                    .SetLoops(-1, LoopType.Yoyo)
+                    .OnKill(() => _icon.color = color);
             }
         }
 

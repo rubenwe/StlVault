@@ -39,25 +39,25 @@ namespace StlVault.Util.Collections
             if (sourceItems != null) SetSource(sourceItems);
         }
 
-        public void SetSource([NotNull] IReadOnlyObservableCollection<TFrom> sourceItems)
+        public void SetSource([NotNull] IReadOnlyObservableCollection<TFrom> newSource)
         {
-            if (sourceItems == null) throw new ArgumentNullException(nameof(sourceItems));
+            if (newSource == null) throw new ArgumentNullException(nameof(newSource));
 
             using (_targetItems.EnterMassUpdate())
             {
                 if (_sourceItems != null)
                 {
-                    sourceItems.CollectionChanged -= SourceItemsOnCollectionChanged;
-                    if (sourceItems is IDisposable disposable) disposable.Dispose();
+                    _sourceItems.CollectionChanged -= SourceItemsOnCollectionChanged;
+                    if (_sourceItems is IDisposable disposable) disposable.Dispose();
                 }
 
-                _sourceItems = sourceItems;
+                _sourceItems = newSource;
                 _sourceItems.CollectionChanged += SourceItemsOnCollectionChanged;
                 
                 _targetItems.Clear();
                 _lookup.Clear();
                 
-                AddNewItems(sourceItems);
+                AddNewItems(newSource);
             }
         }
 

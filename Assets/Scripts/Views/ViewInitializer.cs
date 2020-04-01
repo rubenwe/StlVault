@@ -44,9 +44,12 @@ namespace StlVault.Views
             IConfigStore configStore = new AppDataConfigStore();
             IPreviewImageStore previewStore = new AppDataPreviewImageStore();
             
-            UpdateApplicationSettings(configStore);
-
-            var library = new Library(configStore, _previewBuilder, previewStore);
+            var settings = UpdateApplicationSettings(configStore);
+            var library = new Library(configStore, _previewBuilder, previewStore)
+            {
+                Parallelism = settings.ImportParallelism
+            };
+            
             var factory = new ImportFolderFactory(library);
 
             // Main View
@@ -105,7 +108,7 @@ namespace StlVault.Views
             }
         }
 
-        private static void UpdateApplicationSettings(IConfigStore store)
+        private static ApplicationSettings UpdateApplicationSettings(IConfigStore store)
         {
             var settings = store.LoadOrDefault<ApplicationSettings>();
             foreach (var canvas in FindObjectsOfType<Canvas>())
@@ -115,6 +118,8 @@ namespace StlVault.Views
 
             FindObjectOfType<LogLevelSettings>().LogLevel = settings.LogLevel;
             UnityLogger.LogLevel = settings.LogLevel;
+
+            return settings;
         }
     }
 }

@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using StlVault.Util.Unity;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Object = System.Object;
 
 namespace StlVault.Util.Stl
 {
@@ -52,27 +54,33 @@ namespace StlVault.Util.Stl
             var (vertices, normals, triangles) = await Task.Run(() => BuildMesh(facets))
                 .Timed("Building mesh data from {0} imported facets of {1}", facets.Length, fileName);
 
-            var mesh = new Mesh
+            var tcs = new TaskCompletionSource<Mesh>(TaskCreationOptions.RunContinuationsAsynchronously);
+            GuiCallbackQueue.Enqueue(async () =>
             {
-                name = fileName,
-                indexFormat = IndexFormat.UInt32,
-                vertices = vertices,
-                normals = normals,
-                triangles = triangles,
-                hideFlags = HideFlags.HideAndDontSave
-            };
+                var mesh = new Mesh
+                {
+                    name = fileName,
+                    indexFormat = IndexFormat.UInt32,
+                    vertices = vertices,
+                    normals = normals,
+                    triangles = triangles,
+                    hideFlags = HideFlags.HideAndDontSave
+                };
+                
+                if (centerVertices)
+                {
+                    var currentCenter = mesh.bounds.center;
+                    await Task.Run(() => CenterVertices(vertices, currentCenter))
+                        .Timed("Centering vertices of {0}", fileName);
 
-            if (centerVertices)
-            {
-                var currentCenter = mesh.bounds.center;
-                await Task.Run(() => CenterVertices(vertices, currentCenter))
-                    .Timed("Centering vertices of {0}", fileName);
+                    mesh.vertices = vertices;
+                    mesh.RecalculateBounds();
+                }
 
-                mesh.vertices = vertices;
-                mesh.RecalculateBounds();
-            }
+                tcs.SetResult(mesh);
+            });
 
-            return mesh;
+            return await tcs.Task;
         }
 
         private static string ComputeHash(byte[] fileBytes)
@@ -126,6 +134,11 @@ namespace StlVault.Util.Stl
             Parallel.For(0, facets.Length, WriteFacet);
 
             return (vertices, normals, triangles);
+        }
+        
+        public static void Destroy(Mesh mesh)
+        {
+            GuiCallbackQueue.Enqueue(() => UnityEngine.Object.Destroy(mesh));
         }
     }
 }

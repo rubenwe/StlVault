@@ -6,5 +6,7 @@ namespace StlVault.Config
     {
         public ushort UiScalePercent { get; set; } = 100;
         public LogLevel LogLevel { get; set; } = LogLevel.Info;
+        
+        public ushort ImportParallelism { get; set; } = 2;
     }
 }
