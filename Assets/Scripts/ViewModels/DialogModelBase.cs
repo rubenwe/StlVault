@@ -57,9 +57,9 @@ namespace StlVault.ViewModels
 
         private void Show(TShowMessage message)
         {
+            Reset();
             OnShown(message);
             Shown = true;
-            Reset();
         }
 
         protected abstract void Reset();

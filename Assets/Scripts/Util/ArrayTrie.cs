@@ -28,7 +28,7 @@ namespace StlVault.Util
         public bool Insert(string word) => Insert(word.AsSpan());
         
         [PublicAPI]
-        public void Insert(IReadOnlyList<string> tags)
+        public void Insert(IReadOnlyCollection<string> tags)
         {
             foreach (var tag in tags) Insert(tag);
         }

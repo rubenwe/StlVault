@@ -9,9 +9,7 @@ namespace StlVault.Services
             where T : ITagged
         {
             var lowerFilter = filter.Select(f => f.ToLowerInvariant()).ToList();
-            return items.AsParallel()
-                .Where(item => lowerFilter.All(item.Tags.Contains))
-                .ToList();
+            return items.Where(item => lowerFilter.All(item.Tags.Contains)).ToList();
         }
     }
 }

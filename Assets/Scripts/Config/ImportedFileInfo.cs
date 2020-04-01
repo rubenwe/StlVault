@@ -1,12 +1,13 @@
 ﻿using System;
 using Newtonsoft.Json;
 using StlVault.Util.FileSystem;
+using UnityEngine.Scripting;
 
-namespace StlVault.Services
+namespace StlVault.Config
 {
     internal class ImportedFileInfo
     {
-        [JsonConstructor]
+        [JsonConstructor, Preserve]
         public ImportedFileInfo(string hash, DateTime lastChange)
         {
             Hash = hash;

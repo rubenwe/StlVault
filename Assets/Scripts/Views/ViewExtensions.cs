@@ -4,6 +4,7 @@ using System.Windows.Input;
 using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
+using StlVault.Util.Logging;
 using StlVault.Util.Unity;
 using TMPro;
 using UnityEngine;
@@ -78,6 +79,26 @@ namespace StlVault.Views
 
             void OnPropertyChanged(bool newValue) => toggle.isOn = newValue;
             void OnDisplayValueChanged(bool newValue) => property.Value = newValue;
+        }
+
+        public static void Bind(this Slider slider, BindableProperty<ushort> property)
+        {
+            property.ValueChanged += OnPropertyChanged;
+            slider.onValueChanged.AddListener(OnDisplayValueChanged);
+            OnPropertyChanged(property);
+
+            void OnPropertyChanged(ushort newValue) => slider.value = newValue;
+            void OnDisplayValueChanged(float newValue) => property.Value = (ushort) newValue;
+        }
+        
+        public static void Bind(this Slider slider, BindableProperty<LogLevel> property)
+        {
+            property.ValueChanged += OnPropertyChanged;
+            slider.onValueChanged.AddListener(OnDisplayValueChanged);
+            OnPropertyChanged(property);
+
+            void OnPropertyChanged(LogLevel newValue) => slider.value = (int) newValue;
+            void OnDisplayValueChanged(float newValue) => property.Value = (LogLevel) (int) newValue;
         }
 
         public static BindableProperty<T> OnMainThread<T>(this BindableProperty<T> property)

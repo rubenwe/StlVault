@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using StlVault.Config;
 using StlVault.Util;
 
 namespace StlVault.Services
@@ -13,6 +14,6 @@ namespace StlVault.Services
         void Subscribe(IFileSourceSubscriber subscriber);
         Task InitializeAsync();
         Task<byte[]> GetFileBytesAsync(string resourcePath);
-        IReadOnlyList<string> GetTags(string resourcePath);
+        IReadOnlyCollection<string> GetTags(string resourcePath);
     }
 }

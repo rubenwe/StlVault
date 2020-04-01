@@ -49,7 +49,7 @@ namespace StlVault.Services
             return _fileSystem.ReadAllBytesAsync(resourcePath);
         }
 
-        public override IReadOnlyList<string> GetTags(string resourcePath)
+        public override IReadOnlyCollection<string> GetTags(string resourcePath)
         {
             return ImportFolderTagHelper.GenerateTags(_config, resourcePath);
         }
@@ -133,10 +133,10 @@ namespace StlVault.Services
         {
             while (_rescanRunning)
             {
-                await Task.Delay(500);
+                await Task.Delay(200);
             }
             
-            await Task.Run(() => RescanItemsAsync());
+            await Task.Run(RescanItemsAsync);
         }
         
         private void ResetTimer()
@@ -148,6 +148,16 @@ namespace StlVault.Services
             }
         }
  
-        public override void Dispose() => _watcher?.Dispose();
+        public override void Dispose()
+        {
+            _timer?.Dispose();
+            _watcher?.Dispose();
+        }
+
+        public async Task OnDeletedAsync()
+        {
+            await Subscriber.OnItemsRemovedAsync(this, _knownFiles.Keys.ToList());
+            Dispose();
+        }
     }
 }

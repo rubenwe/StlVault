@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace StlVault.Services
+namespace StlVault.Config
 {
     internal class KnownFiles : Dictionary<string, Dictionary<string, ImportedFileInfo>>
     {

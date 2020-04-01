@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using StlVault.Config;
 using StlVault.Util;
 using StlVault.Util.FileSystem;
 using StlVault.Util.Stl;
@@ -178,7 +179,6 @@ namespace StlVault.Services
             {
                 var itemsToRemove = new HashSet<PreviewInfo>();
                 var currentSourceFiles = _knownFiles[source.DisplayName];
-                
                 foreach (var removedItem in removedItems)
                 {
                     if (currentSourceFiles.TryGetValue(removedItem, out var info))
@@ -194,7 +194,7 @@ namespace StlVault.Services
             
                 _previewStreams.ForEach(stream => stream.RemoveRange(itemsToRemove));
             });
-
+            
             await StoreChangesAsync();
         }
 

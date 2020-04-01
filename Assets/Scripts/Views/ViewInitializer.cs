@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using StlVault.Config;
 using StlVault.Services;
 using StlVault.Util.Logging;
 using StlVault.Util.Messaging;
@@ -14,21 +13,23 @@ namespace StlVault.Views
 {
     public class ViewInitializer : MonoBehaviour
     {
-        [Category("Main Menu")] [SerializeField]
-        private ImportFoldersView _importFoldersView;
-
+        [Category("Main Menu")] 
+        [SerializeField] private ImportFoldersView _importFoldersView;
         [SerializeField] private SavedSearchesView _savedSearchesView;
         [SerializeField] private CollectionsView _collectionsView;
 
-        [Category("Main Area")] [SerializeField]
-        private SearchView _searchView;
-
+        [Category("Main Area")] 
+        [SerializeField] private SearchView _searchView;
         [SerializeField] private ItemsView _itemsView;
 
-        [Category("Dialogs")] [SerializeField] private AddSavedSearchDialog _addSavedSearchDialog;
+        [Category("Dialogs")] 
+        [SerializeField] private AddSavedSearchDialog _addSavedSearchDialog;
         [SerializeField] private AddImportFolderDialog _addImportFolderDialog;
+        [SerializeField] private ApplicationSettingsDialog _applicationSettingsDialog;
 
-        [Category("Misc")] [SerializeField] private PreviewCam _previewBuilder;
+        [Category("Misc")] 
+        [SerializeField] private PreviewCam _previewBuilder;
+        [SerializeField] private ApplicationView _applicationView;
 
         private void Awake()
         {
@@ -44,15 +45,11 @@ namespace StlVault.Views
             IConfigStore configStore = new AppDataConfigStore();
             IPreviewImageStore previewStore = new AppDataPreviewImageStore();
             
-            var settings = UpdateApplicationSettings(configStore);
-            var library = new Library(configStore, _previewBuilder, previewStore)
-            {
-                Parallelism = settings.ImportParallelism
-            };
-            
+            var library = new Library(configStore, _previewBuilder, previewStore);
             var factory = new ImportFolderFactory(library);
 
             // Main View
+            var applicationModel = new ApplicationModel(relay);
             var searchViewModel = new SearchModel(library, relay);
             var itemsViewModel = new ItemsModel(library, previewStore);
 
@@ -64,9 +61,14 @@ namespace StlVault.Views
             // Dialogs
             var addSavedSearchViewModel = new AddSavedSearchModel(relay);
             var addImportFolderViewModel = new AddImportFolderModel(relay);
-
+            var applicationSettingsModel = new ApplicationSettingsModel(configStore);
+            
             BindViewModels();
+            BindSettings();
 
+            // Also restores app settings for import etc.
+            await applicationSettingsModel.InitializeAsync();
+            
             await library.InitializeAsync();
             await InitializeViewModels();
 
@@ -82,11 +84,29 @@ namespace StlVault.Views
 
                 // Dialogs
                 addSavedSearchViewModel,
-                addImportFolderViewModel);
+                addImportFolderViewModel,
+                applicationSettingsModel);
+
+            void BindSettings()
+            {
+                var rt = applicationSettingsModel.RuntimeSettings;
+
+                rt.ImportParallelism.ValueChanged += factor => library.Parallelism = factor;
+                rt.LogLevel.ValueChanged += logLevel => UnityLogger.LogLevel = logLevel;
+                
+                rt.UiScalePercent.ValueChanged += factor =>
+                {
+                    foreach (var canvas in FindObjectsOfType<Canvas>())
+                    {
+                        canvas.scaleFactor = applicationSettingsModel.UiScalePercent / 125f;
+                    }
+                };
+            }
 
             void BindViewModels()
             {
                 // Main View
+                _applicationView.BindTo(applicationModel);
                 _searchView.BindTo(searchViewModel);
                 _itemsView.BindTo(itemsViewModel);
 
@@ -98,6 +118,7 @@ namespace StlVault.Views
                 // Dialogs
                 _addImportFolderDialog.BindTo(addImportFolderViewModel);
                 _addSavedSearchDialog.BindTo(addSavedSearchViewModel);
+                _applicationSettingsDialog.BindTo(applicationSettingsModel);
             }
 
             async Task InitializeViewModels()
@@ -108,18 +129,5 @@ namespace StlVault.Views
             }
         }
 
-        private static ApplicationSettings UpdateApplicationSettings(IConfigStore store)
-        {
-            var settings = store.LoadOrDefault<ApplicationSettings>();
-            foreach (var canvas in FindObjectsOfType<Canvas>())
-            {
-                canvas.scaleFactor = settings.UiScalePercent / 125f;
-            }
-
-            FindObjectOfType<LogLevelSettings>().LogLevel = settings.LogLevel;
-            UnityLogger.LogLevel = settings.LogLevel;
-
-            return settings;
-        }
     }
 }

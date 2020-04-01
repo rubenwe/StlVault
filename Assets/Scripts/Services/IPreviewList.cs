@@ -1,4 +1,5 @@
 ﻿using System;
+using StlVault.Config;
 using StlVault.Util.Collections;
 
 namespace StlVault.Services

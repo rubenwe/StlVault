@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using StlVault.Config;
 using StlVault.Util;
 
 namespace StlVault.Services
@@ -19,7 +20,7 @@ namespace StlVault.Services
         
         public abstract Task InitializeAsync();
         public abstract Task<byte[]> GetFileBytesAsync(string resourcePath);
-        public abstract IReadOnlyList<string> GetTags(string resourcePath);
+        public abstract IReadOnlyCollection<string> GetTags(string resourcePath);
         public abstract void Dispose();
     }
 }

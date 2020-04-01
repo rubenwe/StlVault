@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
-using StlVault.Config;
-using UnityEngine;
+using StlVault.Services;
+using UnityEngine.Scripting;
 
-namespace StlVault.Services
+namespace StlVault.Config
 {
     [DebuggerDisplay("{" + nameof(ItemName) + "}")]
     internal class PreviewInfo : ITagged
@@ -28,7 +27,7 @@ namespace StlVault.Services
             Tags = tags ?? throw new ArgumentNullException(nameof(tags));
         }
         
-        [JsonConstructor]
+        [JsonConstructor, Preserve]
         public PreviewInfo(
             [NotNull] string itemName,
             [NotNull] HashSet<string> tags)

@@ -1,6 +1,4 @@
-﻿using StlVault.Config;
-
-namespace StlVault.Services
+﻿namespace StlVault.Config
 {
     internal class FileSourceConfig
     {

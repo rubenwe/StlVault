@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Windows.Forms;
 using DG.Tweening;
 using StlVault.Services;
 using StlVault.ViewModels;
@@ -7,6 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using static StlVault.Services.FileSourceState;
+using Button = UnityEngine.UI.Button;
 
 #pragma warning disable 0649
 
@@ -15,7 +17,8 @@ namespace StlVault.Views
     internal class ImportFolderView : ViewBase<FileSourceModel>
     {
         [SerializeField] private TMP_Text _text;
-        [SerializeField] private Button _button;
+        [SerializeField] private Button _selectButton;
+        [SerializeField] private Button _deleteButton;
         [SerializeField] private Image _icon;
         [SerializeField] private Color _highlightColor = new Color(1f, 1f, 0.6f, 1f);
 
@@ -27,7 +30,8 @@ namespace StlVault.Views
         {
             base.OnViewModelBound();
 
-            _button.Bind(ViewModel.SelectCommand);
+            _selectButton.Bind(ViewModel.SelectCommand);
+            _deleteButton.Bind(ViewModel.DeleteCommand);
 
             ViewModel.State.OnMainThread().ValueChanged += UpdateStateIcon;
             UpdateStateIcon(ViewModel.State);
