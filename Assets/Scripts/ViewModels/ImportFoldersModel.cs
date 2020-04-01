@@ -60,7 +60,10 @@ namespace StlVault.ViewModels
                 .ToList();
 
             await SaveAndRefreshAsync(folders);
-            await folder.InitializeAsync();
+            _ = folder.InitializeAsync();
+            
+            // Switch to added folder
+            _relay.Send(this, new SearchChangedMessage {SearchTags = new[] {"Folder: " + newConfig.FullPath}});
         }
 
         public async Task InitializeAsync()
@@ -98,17 +101,17 @@ namespace StlVault.ViewModels
                 Folders.AddRange(folders);
             }
 
-            void LoadItem(FileSourceModel item) =>
-                _relay.Send(this, new SearchChangedMessage {SearchTags = new[] {"Folder: " + item.Path}});
+            void LoadItem(FileSourceModel model) =>
+                _relay.Send(this, new SearchChangedMessage {SearchTags = new[] {"Folder: " + model.Path}});
 
-            void EditItem(FileSourceModel item)
+            void EditItem(FileSourceModel mode)
             {
             }
 
-            async void DeleteItem(FileSourceModel item)
+            async void DeleteItem(FileSourceModel model)
             {
                 var currentFolders = SavedFolders;
-                var importFolder = (ImportFolder) item.FileSource;
+                var importFolder = (ImportFolder) model.FileSource;
 
                 currentFolders.Remove(importFolder);
                 importFolder.Dispose();
