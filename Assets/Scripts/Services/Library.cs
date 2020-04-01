@@ -118,7 +118,7 @@ namespace StlVault.Services
 
         private async Task ImportBatched(IFileSource source, List<IFileInfo> itemsForImport, Dictionary<string, ImportedFileInfo> currentSourceFiles)
         {
-            var current = 0;
+            var current = -1;
             var tasks = new Task[Parallelism];
             for (var i = 0; i < tasks.Length; i++)
             {
