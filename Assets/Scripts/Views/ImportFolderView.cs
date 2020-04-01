@@ -6,6 +6,7 @@ using StlVault.Services;
 using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static StlVault.Services.FileSourceState;
 using Button = UnityEngine.UI.Button;
@@ -14,7 +15,7 @@ using Button = UnityEngine.UI.Button;
 
 namespace StlVault.Views
 {
-    internal class ImportFolderView : ViewBase<FileSourceModel>
+    internal class ImportFolderView : ViewBase<FileSourceModel>, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private TMP_Text _text;
         [SerializeField] private Button _selectButton;
@@ -99,5 +100,8 @@ namespace StlVault.Views
             }
             else _stopTrimming = true;
         }
+
+        public void OnPointerEnter(PointerEventData eventData) => _deleteButton.gameObject.SetActive(true);
+        public void OnPointerExit(PointerEventData eventData) => _deleteButton.gameObject.SetActive(false);
     }
 }
