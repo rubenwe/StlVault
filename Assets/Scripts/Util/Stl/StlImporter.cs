@@ -117,11 +117,13 @@ namespace StlVault.Util.Stl
                 ref var face = ref facets[currentFacet];
 
                 // Invert indices because .stl files are right-handed
-                vertices[index0] = new Vector3(-face.vert_1.y, face.vert_1.z, face.vert_1.x);
-                vertices[index1] = new Vector3(-face.vert_2.y, face.vert_2.z, face.vert_2.x);
-                vertices[index2] = new Vector3(-face.vert_3.y, face.vert_3.z, face.vert_3.x);
-                var normal = new Vector3(-face.normal.y, face.normal.z, face.normal.x);
-
+                var a = new Vector3(-face.vert_1.y, face.vert_1.z, face.vert_1.x);
+                var b = new Vector3(-face.vert_2.y, face.vert_2.z, face.vert_2.x);
+                var c = new Vector3(-face.vert_3.y, face.vert_3.z, face.vert_3.x);
+                vertices[index0] = a; vertices[index1] = b; vertices[index2] = c;
+                
+                // Recompute normal vector
+                var normal = Vector3.Cross(a - b, c - a).normalized;
                 normals[index0] = normal;
                 normals[index1] = normal;
                 normals[index2] = normal;

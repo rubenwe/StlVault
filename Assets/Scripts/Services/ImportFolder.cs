@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -16,6 +17,7 @@ using Timer = System.Timers.Timer;
 
 namespace StlVault.Services
 {
+    [DebuggerDisplay("{" + nameof(DisplayName) + "}")]
     internal sealed class ImportFolder : FileSourceBase, IImportFolder
     {
         private readonly Dictionary<string, IFileInfo> _knownFiles = new Dictionary<string, IFileInfo>();
