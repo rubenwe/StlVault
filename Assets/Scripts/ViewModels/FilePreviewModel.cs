@@ -1,40 +1,35 @@
 using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using JetBrains.Annotations;
 using StlVault.Services;
 using StlVault.Util;
+using StlVault.Util.Commands;
 
 namespace StlVault.ViewModels
 {
     internal class FilePreviewModel : ModelBase
     {
         private readonly IPreviewImageStore _previewImageStore;
-        private bool _inSelection;
-        private bool _inFavorites;
-
         public string Name { get; set; }
         public string FileHash { get; set; }
 
-        public bool InFavorites
-        {
-            get => _inFavorites;
-            set => SetValueAndNotify(ref _inFavorites, value);
-        }
-
-        public bool InSelection
-        {
-            get => _inSelection;
-            set => SetValueAndNotify(ref _inSelection, value);
-        }
+        public BindableProperty<bool> Selected { get; } = new BindableProperty<bool>();
+        public ICommand SelectCommand { get; }
 
         public Task<byte[]> LoadPreviewAsync()
         {
             return _previewImageStore.LoadPreviewAsync(FileHash);
         }
 
-        public FilePreviewModel([NotNull] IPreviewImageStore previewImageStore)
+        public FilePreviewModel([NotNull] IPreviewImageStore previewImageStore, [NotNull] Action onSelected)
         {
             _previewImageStore = previewImageStore ?? throw new ArgumentNullException(nameof(previewImageStore));
+            SelectCommand = new DelegateCommand(() =>
+            {
+                Selected.Value = !Selected;
+                onSelected();
+            });
         }
     }
 }

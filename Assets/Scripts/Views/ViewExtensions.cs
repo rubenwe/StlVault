@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Windows.Input;
+using JetBrains.Annotations;
 using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
@@ -32,18 +33,20 @@ namespace StlVault.Views
             void OnDisplayValueChanged(string newValue) => property.Value = (T) Convert.ChangeType(newValue, typeof(T));
         }
 
-        public static void Bind<T>(this TMP_Text text, BindableProperty<T> property)
+        public static void Bind<T>(this TMP_Text text, BindableProperty<T> property, string formatString = null)
         {
             property.ValueChanged += OnPropertyChanged;
             OnPropertyChanged(property);
 
-            void OnPropertyChanged(T newValue) => text.text = newValue?.ToString();
+            void OnPropertyChanged(T newValue) => text.text = formatString != null 
+                ? string.Format(formatString, newValue)
+                : newValue?.ToString();
         }
 
         public static void Bind(
             this (TMP_InputField x, TMP_InputField y, TMP_InputField z) fields,
             BindableProperty<Vector3> property,
-            string format = "F0")
+            string formatString = "F0")
         {
             var (x, y, z) = fields;
 
@@ -57,9 +60,9 @@ namespace StlVault.Views
 
             void OnPropertyChanged(Vector3 newValue)
             {
-                x.text = newValue.x.ToString(format, CultureInfo.InvariantCulture);
-                y.text = newValue.y.ToString(format, CultureInfo.InvariantCulture);
-                z.text = newValue.z.ToString(format, CultureInfo.InvariantCulture);
+                x.text = newValue.x.ToString(formatString, CultureInfo.InvariantCulture);
+                y.text = newValue.y.ToString(formatString, CultureInfo.InvariantCulture);
+                z.text = newValue.z.ToString(formatString, CultureInfo.InvariantCulture);
             }
 
             void OnDisplayValueChanged(string newValue)

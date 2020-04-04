@@ -1,12 +1,11 @@
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using DG.Tweening;
 using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Button = UnityEngine.UI.Button;
 
 #pragma warning disable 0649
 
@@ -19,7 +18,8 @@ namespace StlVault.Views
 
         [SerializeField] private Image _previewImage;
         [SerializeField] private TMP_Text _itemName;
-
+        [SerializeField] private Button _button;
+        
         private bool _isLoaded;
         private RectTransform _rect;
         private Camera _mainCam;
@@ -34,7 +34,7 @@ namespace StlVault.Views
 
             _rect = GetComponent<RectTransform>();
             _animator = GetComponent<Animator>();
-
+            
             _previewImage.color = new Color(0, 0, 0, 0);
             _textBanner = _itemName.transform.parent.gameObject;
 
@@ -102,6 +102,7 @@ namespace StlVault.Views
         protected override void OnViewModelBound()
         {
             _itemName.text = ViewModel.Name;
+            _button.Bind(ViewModel.SelectCommand);
         }
 
         private void OnDestroy()

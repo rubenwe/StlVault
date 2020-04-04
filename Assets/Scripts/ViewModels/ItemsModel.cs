@@ -14,16 +14,21 @@ namespace StlVault.ViewModels
     internal class ItemsModel : ModelBase, IMessageReceiver<SearchChangedMessage>
     {
         [NotNull] private readonly ILibrary _library;
+        [NotNull] private readonly IMessageRelay _relay;
         [NotNull] private readonly IPreviewImageStore _previewImageStore;
         [NotNull] private readonly TrackingCollection<PreviewInfo, FilePreviewModel> _items;
         [NotNull] private IEnumerable<string> _currentSearchTags = Enumerable.Empty<string>();
         
         public IReadOnlyObservableList<FilePreviewModel> Items => _items;
 
-        public ItemsModel([NotNull] ILibrary library, [NotNull] IPreviewImageStore previewImageStore)
+        public ItemsModel(
+            [NotNull] ILibrary library, 
+            [NotNull] IPreviewImageStore previewImageStore,
+            [NotNull] IMessageRelay relay)
         {
             _library = library ?? throw new ArgumentNullException(nameof(library));
             _previewImageStore = previewImageStore ?? throw new ArgumentNullException(nameof(previewImageStore));
+            _relay = relay ?? throw new ArgumentNullException(nameof(relay));
             _items = new TrackingCollection<PreviewInfo, FilePreviewModel>(CreateModel);
         }
 
@@ -38,12 +43,12 @@ namespace StlVault.ViewModels
 
         private FilePreviewModel CreateModel(PreviewInfo info)
         {
-            return new FilePreviewModel(_previewImageStore)
+            void OnSelected() => _relay.Send(this, new PreviewSelectedMessage {Hash = info.FileHash});
+            
+            return new FilePreviewModel(_previewImageStore, OnSelected)
             {
                 Name = info.ItemName,
-                FileHash = info.FileHash,
-                InFavorites = false,
-                InSelection = false
+                FileHash = info.FileHash
             };
         }
     }

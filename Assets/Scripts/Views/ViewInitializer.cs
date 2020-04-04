@@ -18,6 +18,9 @@ namespace StlVault.Views
         [SerializeField] private SavedSearchesView _savedSearchesView;
         [SerializeField] private CollectionsView _collectionsView;
 
+        [Category("Detail Menu")]
+        [SerializeField] private DetailMenu _detailMenu;
+        
         [Category("Main Area")] 
         [SerializeField] private SearchView _searchView;
         [SerializeField] private ItemsView _itemsView;
@@ -51,12 +54,15 @@ namespace StlVault.Views
             // Main View
             var applicationModel = new ApplicationModel(relay);
             var searchViewModel = new SearchModel(library, relay);
-            var itemsViewModel = new ItemsModel(library, previewStore);
+            var itemsViewModel = new ItemsModel(library, previewStore, relay);
 
             // Main Menu
             var importFoldersViewModel = new ImportFoldersModel(configStore, factory, relay);
             var savedSearchesViewModel = new SavedSearchesModel(configStore, relay);
             var collectionsViewModel = new CollectionsModel(configStore, relay);
+
+            // Detail Menu
+            var detailMenuModel = new DetailMenuModel(library);
 
             // Dialogs
             var addSavedSearchViewModel = new AddSavedSearchModel(relay);
@@ -73,10 +79,12 @@ namespace StlVault.Views
             await InitializeViewModels();
 
             aggregator.Subscribe(
+                library,
+                
                 // Main View
                 searchViewModel,
                 itemsViewModel,
-
+                
                 // Main Menu
                 importFoldersViewModel,
                 savedSearchesViewModel,
@@ -115,6 +123,9 @@ namespace StlVault.Views
                 _savedSearchesView.BindTo(savedSearchesViewModel);
                 _collectionsView.BindTo(collectionsViewModel);
 
+                // Detail Menu
+                _detailMenu.BindTo(detailMenuModel);
+                
                 // Dialogs
                 _addImportFolderDialog.BindTo(addImportFolderViewModel);
                 _addSavedSearchDialog.BindTo(addSavedSearchViewModel);

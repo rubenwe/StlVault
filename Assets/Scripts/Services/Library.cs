@@ -8,15 +8,16 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using StlVault.Config;
 using StlVault.Util;
+using StlVault.Util.Collections;
 using StlVault.Util.FileSystem;
 using StlVault.Util.Messaging;
 using StlVault.Util.Stl;
-using UnityEngine;
 
 namespace StlVault.Services
 {
-    internal class Library : ILibrary, ITagIndex, IFileSourceSubscriber
+    internal class Library : ILibrary, ITagIndex, IFileSourceSubscriber, IMessageReceiver<PreviewSelectedMessage>
     {
+        private readonly ObservableList<PreviewInfo> _selection = new ObservableList<PreviewInfo>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private readonly List<PreviewList> _previewStreams = new List<PreviewList>();
         private MetaData _metaData;
@@ -28,6 +29,8 @@ namespace StlVault.Services
         [NotNull] private readonly ArrayTrie _trie = new ArrayTrie();
 
         public ushort Parallelism { get; set; } = 1;
+        public BindableProperty<PreviewInfo> CurrentSelected { get; } = new BindableProperty<PreviewInfo>();
+        public IReadOnlyObservableList<PreviewInfo> Selection => _selection;
         
         public Library(
             [NotNull] IConfigStore configStore,
@@ -50,6 +53,7 @@ namespace StlVault.Services
             
             return previewList;
         }
+
 
         /// <summary>
         /// Called during initial creation of scene graph.
@@ -151,16 +155,24 @@ namespace StlVault.Services
                 .ImportMeshAsync(fileName, fileBytes)
                 .Timed("Imported {0}", fileName);
 
+            var geoInfo = await GeometryInfo.FromMeshAsync(mesh, source.Config);
+
             var previewData = await _previewBuilder
                 .GetPreviewImageDataAsync(mesh, source.Config.Rotation)
                 .Timed("Building preview for {0}", fileName);
-
+            
             StlImporter.Destroy(mesh);
-
+            
             await _previewStore.StorePreviewAsync(hash, previewData);
 
             var tags = source.GetTags(file.Path);
-            var previewInfo = new PreviewInfo(fileName, hash, tags.ToHashSet());
+            var previewInfo = new PreviewInfo
+            {
+                ItemName = fileName, 
+                FileHash = hash, 
+                Tags = tags.ToHashSet(),
+                GeometryInfo = geoInfo
+            };
 
             WriteLocked(() =>
             {
@@ -170,6 +182,8 @@ namespace StlVault.Services
                 _previewStreams.ForEach(stream => stream.AddFiltered(previewInfo));
             });
         }
+
+        
 
         public async Task OnItemsRemovedAsync(IFileSource source, IReadOnlyCollection<string> removedItems)
         {
@@ -239,5 +253,19 @@ namespace StlVault.Services
                 _lock.ExitReadLock();
             }
         }
+
+        public void Receive(PreviewSelectedMessage message)
+        {
+            if (_metaData.TryGetValue(message.Hash, out var previewInfo))
+            {
+                _selection.Add(previewInfo);
+                CurrentSelected.Value = previewInfo;
+            }
+        }
+    }
+
+    internal class PreviewSelectedMessage
+    {
+        public string Hash { get; set; }
     }
 }
