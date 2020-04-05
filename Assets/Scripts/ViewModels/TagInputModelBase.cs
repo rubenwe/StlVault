@@ -43,22 +43,26 @@ namespace StlVault.ViewModels
 
         private void SuggestionChosen(SuggestionModel suggestion)
         {
-            AddTag(suggestion.Text);
+            if (AddTag(suggestion.Text))
+            {
+                OnTagAdded(suggestion.Text);
+            }
+            
             CurrentInput.Value = string.Empty;
-            OnTagAdded(suggestion.Text);
         }
 
-        private void AddTag(string tagText)
+        private bool AddTag(string tagText)
         {
             tagText = tagText?.Trim().ToLowerInvariant();
-            if (string.IsNullOrEmpty(tagText)) return;
-
-            if (Tags.All(tag => tag.Text != tagText))
+            if (!string.IsNullOrEmpty(tagText) && Tags.All(tag => tag.Text != tagText))
             {
                 tagText = OnAddingTag(tagText);
-
                 Tags.Add(new TagModel(tagText, RemoveTag));
+                
+                return true;
             }
+
+            return false;
         }
 
         protected virtual string OnAddingTag(string tagText) => tagText;
@@ -70,9 +74,12 @@ namespace StlVault.ViewModels
 
         private void PinCurrentInput()
         {
-            AddTag(CurrentInput);
+            if (AddTag(CurrentInput))
+            {
+                OnTagAdded(CurrentInput);
+            }
+            
             CurrentInput.Value = string.Empty;
-            OnTagAdded(CurrentInput);
         }
 
         protected void RemoveTag(TagModel removedTag)

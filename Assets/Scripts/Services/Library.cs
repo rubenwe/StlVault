@@ -76,7 +76,11 @@ namespace StlVault.Services
                 {
                     if (_metaData.TryGetValue(hash, out var item))
                     {
-                        if (action == TagAction.Add) item.Tags.Add(tag);
+                        if (action == TagAction.Add)
+                        {
+                            item.Tags.Add(tag);
+                            _trie.Insert(tag);
+                        }
                         else item.Tags.Remove(tag);
                     }
                 }

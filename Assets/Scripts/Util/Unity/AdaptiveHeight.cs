@@ -4,6 +4,8 @@ using DG.Tweening.Core;
 using DG.Tweening.Plugins.Options;
 using UnityEngine;
 
+#pragma warning disable 0649
+
 namespace StlVault.Util.Unity
 {
     [RequireComponent(typeof(RectTransform))]
