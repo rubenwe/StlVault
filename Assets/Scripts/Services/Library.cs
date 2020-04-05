@@ -15,7 +15,7 @@ using StlVault.Util.Stl;
 
 namespace StlVault.Services
 {
-    internal class Library : ILibrary, ITagIndex, IFileSourceSubscriber, IMessageReceiver<PreviewSelectedMessage>
+    internal class Library : ILibrary, IFileSourceSubscriber, IMessageReceiver<PreviewSelectedMessage>
     {
         private readonly ObservableList<PreviewInfo> _selection = new ObservableList<PreviewInfo>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
@@ -31,7 +31,8 @@ namespace StlVault.Services
         public ushort Parallelism { get; set; } = 1;
         public BindableProperty<PreviewInfo> CurrentSelected { get; } = new BindableProperty<PreviewInfo>();
         public IReadOnlyObservableList<PreviewInfo> Selection => _selection;
-        
+   
+
         public Library(
             [NotNull] IConfigStore configStore,
             [NotNull] IPreviewBuilder builder,
@@ -53,7 +54,34 @@ namespace StlVault.Services
             
             return previewList;
         }
+        
+        public async Task AddTagAsync(IEnumerable<string> hashes, string tag)
+        {
+            UpdateTags(TagAction.Add, hashes, tag);
+            await StoreChangesAsync();
+        }
 
+        public async Task RemoveTagAsync(IEnumerable<string> hashes, string tag)
+        {
+            UpdateTags(TagAction.Remove, hashes, tag);
+            await StoreChangesAsync();
+        }
+
+        private enum TagAction { Add, Remove }
+        private void UpdateTags(TagAction action, IEnumerable<string> hashes, string tag)
+        {
+            WriteLocked(() =>
+            {
+                foreach (var hash in hashes)
+                {
+                    if (_metaData.TryGetValue(hash, out var item))
+                    {
+                        if (action == TagAction.Add) item.Tags.Add(tag);
+                        else item.Tags.Remove(tag);
+                    }
+                }
+            });
+        }
 
         /// <summary>
         /// Called during initial creation of scene graph.

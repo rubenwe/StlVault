@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.Linq;
 using StlVault.Config;
 using StlVault.Util;
@@ -16,19 +15,19 @@ namespace StlVault.ViewModels
         public BindableProperty<float> Height { get; } = new BindableProperty<float>();
         public BindableProperty<float> Depth { get; } = new BindableProperty<float>();
         public BindableProperty<float> Volume { get; } = new BindableProperty<float>();
-        
+
         private readonly DetailMenuModel _model;
         private SelectionMode Mode => _model.Mode;
 
         public StatsModel(DetailMenuModel model)
         {
             _model = model;
-            
+
             _model.Mode.ValueChanged += ModeChanged;
             _model.Current.ValueChanged += CurrentChanged;
             _model.Selection.CollectionChanged += SelectionChanged;
         }
-        
+
         private void ModeChanged(SelectionMode mode)
         {
             if (mode == SelectionMode.Current) UpdateFromCurrent();
@@ -44,7 +43,7 @@ namespace StlVault.ViewModels
         {
             if (Mode == SelectionMode.Current) UpdateFromCurrent();
         }
-        
+
         private void UpdateFromSelection()
         {
             if (!_model.Selection.Any())
@@ -53,7 +52,7 @@ namespace StlVault.ViewModels
                 return;
             }
 
-            FileName.Value = "multiple ...";
+            FileName.Value = $"{_model.Selection.Count} Models selected";
             VertexCount.Value = _model.Selection.Sum(pi => pi.GeometryInfo.VertexCount);
             TriangleCount.Value = _model.Selection.Sum(pi => pi.GeometryInfo.TriangleCount);
             Volume.Value = _model.Selection.Sum(pi => pi.GeometryInfo.Volume);

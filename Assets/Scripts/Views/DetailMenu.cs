@@ -16,6 +16,7 @@ namespace StlVault.Views
         [SerializeField] private Color _inactiveColor;
 
         [SerializeField] private StatsPanel _statsPanel;
+        [SerializeField] private TagInputView _tagsPanel;
         
         private Image _currentImage;
         private Image _selectedImage;
@@ -37,6 +38,7 @@ namespace StlVault.Views
             ModeOnValueChanged(ViewModel.Mode);
 
             _statsPanel.BindTo(ViewModel.StatsModel);
+            _tagsPanel.BindTo(ViewModel.TagEditorModel);
         }
 
         private void ModeOnValueChanged(SelectionMode mode)

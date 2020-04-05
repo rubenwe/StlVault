@@ -1,8 +1,10 @@
 using System;
+using StlVault.Config;
+using StlVault.Util.Collections;
 
 namespace StlVault.Util
 {
-    internal class BindableProperty<T>
+    internal class BindableProperty<T> : IBindableProperty<T>
     {
         private T _value;
         public virtual event Action<T> ValueChanged;

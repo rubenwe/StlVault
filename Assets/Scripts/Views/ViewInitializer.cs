@@ -6,6 +6,7 @@ using StlVault.Util.Logging;
 using StlVault.Util.Messaging;
 using StlVault.ViewModels;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 #pragma warning disable 0649
 
@@ -21,8 +22,8 @@ namespace StlVault.Views
         [Category("Detail Menu")]
         [SerializeField] private DetailMenu _detailMenu;
         
-        [Category("Main Area")] 
-        [SerializeField] private SearchView _searchView;
+        [Category("Main Area")]
+        [SerializeField] private TagInputView _searchView;
         [SerializeField] private ItemsView _itemsView;
 
         [Category("Dialogs")] 

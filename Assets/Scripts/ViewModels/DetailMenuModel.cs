@@ -18,6 +18,7 @@ namespace StlVault.ViewModels
         public ICommand SwitchToSelectionModeCommand { get; }
         
         public StatsModel StatsModel { get; }
+        public TagEditorModel TagEditorModel { get; }
 
         public DetailMenuModel(ILibrary library)
         {
@@ -34,6 +35,7 @@ namespace StlVault.ViewModels
             Mode.ValueChanged += ModeOnValueChanged;
 
             StatsModel = new StatsModel(this);
+            TagEditorModel = new TagEditorModel(this, library);
         }
 
         private void ModeOnValueChanged(SelectionMode obj)

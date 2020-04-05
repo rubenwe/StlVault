@@ -15,6 +15,8 @@ namespace StlVault.Views
     [RequireComponent(typeof(HorizontalLayoutGroup))]
     internal class TagView : ViewBase<TagModel>
     {
+        public bool PlayIntroAnimation { private get; set; } = true;
+        
         private const float TagFadeDuration = 0.2f;
 
         private HorizontalLayoutGroup _layoutGroup;
@@ -48,9 +50,12 @@ namespace StlVault.Views
             _parentTransform = transform.parent.GetComponent<RectTransform>();
 
             _rect = GetComponent<RectTransform>();
-            _rect.localScale = Vector3.zero;
-            _tween = _rect.DOScale(Vector3.one, TagFadeDuration);
-            StartCoroutine(TriggerParentResizeWhilePlaying());
+            if (PlayIntroAnimation)
+            {
+                _rect.localScale = Vector3.zero;
+                _tween = _rect.DOScale(Vector3.one, TagFadeDuration);
+                StartCoroutine(TriggerParentResizeWhilePlaying());
+            }
         }
 
         private void OnDestroy()

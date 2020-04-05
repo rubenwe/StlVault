@@ -121,5 +121,14 @@ namespace StlVault.Util.Collections
             add => base.PropertyChanged += value;
             remove => base.PropertyChanged -= value;
         }
+
+        public void ChangeTo(IEnumerable<T> items)
+        {
+            using (EnterMassUpdate())
+            {
+                Clear();
+                AddRange(items);
+            }
+        }
     }
 }

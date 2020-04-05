@@ -15,7 +15,7 @@ using static UnityEngine.KeyCode;
 
 namespace StlVault.Views
 {
-    internal class SearchView : ContainerView<SearchModel, TagView, TagModel>
+    internal class TagInputView : ContainerView<TagInputModelBase, TagView, TagModel>
     {
         private const float PanelFadeDuration = 0.2f;
 
@@ -23,11 +23,12 @@ namespace StlVault.Views
         [SerializeField] private TMP_InputField _searchInputField;
         [SerializeField] private Transform _autocompleteContainer;
         [SerializeField] private Transform _autocompleteParent;
+        [SerializeField] private bool _playIntroAnimations = true;
 
         private EventSystem _eventSystem;
         private WrapGroup _wrapGroup;
 
-        protected override IReadOnlyObservableList<TagModel> Items => ViewModel.SearchedTags;
+        protected override IReadOnlyObservableList<TagModel> Items => ViewModel.Tags;
 
         private void Awake()
         {
@@ -39,15 +40,16 @@ namespace StlVault.Views
         protected override void OnViewModelBound()
         {
             // Dont' call base.OnViewModelBound() here, because we handle this ourselves:
-            ViewModel.SearchedTags.CollectionChanged += SearchedTagsChanged;
+            ViewModel.Tags.CollectionChanged += SearchedTagsChanged;
             ViewModel.AutoCompletionSuggestions.CollectionChanged += AutoCompletionSuggestionsChanged;
             _searchInputField.onEndEdit.AddListener(OnSearchEditEnd);
+            
+            ViewModel.CurrentInput.ValueChanged += str =>_searchInputField.text = str;
         }
 
-        protected override void OnViewModelPropertyChanged(string propertyName)
+        protected override void OnChildViewInstantiated(TagView view)
         {
-            if (propertyName != nameof(ViewModel.CurrentSearchInput)) return;
-            _searchInputField.text = ViewModel.CurrentSearchInput;
+            view.PlayIntroAnimation = _playIntroAnimations;
         }
 
         private bool IsSelected => _eventSystem.currentSelectedGameObject == _searchInputField.gameObject;
@@ -56,14 +58,14 @@ namespace StlVault.Views
 
         private void Update()
         {
-            ViewModel.CurrentSearchInput = _searchInputField.text;
+            ViewModel.CurrentInput.Value = _searchInputField.text;
             if (IsSelected) OnSelected();
             else if (IsShortCutActive) SelectSearchField();
 
             _wasEmptyBeforeFrame = ContainsNoText;
         }
 
-        private static bool IsShortCutActive => T.Down() && (LeftControl.Pressed() || RightControl.Pressed());
+        private static bool IsShortCutActive => KeyCode.T.Down() && (LeftControl.Pressed() || RightControl.Pressed());
 
         private void OnSelected()
         {
@@ -112,7 +114,7 @@ namespace StlVault.Views
         {
             _itemsContainer.gameObject.SetActive(true);
 
-            var hasTags = ViewModel.SearchedTags.Any();
+            var hasTags = ViewModel.Tags.Any();
             var fadeIn = _itemsContainer.childCount == 0 && hasTags;
             var fadeOut = _itemsContainer.childCount != 0 && !hasTags;
 
