@@ -2,9 +2,8 @@
 using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
-using StlVault.AppModel;
-using StlVault.AppModel.Messages;
 using StlVault.Config;
+using StlVault.Messages;
 using StlVault.Services;
 using StlVault.Util.Commands;
 using StlVault.Util.Messaging;

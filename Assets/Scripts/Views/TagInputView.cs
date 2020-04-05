@@ -24,7 +24,8 @@ namespace StlVault.Views
         [SerializeField] private Transform _autocompleteContainer;
         [SerializeField] private Transform _autocompleteParent;
         [SerializeField] private bool _playIntroAnimations = true;
-
+        [SerializeField] private bool _activateOnShortcut = true;
+        
         private EventSystem _eventSystem;
         private WrapGroup _wrapGroup;
 
@@ -60,12 +61,13 @@ namespace StlVault.Views
         {
             ViewModel.CurrentInput.Value = _searchInputField.text;
             if (IsSelected) OnSelected();
-            else if (IsShortCutActive) SelectSearchField();
+            else if (_activateOnShortcut && IsShortCutActive) SelectSearchField();
 
             _wasEmptyBeforeFrame = ContainsNoText;
         }
 
-        private static bool IsShortCutActive => KeyCode.T.Down() && (LeftControl.Pressed() || RightControl.Pressed());
+        private static bool IsShortCutActive => 
+            (F.Down() || T.Down()) && (LeftControl.Pressed() || RightControl.Pressed());
 
         private void OnSelected()
         {

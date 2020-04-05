@@ -19,7 +19,7 @@ namespace StlVault.Util.Collections
     /// <seealso cref="IReadOnlyObservableCollection{T}" />
     public class TrackingCollection<TFrom, TTo> : IReadOnlyObservableList<TTo>
     {
-        [CanBeNull] private IReadOnlyObservableCollection<TFrom> _sourceItems;
+        [CanBeNull] private IReadOnlyObservableList<TFrom> _sourceItems;
         
         private readonly Func<TFrom, TTo> _createTargetItemFunc;
         private readonly Dictionary<TFrom, TTo> _lookup = new Dictionary<TFrom, TTo>();
@@ -29,7 +29,7 @@ namespace StlVault.Util.Collections
         public TrackingCollection([NotNull] Func<TFrom, TTo> createTargetItemFunc) : this(null, createTargetItemFunc) {}
         
         public TrackingCollection(
-            [CanBeNull] IReadOnlyObservableCollection<TFrom> sourceItems,
+            [CanBeNull] IReadOnlyObservableList<TFrom> sourceItems,
             [NotNull] Func<TFrom, TTo> createTargetItemFunc)
         {
             _sourceItems = sourceItems;
@@ -39,7 +39,7 @@ namespace StlVault.Util.Collections
             if (sourceItems != null) SetSource(sourceItems);
         }
 
-        public void SetSource([NotNull] IReadOnlyObservableCollection<TFrom> newSource)
+        public void SetSource([NotNull] IReadOnlyObservableList<TFrom> newSource)
         {
             if (newSource == null) throw new ArgumentNullException(nameof(newSource));
 
@@ -76,7 +76,7 @@ namespace StlVault.Util.Collections
                     RemoveOldItems(oldSourceItems);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    SetSource((IReadOnlyObservableCollection<TFrom>) sender);
+                    SetSource((IReadOnlyObservableList<TFrom>) sender);
                     break;
                 case NotifyCollectionChangedAction.Replace:
                 case NotifyCollectionChangedAction.Move:
@@ -124,6 +124,7 @@ namespace StlVault.Util.Collections
         }
 
         public int Count => _targetItemsWrapper.Count;
+        public IReadOnlyObservableList<TFrom> Source => _sourceItems;
 
         public event PropertyChangedEventHandler PropertyChanged
         {

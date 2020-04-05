@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
-using INotifyCollectionChanged = System.Collections.Specialized.INotifyCollectionChanged;
+using StlVault.Config;
 
 namespace StlVault.Util.Collections
 {

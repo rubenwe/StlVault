@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 
-// ReSharper disable CheckNamespace
-
-namespace StlVault.AppModel.Messages
+namespace StlVault.Messages
 {
     internal class SearchChangedMessage
     {

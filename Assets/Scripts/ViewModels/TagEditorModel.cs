@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using JetBrains.Annotations;
 using StlVault.Config;
 using StlVault.Services;
-using StlVault.Util;
 using static StlVault.ViewModels.SelectionMode;
 
 namespace StlVault.ViewModels
 {
     internal class TagEditorModel : TagInputModelBase
     {
-        public IBindableProperty<bool> InputEnabled { get; }
-
         private readonly DetailMenuModel _detailMenu;
         private readonly ILibrary _library;
         private SelectionMode Mode => _detailMenu.Mode;
@@ -24,12 +20,15 @@ namespace StlVault.ViewModels
             _detailMenu = detailMenu ?? throw new ArgumentNullException(nameof(detailMenu));
             _library = library ?? throw new ArgumentNullException(nameof(library));
             
+            _detailMenu.Mode.ValueChanged += OnModeChanged;
             _detailMenu.Selection.CollectionChanged += (s, a) => SelectionChanged();
             _detailMenu.Current.ValueChanged += CurrentChanged;
-            
-            InputEnabled = new DelegateProperty<bool>(AnythingSelected)
-                .UpdateOn(_detailMenu.Current)
-                .UpdateOn(_detailMenu.Selection);
+        }
+
+        private void OnModeChanged(SelectionMode mode)
+        {
+            if (mode == Current) CurrentChanged(_detailMenu.Current);
+            if (mode == Selection) SelectionChanged();
         }
 
         private void CurrentChanged(PreviewInfo current)

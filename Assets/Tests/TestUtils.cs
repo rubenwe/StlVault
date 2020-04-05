@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Moq;
-using StlVault.AppModel;
 using StlVault.Services;
 
 namespace StlVault.Tests

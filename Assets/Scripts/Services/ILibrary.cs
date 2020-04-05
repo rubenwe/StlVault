@@ -10,9 +10,7 @@ namespace StlVault.Services
     internal interface ILibrary : ITagIndex
     {
         IPreviewList GetItemPreviewMetadata(IReadOnlyList<string> filters);
-        BindableProperty<PreviewInfo> CurrentSelected { get; }
-        IReadOnlyObservableList<PreviewInfo> Selection { get; }
-        
+
         Task AddTagAsync(IEnumerable<string> hashes, string tag);
         Task RemoveTagAsync(IEnumerable<string> hashes, string tag);
     }

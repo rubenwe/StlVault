@@ -6,7 +6,6 @@ using StlVault.Util.Logging;
 using StlVault.Util.Messaging;
 using StlVault.ViewModels;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 #pragma warning disable 0649
 
@@ -48,6 +47,7 @@ namespace StlVault.Views
             IMessageRelay relay = aggregator;
             IConfigStore configStore = new AppDataConfigStore();
             IPreviewImageStore previewStore = new AppDataPreviewImageStore();
+            ISelectionTracker tracker = new SelectionTracker();
             
             var library = new Library(configStore, _previewBuilder, previewStore);
             var factory = new ImportFolderFactory(library);
@@ -55,7 +55,7 @@ namespace StlVault.Views
             // Main View
             var applicationModel = new ApplicationModel(relay);
             var searchViewModel = new SearchModel(library, relay);
-            var itemsViewModel = new ItemsModel(library, previewStore, relay);
+            var itemsViewModel = new ItemsModel(library, tracker, previewStore);
 
             // Main Menu
             var importFoldersViewModel = new ImportFoldersModel(configStore, factory, relay);
@@ -63,7 +63,7 @@ namespace StlVault.Views
             var collectionsViewModel = new CollectionsModel(configStore, relay);
 
             // Detail Menu
-            var detailMenuModel = new DetailMenuModel(library);
+            var detailMenuModel = new DetailMenuModel(tracker, library);
 
             // Dialogs
             var addSavedSearchViewModel = new AddSavedSearchModel(relay);
@@ -80,8 +80,6 @@ namespace StlVault.Views
             await InitializeViewModels();
 
             aggregator.Subscribe(
-                library,
-                
                 // Main View
                 searchViewModel,
                 itemsViewModel,

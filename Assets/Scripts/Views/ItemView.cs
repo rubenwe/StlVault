@@ -1,50 +1,49 @@
 using System.Threading;
 using System.Threading.Tasks;
 using DG.Tweening;
+using StlVault.Util.Commands;
 using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using Button = UnityEngine.UI.Button;
 
 #pragma warning disable 0649
 
 namespace StlVault.Views
 {
-    internal class ItemView : ViewBase<FilePreviewModel>
+    internal class ItemView : ViewBase<FilePreviewModel>, 
+        IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         private static readonly Rect PreviewRect = new Rect(Vector2.zero, new Vector2(1024, 1024));
         private static readonly Vector2 Pivot = 0.5f * Vector2.one;
 
         [SerializeField] private Image _previewImage;
         [SerializeField] private TMP_Text _itemName;
-        [SerializeField] private Button _button;
-        
+        [SerializeField] private Color _selectedColor;
+
+        private Image _image;
         private bool _isLoaded;
         private RectTransform _rect;
         private Camera _mainCam;
         private CancellationTokenSource _source;
 
         private GameObject _textBanner;
-        private Animator _animator;
 
-        private void Start()
+        private void Awake()
         {
             _mainCam = Camera.main;
-
             _rect = GetComponent<RectTransform>();
-            _animator = GetComponent<Animator>();
-            
-            _previewImage.color = new Color(0, 0, 0, 0);
-            _textBanner = _itemName.transform.parent.gameObject;
+            _image = GetComponent<Image>();
 
+            _previewImage.color = new Color(0, 0, 0, 0);
             _previewImage.gameObject.SetActive(false);
+            
+            _textBanner = _itemName.transform.parent.gameObject;
             _textBanner.SetActive(false);
-            _animator.enabled = false;
         }
 
-        private static int _number;
-        private Texture2D _texture;
+       private Texture2D _texture;
 
         private async void StartLoad()
         {
@@ -96,13 +95,20 @@ namespace StlVault.Views
 
             _previewImage.gameObject.SetActive(isVisible);
             _textBanner.SetActive(isVisible);
-            _animator.enabled = isVisible;
         }
 
         protected override void OnViewModelBound()
         {
             _itemName.text = ViewModel.Name;
-            _button.Bind(ViewModel.SelectCommand);
+            
+            var currentColor = _image.color;
+            
+            void SelectedChanged(bool selected) => _image.color = selected 
+                ? _selectedColor 
+                : currentColor;
+            
+            ViewModel.Selected.ValueChanged += SelectedChanged;
+            SelectedChanged(ViewModel.Selected);
         }
 
         private void OnDestroy()
@@ -110,6 +116,21 @@ namespace StlVault.Views
             _previewImage.DOKill();
             _source?.Cancel();
             Destroy(_texture);
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            //
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            //
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            ViewModel.ToggleSelection.Execute();
         }
     }
 }

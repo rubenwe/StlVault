@@ -15,21 +15,20 @@ namespace StlVault.ViewModels
         public string FileHash { get; set; }
 
         public BindableProperty<bool> Selected { get; } = new BindableProperty<bool>();
-        public ICommand SelectCommand { get; }
+        public ICommand ToggleSelection { get; }
 
         public Task<byte[]> LoadPreviewAsync()
         {
             return _previewImageStore.LoadPreviewAsync(FileHash);
         }
 
-        public FilePreviewModel([NotNull] IPreviewImageStore previewImageStore, [NotNull] Action onSelected)
+        public FilePreviewModel([NotNull] IPreviewImageStore previewImageStore, [NotNull] Action<bool> onSelectedChanged)
         {
+            if (onSelectedChanged == null) throw new ArgumentNullException(nameof(onSelectedChanged));
             _previewImageStore = previewImageStore ?? throw new ArgumentNullException(nameof(previewImageStore));
-            SelectCommand = new DelegateCommand(() =>
-            {
-                Selected.Value = !Selected;
-                onSelected();
-            });
+            
+            ToggleSelection = new DelegateCommand(() => Selected.Value = !Selected);
+            Selected.ValueChanged += onSelectedChanged;
         }
     }
 }

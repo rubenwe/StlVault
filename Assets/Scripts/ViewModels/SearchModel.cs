@@ -1,5 +1,5 @@
 using System.Linq;
-using StlVault.AppModel.Messages;
+using StlVault.Messages;
 using StlVault.Services;
 using StlVault.Util.Messaging;
 

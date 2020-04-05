@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using JetBrains.Annotations;
-using StlVault.AppModel.Messages;
 using StlVault.Config;
 using StlVault.Messages;
 using StlVault.Services;

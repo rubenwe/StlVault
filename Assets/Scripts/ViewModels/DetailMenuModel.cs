@@ -1,4 +1,6 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
+using JetBrains.Annotations;
 using StlVault.Config;
 using StlVault.Services;
 using StlVault.Util;
@@ -9,10 +11,10 @@ namespace StlVault.ViewModels
 {
     internal class DetailMenuModel : ModelBase
     {
-        private readonly ILibrary _library;
+        private readonly ISelectionTracker _tracker;
         public BindableProperty<SelectionMode> Mode { get; } = new BindableProperty<SelectionMode>();
-        public BindableProperty<PreviewInfo> Current => _library.CurrentSelected;
-        public IReadOnlyObservableList<PreviewInfo> Selection => _library.Selection;
+        public BindableProperty<PreviewInfo> Current => _tracker.CurrentSelected;
+        public IReadOnlyObservableCollection<PreviewInfo> Selection => _tracker.Selection;
         
         public ICommand SwitchToCurrentModeCommand { get; }
         public ICommand SwitchToSelectionModeCommand { get; }
@@ -20,9 +22,10 @@ namespace StlVault.ViewModels
         public StatsModel StatsModel { get; }
         public TagEditorModel TagEditorModel { get; }
 
-        public DetailMenuModel(ILibrary library)
+        public DetailMenuModel([NotNull] ISelectionTracker tracker, [NotNull] ILibrary library)
         {
-            _library = library;
+            if (library == null) throw new ArgumentNullException(nameof(library));
+            _tracker = tracker ?? throw new ArgumentNullException(nameof(tracker));
             
             SwitchToCurrentModeCommand = new DelegateCommand(
                 () => Mode != SelectionMode.Current,
