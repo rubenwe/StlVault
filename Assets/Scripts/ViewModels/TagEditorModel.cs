@@ -4,6 +4,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using StlVault.Config;
 using StlVault.Services;
+using StlVault.Util;
 using static StlVault.ViewModels.SelectionMode;
 
 namespace StlVault.ViewModels
@@ -49,20 +50,27 @@ namespace StlVault.ViewModels
         {
             if (Mode != Selection) return;
             
-            var sharedTags = _detailMenu.Selection.Select(pi => Filter(pi.Tags)).ToList();
-            if (!sharedTags.Any())
+            var selectionTags = _detailMenu.Selection.Select(pi => Filter(pi.Tags)).ToList();
+            if (!selectionTags.Any())
             {
                 Tags.Clear();
                 return;
             }
 
-            var first = sharedTags.First();
-            foreach (var tags in sharedTags.Skip(1))
+            var shared = selectionTags.First();
+            var complete = shared.ToHashSet();
+            foreach (var tags in selectionTags.Skip(1))
             {
-                first.IntersectWith(tags);
+                shared.IntersectWith(tags.ToList());
+                complete.UnionWith(tags.ToList());
             }
+
+            var targetTags = complete
+                .Select(text => new TagModel(text, RemoveTag) {IsPartial = !shared.Contains(text)})
+                .OrderBy(model => model.IsPartial)
+                .ThenBy(model => model.Text);
             
-            Tags.ChangeTo(first.Select(text => new TagModel(text, RemoveTag)));
+            Tags.ChangeTo(targetTags);
         }
 
         private HashSet<string> Filter(HashSet<string> tags)

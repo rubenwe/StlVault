@@ -1,4 +1,5 @@
-﻿using StlVault.Config;
+﻿using System;
+using StlVault.Config;
 using StlVault.Util;
 using StlVault.Util.Collections;
 
@@ -11,5 +12,6 @@ namespace StlVault.Services
         void SetSelected(PreviewInfo info);
         void SetDeselected(PreviewInfo info);
         bool IsSelected(PreviewInfo info);
+        IDisposable EnterMassUpdate();
     }
 }

@@ -70,11 +70,14 @@ namespace StlVault.ViewModels
                         var start = Mathf.Min(lastPos, newPos);
                         var end = Mathf.Max(lastPos, newPos);
                         if (lastPos > newPos) end++;
-                        
-                        for (var i = start; i < end; i++)
+
+                        using (_tracker.EnterMassUpdate())
                         {
-                            // ... from here
-                            _items[i].Selected.Value = selected;
+                            for (var i = start; i < end; i++)
+                            {
+                                // ... from here
+                                _items[i].Selected.Value = selected;
+                            }
                         }
                     }
                 }
@@ -99,9 +102,12 @@ namespace StlVault.ViewModels
 
         public void SelectAll()
         {
-            foreach (var previewModel in Items)
+            using (_tracker.EnterMassUpdate())
             {
-                previewModel.Selected.Value = true;
+                foreach (var previewModel in Items)
+                {
+                    previewModel.Selected.Value = true;
+                }
             }
         }
     }

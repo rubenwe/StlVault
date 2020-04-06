@@ -16,6 +16,8 @@ namespace StlVault.Views
     internal class TagView : ViewBase<TagModel>
     {
         public bool PlayIntroAnimation { private get; set; } = true;
+
+        [SerializeField] private Color _partialColor;
         
         private const float TagFadeDuration = 0.2f;
 
@@ -26,6 +28,7 @@ namespace StlVault.Views
         private RectTransform _parentTransform;
         private RectTransform _rect;
         private Tween _tween;
+        private Image _image;
 
         private void Awake()
         {
@@ -33,6 +36,7 @@ namespace StlVault.Views
             _text = _button.GetComponentInChildren<TMP_Text>();
             _layoutGroup = GetComponent<HorizontalLayoutGroup>();
             _contentFitter = GetComponent<ContentSizeFitter>();
+            _image = GetComponent<Image>();
         }
 
         protected override void OnViewModelBound()
@@ -41,7 +45,9 @@ namespace StlVault.Views
             _contentFitter.enabled = true;
             _text.text = ViewModel.Text;
             _button.onClick.AddListener(OnButtonClick);
-
+            
+            if (ViewModel.IsPartial) _image.color = _partialColor;
+            
             StartCoroutine(DisableFitter());
         }
 

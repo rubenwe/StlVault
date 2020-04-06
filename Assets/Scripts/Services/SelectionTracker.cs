@@ -1,4 +1,5 @@
-﻿using StlVault.Config;
+﻿using System;
+using StlVault.Config;
 using StlVault.Util;
 using StlVault.Util.Collections;
 
@@ -7,7 +8,6 @@ namespace StlVault.Services
     internal class SelectionTracker : ISelectionTracker
     {
         private readonly ObservableSet<PreviewInfo> _selection = new ObservableSet<PreviewInfo>();
-        
         public BindableProperty<PreviewInfo> CurrentSelected { get; } = new BindableProperty<PreviewInfo>();
         public IReadOnlyObservableCollection<PreviewInfo> Selection => _selection;
 
@@ -24,5 +24,10 @@ namespace StlVault.Services
         }
 
         public bool IsSelected(PreviewInfo info) => _selection.Contains(info);
+        
+        public IDisposable EnterMassUpdate()
+        {
+            return _selection.EnterMassUpdate();
+        }
     }
 }
