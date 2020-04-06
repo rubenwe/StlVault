@@ -119,5 +119,16 @@ namespace StlVault.Util.Collections
                 PropertyChanged?.Invoke(this, PropertyChangedEventArgsCache.Get(nameof(Count)));
             }
         }
+
+        public void AddRange(IReadOnlyCollection<T> newItems)
+        {
+            using (EnterMassUpdate())
+            {
+                foreach (var item in newItems)
+                {
+                    Add(item);
+                }
+            }
+        }
     }
 }

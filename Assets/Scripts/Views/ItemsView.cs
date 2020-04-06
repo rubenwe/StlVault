@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace StlVault.Views
 {
-    internal class ItemsView : ContainerView<ItemsModel, ItemView, FilePreviewModel>
+    internal class ItemsView : ContainerView<ItemsModel, ItemView, ItemPreviewModel>
     {
-        protected override IReadOnlyObservableList<FilePreviewModel> Items => ViewModel.Items;
+        protected override IReadOnlyObservableList<ItemPreviewModel> Items => ViewModel.Items;
 
         private void Update()
         {

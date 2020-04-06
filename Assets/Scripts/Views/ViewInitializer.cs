@@ -47,15 +47,15 @@ namespace StlVault.Views
             IMessageRelay relay = aggregator;
             IConfigStore configStore = new AppDataConfigStore();
             IPreviewImageStore previewStore = new AppDataPreviewImageStore();
-            ISelectionTracker tracker = new SelectionTracker();
             
-            var library = new Library(configStore, _previewBuilder, previewStore);
+            
+            var library = new Library(configStore, _previewBuilder, previewStore, relay);
             var factory = new ImportFolderFactory(library);
 
             // Main View
             var applicationModel = new ApplicationModel(relay);
             var searchViewModel = new SearchModel(library, relay);
-            var itemsViewModel = new ItemsModel(library, tracker, previewStore);
+            var itemsViewModel = new ItemsModel(library, relay);
 
             // Main Menu
             var importFoldersViewModel = new ImportFoldersModel(configStore, factory, relay);
@@ -63,7 +63,7 @@ namespace StlVault.Views
             var collectionsViewModel = new CollectionsModel(configStore, relay);
 
             // Detail Menu
-            var detailMenuModel = new DetailMenuModel(tracker, library);
+            var detailMenuModel = new DetailMenuModel(library);
 
             // Dialogs
             var addSavedSearchViewModel = new AddSavedSearchModel(relay);
@@ -88,6 +88,9 @@ namespace StlVault.Views
                 importFoldersViewModel,
                 savedSearchesViewModel,
                 collectionsViewModel,
+                
+                // DetailMenu
+                detailMenuModel,
 
                 // Dialogs
                 addSavedSearchViewModel,

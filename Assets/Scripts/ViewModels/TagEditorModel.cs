@@ -32,7 +32,7 @@ namespace StlVault.ViewModels
             if (mode == Selection) SelectionChanged();
         }
 
-        private void CurrentChanged(PreviewInfo current)
+        private void CurrentChanged(ItemPreviewModel current)
         {
             if (Mode != Current) return;
             if (current == null)
@@ -73,7 +73,7 @@ namespace StlVault.ViewModels
             Tags.ChangeTo(targetTags);
         }
 
-        private HashSet<string> Filter(HashSet<string> tags)
+        private HashSet<string> Filter(IReadOnlyCollection<string> tags)
         {
             var filtered = tags
                 .Where(t => !t.StartsWith("folder:"));
@@ -81,15 +81,11 @@ namespace StlVault.ViewModels
             return new HashSet<string>(filtered);
         }
 
-        private bool AnythingSelected() => Mode == Current
-            ? _detailMenu.Current.Value != null
-            : _detailMenu.Selection.Any();
-        
         private IEnumerable<string> Hashes => Mode == Current
             ? new[] {_detailMenu.Current.Value.FileHash}
             : _detailMenu.Selection.Select(pi => pi.FileHash);
 
-        protected override bool CanPinCurrentInput() => AnythingSelected();
+        protected override bool CanPinCurrentInput() => _detailMenu.AnythingSelected.Value;
         protected override void OnTagAdded(string tag) => _library.AddTagAsync(Hashes, tag);
         protected override void OnTagRemoved(string tag) => _library.RemoveTagAsync(Hashes, tag);
     }

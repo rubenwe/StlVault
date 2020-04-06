@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using StlVault.Config;
 using StlVault.Util;
 using StlVault.Util.Collections;
+using StlVault.ViewModels;
+using UnityEngine;
 
 
 namespace StlVault.Services
@@ -13,5 +15,6 @@ namespace StlVault.Services
 
         Task AddTagAsync(IEnumerable<string> hashes, string tag);
         Task RemoveTagAsync(IEnumerable<string> hashes, string tag);
+        Task RotateAsync(ItemPreviewModel previewModel, Vector3 newRotation);
     }
 }

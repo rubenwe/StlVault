@@ -9,14 +9,12 @@ using UnityEngine.Scripting;
 namespace StlVault.Config
 {
     [DebuggerDisplay("{" + nameof(ItemName) + "}")]
-    internal class PreviewInfo : ITagged
+    internal class PreviewInfo
     {
-        [JsonIgnore]
-        public string FileHash { get; set; }
         public string ItemName { get; set; }
+        public string FileHash { get; set; }
         public HashSet<string> Tags { get; set; }
-        
-        public float Volume { get; set; }
         public GeometryInfo GeometryInfo { get; set; }
+        public List<ImportedFileInfo> Sources { get; set; }
     }
 }

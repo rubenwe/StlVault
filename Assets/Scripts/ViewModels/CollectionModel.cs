@@ -1,9 +1,10 @@
+using System.ComponentModel;
 using StlVault.Config;
 using StlVault.Util;
 
 namespace StlVault.ViewModels
 {
-    internal class CollectionModel : ModelBase
+    internal class CollectionModel
     {
         public BindableProperty<string> Name { get; } = new BindableProperty<string>();
 

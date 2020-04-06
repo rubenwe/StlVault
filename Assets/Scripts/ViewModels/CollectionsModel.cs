@@ -1,16 +1,16 @@
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using StlVault.Config;
 using StlVault.Messages;
 using StlVault.Services;
-using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Messaging;
 
 namespace StlVault.ViewModels
 {
-    internal class CollectionsModel : ModelBase, IMessageReceiver<AddCollectionMessage>
+    internal class CollectionsModel : IMessageReceiver<AddCollectionMessage>
     {
         private readonly IConfigStore _store;
         private readonly IMessageRelay _relay;

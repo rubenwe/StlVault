@@ -19,21 +19,21 @@ namespace StlVault.Services
 
         public Vector3 Scale { get; set; }
 
-        public static Task<GeometryInfo> FromMeshAsync(Mesh mesh, FileSourceConfig config)
+        public static Task<GeometryInfo> FromMeshAsync(Mesh mesh, ConfigVector3? rotation, ConfigVector3? scale)
         {
             var tcs = new TaskCompletionSource<GeometryInfo>();
             GuiCallbackQueue.Enqueue(() =>
             {
-                var rotation = config.Rotation != null
-                    ? (Vector3) config.Rotation.Value
+                var rot = rotation != null
+                    ? (Vector3) rotation.Value
                     : Vector3.zero;
 
-                var scale = config.Scale != null
-                    ? (Vector3) config.Scale.Value
+                var scl = scale != null
+                    ? (Vector3) scale.Value
                     : Vector3.one;
 
-                var rotated = Quaternion.Euler(rotation) * mesh.bounds.size;
-                var size = new Vector3(rotated.x * scale.x, rotated.y * scale.y, rotated.z * scale.z);
+                var rotated = Quaternion.Euler(rot) * mesh.bounds.size;
+                var size = new Vector3(rotated.x * scl.x, rotated.y * scl.y, rotated.z * scl.z);
 
                 var vertices = mesh.vertices;
 
@@ -47,12 +47,12 @@ namespace StlVault.Services
                     volume += Vector3.Dot(Vector3.Cross(a, b), c) / 6f;
                 }
 
-                volume = Mathf.Abs(volume * scale.x * scale.y * scale.z) / 1000f;
+                volume = Mathf.Abs(volume * scl.x * scl.y * scl.z) / 1000f;
 
                 var info =  new GeometryInfo
                 {
-                    Rotation = rotation,
-                    Scale = scale,
+                    Rotation = rot,
+                    Scale = scl,
                     Size = size,
                     Volume = volume,
                     VertexCount = vertices.Length,

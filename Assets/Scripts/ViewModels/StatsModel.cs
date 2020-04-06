@@ -1,12 +1,15 @@
-﻿using System.Collections.Specialized;
+﻿using System.ComponentModel;
 using System.Linq;
 using StlVault.Config;
+using StlVault.Services;
 using StlVault.Util;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
+using NotifyCollectionChangedEventArgs = System.Collections.Specialized.NotifyCollectionChangedEventArgs;
 
 namespace StlVault.ViewModels
 {
-    internal class StatsModel : ModelBase
+    internal class StatsModel 
     {
         public BindableProperty<string> FileName { get; } = new BindableProperty<string>();
         public BindableProperty<int> VertexCount { get; } = new BindableProperty<int>();
@@ -24,8 +27,20 @@ namespace StlVault.ViewModels
             _model = model;
 
             _model.Mode.ValueChanged += ModeChanged;
+            _model.Current.ValueChanging += CurrentChanging;
             _model.Current.ValueChanged += CurrentChanged;
             _model.Selection.CollectionChanged += SelectionChanged;
+        }
+
+        private void CurrentChanging(ItemPreviewModel oldValue)
+        {
+            if (oldValue == null) return;
+            oldValue.GeometryInfo.ValueChanged -= CurrentGeoChanged;
+        }
+
+        private void CurrentGeoChanged(GeometryInfo info)
+        {
+            if(Mode == SelectionMode.Current) UpdateFromCurrent();
         }
 
         private void ModeChanged(SelectionMode mode)
@@ -39,8 +54,9 @@ namespace StlVault.ViewModels
             if (Mode == SelectionMode.Selection) UpdateFromSelection();
         }
 
-        private void CurrentChanged(PreviewInfo obj)
+        private void CurrentChanged(ItemPreviewModel newValue)
         {
+            if (newValue != null) newValue.GeometryInfo.ValueChanged += CurrentGeoChanged;
             if (Mode == SelectionMode.Current) UpdateFromCurrent();
         }
 
@@ -53,12 +69,12 @@ namespace StlVault.ViewModels
             }
 
             FileName.Value = $"{_model.Selection.Count} Models selected";
-            VertexCount.Value = _model.Selection.Sum(pi => pi.GeometryInfo.VertexCount);
-            TriangleCount.Value = _model.Selection.Sum(pi => pi.GeometryInfo.TriangleCount);
-            Volume.Value = _model.Selection.Sum(pi => pi.GeometryInfo.Volume);
-            Width.Value = _model.Selection.Max(pi => Mathf.Abs(pi.GeometryInfo.Size.x));
-            Height.Value = _model.Selection.Max(pi => Mathf.Abs(pi.GeometryInfo.Size.y));
-            Depth.Value = _model.Selection.Max(pi => Mathf.Abs(pi.GeometryInfo.Size.z));
+            VertexCount.Value = _model.Selection.Sum(pi => pi.GeometryInfo.Value.VertexCount);
+            TriangleCount.Value = _model.Selection.Sum(pi => pi.GeometryInfo.Value.TriangleCount);
+            Volume.Value = _model.Selection.Sum(pi => pi.GeometryInfo.Value.Volume);
+            Width.Value = _model.Selection.Max(pi => Mathf.Abs(pi.GeometryInfo.Value.Size.x));
+            Height.Value = _model.Selection.Max(pi => Mathf.Abs(pi.GeometryInfo.Value.Size.y));
+            Depth.Value = _model.Selection.Max(pi => Mathf.Abs(pi.GeometryInfo.Value.Size.z));
         }
 
         private void UpdateFromCurrent()
@@ -69,9 +85,9 @@ namespace StlVault.ViewModels
                 return;
             }
 
-            var geometry = _model.Current.Value.GeometryInfo;
+            var geometry = _model.Current.Value.GeometryInfo.Value;
 
-            FileName.Value = _model.Current.Value.ItemName;
+            FileName.Value = _model.Current.Value.Name;
             VertexCount.Value = geometry.VertexCount;
             TriangleCount.Value = geometry.TriangleCount;
             Volume.Value = geometry.Volume;

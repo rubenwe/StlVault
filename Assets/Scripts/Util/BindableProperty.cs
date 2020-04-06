@@ -8,6 +8,7 @@ namespace StlVault.Util
     {
         private T _value;
         public virtual event Action<T> ValueChanged;
+        public virtual event Action<T> ValueChanging;
 
         public Func<T, T> TransformValue { private get; set; }
 
@@ -32,6 +33,7 @@ namespace StlVault.Util
 
                 if (Equals(value, _value)) return;
 
+                ValueChanging?.Invoke(_value);
                 _value = value;
                 ValueChanged?.Invoke(value);
             }

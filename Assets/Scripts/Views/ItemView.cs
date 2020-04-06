@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace StlVault.Views
 {
-    internal class ItemView : ViewBase<FilePreviewModel>, 
+    internal class ItemView : ViewBase<ItemPreviewModel>, 
         IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         private static readonly Rect PreviewRect = new Rect(Vector2.zero, new Vector2(1024, 1024));
@@ -23,6 +23,7 @@ namespace StlVault.Views
         [SerializeField] private Color _selectedColor;
 
         private Image _image;
+        private Color _normalColor;
         private bool _isLoaded;
         private RectTransform _rect;
         private Camera _mainCam;
@@ -35,7 +36,8 @@ namespace StlVault.Views
             _mainCam = Camera.main;
             _rect = GetComponent<RectTransform>();
             _image = GetComponent<Image>();
-
+            _normalColor = _image.color;
+            
             _previewImage.color = new Color(0, 0, 0, 0);
             _previewImage.gameObject.SetActive(false);
             
@@ -45,7 +47,7 @@ namespace StlVault.Views
 
        private Texture2D _texture;
 
-        private async void StartLoad()
+       private async void StartLoad()
         {
             _source = new CancellationTokenSource();
             var token = _source.Token;
@@ -101,21 +103,30 @@ namespace StlVault.Views
         {
             _itemName.text = ViewModel.Name;
             
-            var currentColor = _image.color;
-            
-            void SelectedChanged(bool selected) => _image.color = selected 
-                ? _selectedColor 
-                : currentColor;
-            
             ViewModel.Selected.ValueChanged += SelectedChanged;
+            ViewModel.PreviewChanged += PreviewChanged;
             SelectedChanged(ViewModel.Selected);
         }
+
+        private void PreviewChanged()
+        {
+            _source?.Cancel();
+            _source = null;
+            _isLoaded = false;
+        }
+
+        private void SelectedChanged(bool selected) => _image.color = selected 
+            ? _selectedColor 
+            : _normalColor;
 
         private void OnDestroy()
         {
             _previewImage.DOKill();
             _source?.Cancel();
             Destroy(_texture);
+            
+            ViewModel.Selected.ValueChanged -= SelectedChanged;
+            ViewModel.PreviewChanged -= PreviewChanged;
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -130,7 +141,7 @@ namespace StlVault.Views
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            ViewModel.ToggleSelection.Execute();
+            ViewModel.Selected.Value = !ViewModel.Selected;
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows.Input;
 using StlVault.Util;
 using StlVault.Util.Commands;
@@ -5,7 +6,7 @@ using StlVault.Util.Messaging;
 
 namespace StlVault.ViewModels
 {
-    internal abstract class DialogModelBase<TShowMessage> : ModelBase, IDialogModel, IMessageReceiver<TShowMessage>
+    internal abstract class DialogModelBase<TShowMessage> : IDialogModel, IMessageReceiver<TShowMessage>
     {
         public BindableProperty<bool> Shown { get; } = new BindableProperty<bool>();
 

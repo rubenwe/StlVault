@@ -1,50 +1,94 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Input;
 using JetBrains.Annotations;
-using StlVault.Config;
+using StlVault.Messages;
 using StlVault.Services;
 using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
+using StlVault.Util.Messaging;
 
 namespace StlVault.ViewModels
 {
-    internal class DetailMenuModel : ModelBase
+    internal class DetailMenuModel :
+        IMessageReceiver<SelectionChangedMessage>,
+        IMessageReceiver<MassSelectionStartingMessage>,
+        IMessageReceiver<MassSelectionFinishedMessage>
     {
-        private readonly ISelectionTracker _tracker;
         public BindableProperty<SelectionMode> Mode { get; } = new BindableProperty<SelectionMode>();
-        public BindableProperty<PreviewInfo> Current => _tracker.CurrentSelected;
-        public IReadOnlyObservableCollection<PreviewInfo> Selection => _tracker.Selection;
-        
+
+        public BindableProperty<ItemPreviewModel> Current { get; } = new BindableProperty<ItemPreviewModel>();
+        public ObservableList<ItemPreviewModel> Selection { get; } = new ObservableList<ItemPreviewModel>();
+
         public ICommand SwitchToCurrentModeCommand { get; }
         public ICommand SwitchToSelectionModeCommand { get; }
-        
+
         public StatsModel StatsModel { get; }
         public TagEditorModel TagEditorModel { get; }
+        public RotateModel RotateModel { get; }
 
-        public DetailMenuModel([NotNull] ISelectionTracker tracker, [NotNull] ILibrary library)
+        public IBindableProperty<bool> AnythingSelected { get; }
+
+        private bool IsSomethingSelected() => Mode == SelectionMode.Current
+            ? Current.Value != null
+            : Selection.Any();
+
+        public DetailMenuModel([NotNull] ILibrary library)
         {
             if (library == null) throw new ArgumentNullException(nameof(library));
-            _tracker = tracker ?? throw new ArgumentNullException(nameof(tracker));
-            
+
             SwitchToCurrentModeCommand = new DelegateCommand(
                 () => Mode != SelectionMode.Current,
                 () => Mode.Value = SelectionMode.Current);
-            
+
             SwitchToSelectionModeCommand = new DelegateCommand(
                 () => Mode != SelectionMode.Selection,
                 () => Mode.Value = SelectionMode.Selection);
-            
-            Mode.ValueChanged += ModeOnValueChanged;
 
+            Mode.ValueChanged += ModeOnValueChanged;
+            
+            AnythingSelected = new DelegateProperty<bool>(IsSomethingSelected)
+                .UpdateOn(Mode)
+                .UpdateOn(Current)
+                .UpdateOn(Selection);
+            
             StatsModel = new StatsModel(this);
             TagEditorModel = new TagEditorModel(this, library);
+            RotateModel = new RotateModel(this, library);
         }
 
         private void ModeOnValueChanged(SelectionMode obj)
         {
             SwitchToCurrentModeCommand.OnCanExecuteChanged();
             SwitchToSelectionModeCommand.OnCanExecuteChanged();
+        }
+
+        public void Receive(SelectionChangedMessage message)
+        {
+            var sender = message.Sender;
+            if (sender.Selected)
+            {
+                Current.Value = sender;
+                Selection.Add(sender);
+            }
+            else
+            {
+                Current.Value = null;
+                Selection.Remove(sender);
+            }
+        }
+
+        private IDisposable _massUpdate;
+        public void Receive(MassSelectionStartingMessage message)
+        {
+            _massUpdate?.Dispose();
+            _massUpdate = Selection.EnterMassUpdate();
+        }
+
+        public void Receive(MassSelectionFinishedMessage message)
+        {
+            _massUpdate?.Dispose();
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using JetBrains.Annotations;
 using StlVault.Config;
@@ -7,33 +8,30 @@ using StlVault.Messages;
 using StlVault.Services;
 using StlVault.Util;
 using StlVault.Util.Collections;
+using StlVault.Util.Commands;
 using StlVault.Util.Messaging;
 using UnityEngine;
 
 namespace StlVault.ViewModels
 {
-    internal class ItemsModel : ModelBase, IMessageReceiver<SearchChangedMessage>
+    internal class ItemsModel : 
+        IMessageReceiver<SearchChangedMessage>, 
+        IMessageReceiver<SelectionChangedMessage>
     {
-        [NotNull] private readonly ISelectionTracker _tracker;
+        [NotNull] private readonly ObservableListWrapper<ItemPreviewModel> _items = new ObservableListWrapper<ItemPreviewModel>();
         [NotNull] private readonly ILibrary _library;
-        [NotNull] private readonly IPreviewImageStore _previewImageStore;
-        [NotNull] private readonly TrackingCollection<PreviewInfo, FilePreviewModel> _items;
+        [NotNull] private readonly IMessageRelay _relay;
         [NotNull] private IEnumerable<string> _currentSearchTags = Enumerable.Empty<string>();
-        private PreviewInfo _lastToggled;
+        
+        private ItemPreviewModel _lastToggled;
 
-        public IReadOnlyObservableList<FilePreviewModel> Items => _items;
+        public IReadOnlyObservableList<ItemPreviewModel> Items => _items;
         public bool SelectRange { private get; set; }
 
-        public ItemsModel(
-            [NotNull] ILibrary library, 
-            [NotNull] ISelectionTracker tracker,
-            [NotNull] IPreviewImageStore previewImageStore)
+        public ItemsModel([NotNull] ILibrary library, [NotNull] IMessageRelay relay)
         {
             _library = library ?? throw new ArgumentNullException(nameof(library));
-            _tracker = tracker ?? throw new ArgumentNullException(nameof(tracker));
-            _previewImageStore = previewImageStore ?? throw new ArgumentNullException(nameof(previewImageStore));
-            
-            _items = new TrackingCollection<PreviewInfo, FilePreviewModel>(CreateModel);
+            _relay = relay ?? throw new ArgumentNullException(nameof(relay));
         }
 
         public void Receive(SearchChangedMessage message)
@@ -46,63 +44,9 @@ namespace StlVault.ViewModels
             _lastToggled = null;
         }
 
-        private FilePreviewModel CreateModel(PreviewInfo info)
-        {
-            void OnSelectedChanged(bool selected)
-            {
-                if (SelectRange)
-                {
-                    // Block subsequent select handler calls ...
-                    SelectRange = false;
-                    
-                    var current = _lastToggled;
-                    var lastPos = current != null ? -1 : 0;
-                    var newPos = -1;
-                    for (var i = 0; i < _items.Count; i++)
-                    {
-                        if (lastPos != -1 && newPos != -1) break;
-                        if (_items[i].FileHash == info.FileHash) newPos = i;
-                        if (_items[i].FileHash == current?.FileHash) lastPos = i;
-                    }
-
-                    if (lastPos != -1)
-                    {
-                        var start = Mathf.Min(lastPos, newPos);
-                        var end = Mathf.Max(lastPos, newPos);
-                        if (lastPos > newPos) end++;
-
-                        using (_tracker.EnterMassUpdate())
-                        {
-                            for (var i = start; i < end; i++)
-                            {
-                                // ... from here
-                                _items[i].Selected.Value = selected;
-                            }
-                        }
-                    }
-                }
-               
-                SetTrackerState(info);
-
-                void SetTrackerState(PreviewInfo previewInfo)
-                {
-                    if (selected) _tracker.SetSelected(previewInfo);
-                    else _tracker.SetDeselected(previewInfo);
-                    _lastToggled = previewInfo;
-                }
-            }
-            
-            return new FilePreviewModel(_previewImageStore, OnSelectedChanged)
-            {
-                Name = info.ItemName,
-                FileHash = info.FileHash,
-                Selected = { Value = _tracker.IsSelected(info)}
-            };
-        }
-
         public void SelectAll()
         {
-            using (_tracker.EnterMassUpdate())
+            using (NotifyMassSelection())
             {
                 foreach (var previewModel in Items)
                 {
@@ -110,5 +54,50 @@ namespace StlVault.ViewModels
                 }
             }
         }
+
+        private IDisposable NotifyMassSelection()
+        {
+            _relay.Send<MassSelectionStartingMessage>(this);
+            return Disposable.FromAction(() => _relay.Send<MassSelectionFinishedMessage>(this));
+        }
+
+        public void Receive(SelectionChangedMessage message)
+        {
+            var sender = message.Sender;
+            if (SelectRange)
+            {
+                // Block subsequent select handler calls ...
+                SelectRange = false;
+
+                var lastPos = _lastToggled != null ? -1 : 0;
+                var newPos = -1;
+                for (var i = 0; i < _items.Count; i++)
+                {
+                    if (lastPos != -1 && newPos != -1) break;
+                    if (_items[i] == sender) newPos = i;
+                    if (_items[i] == _lastToggled) lastPos = i;
+                }
+
+                if (lastPos != -1)
+                {
+                    var start = Mathf.Min(lastPos, newPos);
+                    var end = Mathf.Max(lastPos, newPos);
+                    if (lastPos > newPos) end++;
+
+                    using (NotifyMassSelection())
+                    {
+                        for (var i = start; i < end; i++)
+                        {
+                            // ... from here
+                            _items[i].Selected.Value = sender.Selected;
+                        }
+                    }
+                }
+            }
+
+            _lastToggled = sender;
+        }
     }
+
+    
 }

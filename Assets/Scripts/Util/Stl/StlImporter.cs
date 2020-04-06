@@ -11,21 +11,27 @@ namespace StlVault.Util.Stl
 {
     public static class StlImporter
     {
-        public static async Task<(Mesh mesh, string fileHash)> ImportMeshAsync(string fileName, byte[] fileBytes, bool centerVertices = true)
+        public static async Task<(Mesh mesh, string fileHash)> ImportMeshAsync(
+            string fileName, 
+            byte[] fileBytes, 
+            bool centerVertices = true, 
+            bool computeHash = true)
         {
             var isBinary = BinaryStl.IsBinary(fileBytes);
 
             Task<string> ComputeHash()
             {
-                return Task.Run(() => StlImporter.ComputeHash(fileBytes))
-                    .Timed("Computing hash of {0}", fileName);
+                return computeHash
+                    ? Task.Run(() => StlImporter.ComputeHash(fileBytes))
+                        .Timed("Computing hash of {0}", fileName)
+                    : Task.FromResult((string) null);
             }
 
             Facet[] facets;
             Task<string> computeHashTask;
             if (isBinary)
             {
-                computeHashTask = Task.Run(ComputeHash);
+                computeHashTask = ComputeHash();
                 facets = await Task.Run(() => BinaryStl.FromBytes(fileBytes))
                     .Timed("Reading binary stl {0}", fileName);
             }

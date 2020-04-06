@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +9,6 @@ using JetBrains.Annotations;
 using StlVault.Config;
 using StlVault.Messages;
 using StlVault.Services;
-using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
 using StlVault.Util.Messaging;
@@ -17,7 +17,7 @@ using UnityEngine;
 
 namespace StlVault.ViewModels
 {
-    internal sealed class ImportFoldersModel : ModelBase, IMessageReceiver<AddImportFolderMessage>
+    internal sealed class ImportFoldersModel : IMessageReceiver<AddImportFolderMessage>
     {
         [NotNull] private readonly IConfigStore _store;
         [NotNull] private readonly IMessageRelay _relay;

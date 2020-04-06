@@ -15,9 +15,9 @@ using NotifyCollectionChangedEventArgs = System.Collections.Specialized.NotifyCo
 namespace StlVault.Views
 {
     internal abstract class ContainerView<TModel, TChildView, TChildModel> : ViewBase<TModel>
-        where TModel : class, INotifyPropertyChanged
+        where TModel : class
         where TChildView : ViewBase<TChildModel>
-        where TChildModel : class, INotifyPropertyChanged
+        where TChildModel : class
     {
         [SerializeField] private TChildView _itemPrefab;
         [SerializeField] protected Transform _itemsContainer;

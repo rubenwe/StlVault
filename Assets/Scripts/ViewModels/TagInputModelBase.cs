@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.ComponentModel;
+using System.Linq;
 using System.Windows.Input;
 using StlVault.Services;
 using StlVault.Util;
@@ -7,7 +8,7 @@ using StlVault.Util.Commands;
 
 namespace StlVault.ViewModels
 {
-    internal abstract class TagInputModelBase : ModelBase
+    internal abstract class TagInputModelBase
     {
         public ObservableList<SuggestionModel> AutoCompletionSuggestions { get; } = new ObservableList<SuggestionModel>();
         public BindableProperty<string> CurrentInput { get; } = new BindableProperty<string>();

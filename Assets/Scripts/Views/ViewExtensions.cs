@@ -23,6 +23,17 @@ namespace StlVault.Views
             button.onClick.AddListener(command.Execute);
         }
 
+        public static void Bind<T>(this SimpleButton button, ICommand command, T param)
+        {
+            void OnChange(object sender, EventArgs args) => button.Enabled.Value = command.CanExecute(param);
+            void OnButtonOnClicked() => command.Execute(param);
+            
+            command.CanExecuteChanged += OnChange;
+            button.Enabled.Value = command.CanExecute(param);
+
+            button.Clicked += OnButtonOnClicked;
+        }
+
         public static void Bind<T>(this TMP_InputField inputField, BindableProperty<T> property)
         {
             property.ValueChanged += OnPropertyChanged;

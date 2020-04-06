@@ -4,7 +4,7 @@ using StlVault.Util;
 
 namespace StlVault.ViewModels
 {
-    internal interface IDialogModel : INotifyPropertyChanged
+    internal interface IDialogModel 
     {
         BindableProperty<bool> Shown { get; }
         ICommand AcceptCommand { get; }
