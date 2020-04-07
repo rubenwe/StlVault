@@ -86,7 +86,12 @@ namespace StlVault.Services
                 if (file == null) continue;
 
                 model.Sources.Remove(file);
-                if (model.Sources.Count == 0) _models.Remove(model);
+                if (model.Sources.Count == 0)
+                {
+                    _models.Remove(model);
+                    _modelsByHash.Remove(model.FileHash);
+                    model.Selected.Value = false;
+                }
 
                 return model;
             }

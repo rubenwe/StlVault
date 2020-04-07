@@ -1,7 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using DG.Tweening;
-using StlVault.Util.Commands;
 using StlVault.ViewModels;
 using TMPro;
 using UnityEngine;

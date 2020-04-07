@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using StlVault.Config;
+using StlVault.Messages;
 using StlVault.Util;
 using StlVault.Util.FileSystem;
 using StlVault.Util.Messaging;
@@ -25,6 +26,7 @@ namespace StlVault.Services
         [NotNull] private readonly IConfigStore _configStore;
         [NotNull] private readonly IPreviewBuilder _previewBuilder;
         [NotNull] private readonly IPreviewImageStore _previewStore;
+        [NotNull] private readonly IMessageRelay _relay;
         [NotNull] private readonly ArrayTrie _trie = new ArrayTrie();
 
         public ushort Parallelism { get; set; } = 1;
@@ -35,12 +37,11 @@ namespace StlVault.Services
             [NotNull] IPreviewImageStore previewStore, 
             [NotNull] IMessageRelay relay)
         {
-            if (relay == null) throw new ArgumentNullException(nameof(relay));
-            
             _previewBuilder = builder ?? throw new ArgumentNullException(nameof(builder));
             _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
             _previewStore = previewStore ?? throw new ArgumentNullException(nameof(previewStore));
-            
+            _relay = relay ?? throw new ArgumentNullException(nameof(relay));
+
             _previewModels = new ItemPreviewModelSet(_previewStore, relay);
         }
 
@@ -186,6 +187,8 @@ namespace StlVault.Services
             }
 
             await Task.WhenAll(tasks);
+            
+            _relay.Send(this, new ProgressMessage{Text = $"Finished importing from `{source.DisplayName}`"});
         }
 
         private async Task ImportFile(
@@ -198,9 +201,10 @@ namespace StlVault.Services
             var (hash, geoInfo, resolution) = await RebuildPreview(source, file.Path, rotation, scale);
 
             var tags = source.GetTags(file.Path);
+            var fileName = Path.GetFileName(file.Path);
             var previewInfo = new PreviewInfo
             {
-                ItemName = Path.GetFileName(file.Path),
+                ItemName = fileName,
                 FileHash = hash,
                 Tags = tags.ToHashSet(),
                 Resolution = resolution
@@ -211,6 +215,7 @@ namespace StlVault.Services
                 _trie.Insert(tags);
                 var model = _previewModels.AddOrUpdate(source, file, previewInfo, geoInfo);
                 _previewStreams.ForEach(stream => stream.AddFiltered(model));
+                _relay.Send(this, new ProgressMessage{Text = $"Imported `{fileName}`"});
             });
         }
 
@@ -248,14 +253,23 @@ namespace StlVault.Services
             WriteLocked(() =>
             {
                 var itemsToRemove = new HashSet<ItemPreviewModel>();
-                foreach (var removedItem in removedItems)
+                using (NotifyMassSelection())
                 {
-                    var model = _previewModels.RemoveOrUpdate(source, removedItem);
-                    if(model != null) itemsToRemove.Add(model);
+                    foreach (var removedItem in removedItems)
+                    {
+                        var model = _previewModels.RemoveOrUpdate(source, removedItem);
+                        if(model != null) itemsToRemove.Add(model);
+                    }
                 }
 
                 _previewStreams.ForEach(stream => stream.RemoveRange(itemsToRemove));
             });
+        }
+        
+        private IDisposable NotifyMassSelection()
+        {
+            _relay.Send<MassSelectionStartingMessage>(this);
+            return Disposable.FromAction(() => _relay.Send<MassSelectionFinishedMessage>(this));
         }
 
         public async Task StoreChangesAsync()

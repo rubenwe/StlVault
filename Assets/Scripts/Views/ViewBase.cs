@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using UnityEngine;
 
 namespace StlVault.Views

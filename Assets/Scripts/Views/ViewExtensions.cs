@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.Windows.Input;
-using JetBrains.Annotations;
 using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;

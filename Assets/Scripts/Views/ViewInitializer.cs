@@ -33,6 +33,7 @@ namespace StlVault.Views
         [Category("Misc")] 
         [SerializeField] private PreviewCam _previewBuilder;
         [SerializeField] private ApplicationView _applicationView;
+        [SerializeField] private ProgressView _progressView;
         
         private Library _library;
 
@@ -55,6 +56,7 @@ namespace StlVault.Views
             var factory = new ImportFolderFactory(_library);
 
             // Main View
+            var progressModel = new ProgressModel();
             var applicationModel = new ApplicationModel(relay);
             var searchViewModel = new SearchModel(_library, relay);
             var itemsViewModel = new ItemsModel(_library, relay);
@@ -83,6 +85,7 @@ namespace StlVault.Views
 
             aggregator.Subscribe(
                 // Main View
+                progressModel,
                 searchViewModel,
                 itemsViewModel,
                 
@@ -121,6 +124,7 @@ namespace StlVault.Views
             void BindViewModels()
             {
                 // Main View
+                _progressView.BindTo(progressModel);
                 _applicationView.BindTo(applicationModel);
                 _searchView.BindTo(searchViewModel);
                 _itemsView.BindTo(itemsViewModel);

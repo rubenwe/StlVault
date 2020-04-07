@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using StlVault.Services;
 using StlVault.Util;
