@@ -24,6 +24,7 @@ namespace StlVault.ViewModels
         public ObservableSet<string> Tags { get; } = new ObservableSet<string>();
         public BindableProperty<bool> Selected { get; } = new BindableProperty<bool>();
         public List<ImportedFileInfo> Sources { get; }
+        public int PreviewResolution { get; set; }
 
         public Task<byte[]> LoadPreviewAsync()
         {
@@ -44,6 +45,7 @@ namespace StlVault.ViewModels
           GeometryInfo.Value = previewInfo.GeometryInfo;
           Tags.AddRange(previewInfo.Tags);
           Sources = previewInfo.Sources?.ToList() ?? new List<ImportedFileInfo>();
+          PreviewResolution = previewInfo.Resolution;
 
           Selected.ValueChanged += value => relay.Send(this, new SelectionChangedMessage{Sender = this});
         }

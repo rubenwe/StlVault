@@ -15,7 +15,6 @@ namespace StlVault.Views
     internal class ItemView : ViewBase<ItemPreviewModel>, 
         IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
-        private static readonly Rect PreviewRect = new Rect(Vector2.zero, new Vector2(1024, 1024));
         private static readonly Vector2 Pivot = 0.5f * Vector2.one;
 
         [SerializeField] private Image _previewImage;
@@ -54,17 +53,19 @@ namespace StlVault.Views
 
             try
             {
+                var resolution = ViewModel.PreviewResolution;
                 var bytes = await ViewModel.LoadPreviewAsync();
                 if (bytes == null) return;
 
                 await GetSlot(token);
                 if (token.IsCancellationRequested) return;
-
-                _texture = new Texture2D(1024, 1024, TextureFormat.DXT1Crunched, false) {name = ViewModel.Name};
+                
+                if (_texture != null) Destroy(_texture);
+                _texture = new Texture2D(resolution, resolution, TextureFormat.DXT1Crunched, false) {name = ViewModel.Name};
                 _texture.LoadImage(bytes);
                 _texture.Compress(false);
 
-                _previewImage.sprite = Sprite.Create(_texture, PreviewRect, Pivot, 100, 0, SpriteMeshType.FullRect);
+                _previewImage.sprite = Sprite.Create(_texture, new Rect(Vector2.zero, new Vector2(resolution, resolution)), Pivot, 100, 0, SpriteMeshType.FullRect);
                 _previewImage.DOColor(Color.white, 0.2f);
 
                 _isLoaded = true;

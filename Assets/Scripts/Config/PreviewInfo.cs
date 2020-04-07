@@ -16,5 +16,6 @@ namespace StlVault.Config
         public HashSet<string> Tags { get; set; }
         public GeometryInfo GeometryInfo { get; set; }
         public List<ImportedFileInfo> Sources { get; set; }
+        public int Resolution { get; set; }
     }
 }

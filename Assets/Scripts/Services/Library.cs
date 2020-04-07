@@ -79,13 +79,14 @@ namespace StlVault.Services
             
             if (source == null || filePath == null) return;
             
-            var (_, geoInfo) = await RebuildPreview(
+            var (_, geoInfo, resolution) = await RebuildPreview(
                 source, filePath, 
                 newRotation, previewModel.GeometryInfo.Value.Scale, 
                 previewModel.FileHash);
             
             WriteLocked(() =>
             {
+                previewModel.PreviewResolution = resolution;
                 previewModel.GeometryInfo.Value = geoInfo;
                 previewModel.OnPreviewChanged();
             });
@@ -194,7 +195,7 @@ namespace StlVault.Services
             var scale = source.Config.Scale;
             var rotation = source.Config.Rotation;
 
-            var (hash, geoInfo) = await RebuildPreview(source, file.Path, rotation, scale);
+            var (hash, geoInfo, resolution) = await RebuildPreview(source, file.Path, rotation, scale);
 
             var tags = source.GetTags(file.Path);
             var previewInfo = new PreviewInfo
@@ -202,7 +203,8 @@ namespace StlVault.Services
                 ItemName = Path.GetFileName(file.Path),
                 FileHash = hash,
                 Tags = tags.ToHashSet(),
-                GeometryInfo = geoInfo
+                GeometryInfo = geoInfo,
+                Resolution = resolution
             };
 
             WriteLocked(() =>
@@ -213,11 +215,9 @@ namespace StlVault.Services
             });
         }
 
-        private async Task<(string hash, GeometryInfo geoInfo)> RebuildPreview(
-            IFileSource source,
-            string filePath,
-            ConfigVector3? rotation,
-            ConfigVector3? scale, 
+        private async Task<(string hash, GeometryInfo geoInfo, int resolution)> RebuildPreview(
+            IFileSource source, string filePath,
+            ConfigVector3? rotation, ConfigVector3? scale, 
             string knownHash = null)
         {
             var fileName = Path.GetFileName(filePath);
@@ -232,7 +232,7 @@ namespace StlVault.Services
 
             var geoInfo = await GeometryInfo.FromMeshAsync(mesh, rotation, scale);
 
-            var previewData = await _previewBuilder
+            var (previewData, resolution) = await _previewBuilder
                 .GetPreviewImageDataAsync(mesh, rotation)
                 .Timed("Building preview for {0}", fileName);
 
@@ -240,7 +240,7 @@ namespace StlVault.Services
 
             await _previewStore.StorePreviewAsync(hash ?? knownHash, previewData);
 
-            return (hash, geoInfo);
+            return (hash, geoInfo, resolution);
         }
 
 

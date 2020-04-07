@@ -111,6 +111,9 @@ namespace StlVault.Views
                         canvas.scaleFactor = applicationSettingsModel.UiScalePercent / 125f;
                     }
                 };
+                
+                rt.PreviewResolution.ValueChanged += res => _previewBuilder.PreviewResolution.Value = Mathf.RoundToInt(Mathf.Pow(2f, res));
+                rt.PreviewJpegQuality.ValueChanged += quality => _previewBuilder.Quality = quality;
             }
 
             void BindViewModels()

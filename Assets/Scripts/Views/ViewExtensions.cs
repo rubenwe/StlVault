@@ -53,6 +53,16 @@ namespace StlVault.Views
                 ? string.Format(formatString, newValue)
                 : newValue?.ToString();
         }
+        
+        public static void Bind<T>(this TMP_Text text, BindableProperty<T> property, Func<T, object> compute, string formatString = null)
+        {
+            property.ValueChanged += OnPropertyChanged;
+            OnPropertyChanged(property);
+
+            void OnPropertyChanged(T newValue) => text.text = formatString != null 
+                ? string.Format(formatString, compute(newValue))
+                : compute(newValue)?.ToString();
+        }
 
         public static void Bind(
             this (TMP_InputField x, TMP_InputField y, TMP_InputField z) fields,

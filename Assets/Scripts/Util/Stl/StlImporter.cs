@@ -1,11 +1,9 @@
 using System;
-using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using StlVault.Util.Unity;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Object = System.Object;
 
 namespace StlVault.Util.Stl
 {
