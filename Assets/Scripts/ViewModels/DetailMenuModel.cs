@@ -90,6 +90,7 @@ namespace StlVault.ViewModels
         public void Receive(MassSelectionFinishedMessage message)
         {
             _massUpdate?.Dispose();
+            _massUpdate = null;
             Current.ResumeUpdates();
         }
     }
