@@ -100,8 +100,11 @@ namespace StlVault.ViewModels
                 Folders.AddRange(folders);
             }
 
-            void LoadItem(FileSourceModel model) =>
-                _relay.Send(this, new SearchChangedMessage {SearchTags = new[] {"Folder: " + model.Path}});
+            void LoadItem(FileSourceModel model)
+            {
+                var msg = new SearchChangedMessage {SearchTags = new[] {"folder: " + model.Path.Value.ToLowerInvariant()}};
+                _relay.Send(this, msg);
+            }
 
             void EditItem(FileSourceModel mode)
             {
