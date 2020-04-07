@@ -91,6 +91,8 @@ namespace StlVault.Services
             previewModel.OnPreviewChanged();
         }
 
+        public IEnumerable<ItemPreviewModel> GetAllItems() => _previewModels;
+
         private enum TagAction
         {
             Add,

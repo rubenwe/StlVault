@@ -1,12 +1,12 @@
 using System;
-using StlVault.Config;
-using StlVault.Util.Collections;
 
 namespace StlVault.Util
 {
     internal class BindableProperty<T> : IBindableProperty<T>
     {
         private T _value;
+        private T _beforeSuppress;
+        private bool _active = true;
         public virtual event Action<T> ValueChanged;
         public virtual event Action<T> ValueChanging;
 
@@ -33,12 +33,27 @@ namespace StlVault.Util
 
                 if (Equals(value, _value)) return;
 
-                ValueChanging?.Invoke(_value);
+                if(_active) ValueChanging?.Invoke(_value);
                 _value = value;
-                ValueChanged?.Invoke(value);
+                if(_active) ValueChanged?.Invoke(value);
             }
         }
 
         public static implicit operator T(BindableProperty<T> item) => item.Value;
+
+        public void SuppressUpdates()
+        {
+            _beforeSuppress = Value;
+            _active = false;
+        }
+
+        public void ResumeUpdates()
+        {
+            var current = Value;
+            _value = _beforeSuppress;
+            _active = true;
+            
+            Value = current;
+        }
     }
 }

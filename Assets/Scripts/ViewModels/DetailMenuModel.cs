@@ -84,11 +84,13 @@ namespace StlVault.ViewModels
         {
             _massUpdate?.Dispose();
             _massUpdate = Selection.EnterMassUpdate();
+            Current.SuppressUpdates();
         }
 
         public void Receive(MassSelectionFinishedMessage message)
         {
             _massUpdate?.Dispose();
+            Current.ResumeUpdates();
         }
     }
 }

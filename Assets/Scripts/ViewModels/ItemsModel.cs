@@ -44,13 +44,25 @@ namespace StlVault.ViewModels
             _lastToggled = null;
         }
 
-        public void SelectAll()
+        public void ToggleAll()
         {
             using (NotifyMassSelection())
             {
+                var allSelected = Items.All(item => item.Selected);
                 foreach (var previewModel in Items)
                 {
-                    previewModel.Selected.Value = true;
+                    previewModel.Selected.Value = !allSelected;
+                }
+            }
+        }
+
+        public void ClearSelection()
+        {
+            using (NotifyMassSelection())
+            {
+                foreach (var item in _library.GetAllItems())
+                {
+                    item.Selected.Value = false;
                 }
             }
         }

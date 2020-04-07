@@ -13,7 +13,12 @@ namespace StlVault.Views
             var ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             if (ctrl && Input.GetKeyDown(KeyCode.A))
             {
-                ViewModel.SelectAll();
+                ViewModel.ToggleAll();
+            }
+
+            if (ctrl && Input.GetKeyDown(KeyCode.D))
+            {
+                ViewModel.ClearSelection();
             }
 
             var shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
