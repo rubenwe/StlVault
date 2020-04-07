@@ -6,6 +6,6 @@ namespace StlVault.Services
 {
     internal interface IPreviewBuilder
     {
-        Task<byte[]> GetPreviewImageDataAsync(Mesh mesh, Vector3? objRotation);
+        Task<(byte[] imageData, int resolution)> GetPreviewImageDataAsync(Mesh mesh, Vector3? objRotation);
     }
 }

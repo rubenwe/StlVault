@@ -14,6 +14,6 @@ namespace StlVault.Services
         /// <summary>
         /// Call for files removed during the lifetime of the <see cref="IFileSource"/>
         /// </summary>
-        Task OnItemsRemovedAsync(IFileSource source, IReadOnlyCollection<string> removedItems);
+        void OnItemsRemoved(IFileSource source, IReadOnlyCollection<string> removedItems);
     }
 }

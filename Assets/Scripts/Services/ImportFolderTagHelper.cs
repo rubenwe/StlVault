@@ -9,7 +9,7 @@ namespace StlVault.Services
 {
     internal static class ImportFolderTagHelper
     {  
-        private static readonly char[] Separators = {'_', '-', ' ', '.', '(', ')', '+'};
+        private static readonly char[] Separators = {'_', '-', ' ', '.', '(', ')', '+', '&', ','};
         private static readonly char[] Digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
         public static HashSet<string> GenerateTags(ImportFolderConfig folderConfig, string resourcePath)
@@ -48,6 +48,7 @@ namespace StlVault.Services
                 .ToHashSet();
         }
         
-        private static bool IsOnBlackList(string tag) => tag == "repaired" || tag == "stl";
+        private static bool IsOnBlackList(string tag) => 
+            tag == "repaired" || tag == "stl" || tag == "the" || tag == "for" || tag == "and";
     }
 }

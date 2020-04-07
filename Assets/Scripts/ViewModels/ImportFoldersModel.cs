@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using JetBrains.Annotations;
-using StlVault.AppModel.Messages;
 using StlVault.Config;
 using StlVault.Messages;
 using StlVault.Services;
-using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
 using StlVault.Util.Messaging;
@@ -18,7 +17,7 @@ using UnityEngine;
 
 namespace StlVault.ViewModels
 {
-    internal sealed class ImportFoldersModel : ModelBase, IMessageReceiver<AddImportFolderMessage>
+    internal sealed class ImportFoldersModel : IMessageReceiver<AddImportFolderMessage>
     {
         [NotNull] private readonly IConfigStore _store;
         [NotNull] private readonly IMessageRelay _relay;
@@ -63,7 +62,7 @@ namespace StlVault.ViewModels
             _ = folder.InitializeAsync();
             
             // Switch to added folder
-            _relay.Send(this, new SearchChangedMessage {SearchTags = new[] {"Folder: " + newConfig.FullPath}});
+            _relay.Send(this, new SearchChangedMessage {SearchTags = new[] {"folder: " + newConfig.FullPath.ToLowerInvariant()}});
         }
 
         public async Task InitializeAsync()
@@ -101,8 +100,11 @@ namespace StlVault.ViewModels
                 Folders.AddRange(folders);
             }
 
-            void LoadItem(FileSourceModel model) =>
-                _relay.Send(this, new SearchChangedMessage {SearchTags = new[] {"Folder: " + model.Path}});
+            void LoadItem(FileSourceModel model)
+            {
+                var msg = new SearchChangedMessage {SearchTags = new[] {"folder: " + model.Path.Value.ToLowerInvariant()}};
+                _relay.Send(this, msg);
+            }
 
             void EditItem(FileSourceModel mode)
             {
@@ -114,8 +116,8 @@ namespace StlVault.ViewModels
                 var importFolder = (ImportFolder) model.FileSource;
 
                 currentFolders.Remove(importFolder);
+                importFolder.OnDeleted();
                 
-                await importFolder.OnDeletedAsync();
                 await SaveAndRefreshAsync(currentFolders);
             }
         }

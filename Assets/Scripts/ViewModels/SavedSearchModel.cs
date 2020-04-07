@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows.Input;
 using JetBrains.Annotations;
 using StlVault.Config;
-using StlVault.Util;
 using StlVault.Util.Commands;
 
 namespace StlVault.ViewModels
 {
-    internal class SavedSearchModel : ModelBase
+    internal class SavedSearchModel
     {
         internal SavedSearchConfig Config { get; }
         public string Alias => Config.Alias;

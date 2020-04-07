@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
@@ -9,31 +10,22 @@ using UnityEngine.Scripting;
 namespace StlVault.Config
 {
     [DebuggerDisplay("{" + nameof(ItemName) + "}")]
-    internal class PreviewInfo : ITagged
+    internal class PreviewInfo
     {
-        [JsonIgnore]
+        public string ItemName { get; set; }
         public string FileHash { get; set; }
-
-        public string ItemName { get; }
-        public HashSet<string> Tags { get; }
+        public int Resolution { get; set; }
+        public HashSet<string> Tags { get; set; }
+        public List<ImportedFileInfo> Sources { get; set; }
         
-        public PreviewInfo(
-            [NotNull] string itemName,
-            [NotNull] string fileHash,
-            [NotNull] HashSet<string> tags)
-        {
-            ItemName = itemName ?? throw new ArgumentNullException(nameof(itemName));
-            FileHash = fileHash ?? throw new ArgumentNullException(nameof(fileHash));
-            Tags = tags ?? throw new ArgumentNullException(nameof(tags));
-        }
+        public int VertexCount { get; set; }
+        public float Volume { get; set; }
+        public ConfigVector3 Size { get; set; }
         
-        [JsonConstructor, Preserve]
-        public PreviewInfo(
-            [NotNull] string itemName,
-            [NotNull] HashSet<string> tags)
-        {
-            ItemName = itemName ?? throw new ArgumentNullException(nameof(itemName));
-            Tags = tags ?? throw new ArgumentNullException(nameof(tags));
-        }
+        [DefaultValue(null)]
+        public ConfigVector3? Rotation { get; set; }
+        
+        [DefaultValue(null)]
+        public ConfigVector3? Scale { get; set; }
     }
 }

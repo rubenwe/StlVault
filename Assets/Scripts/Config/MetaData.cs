@@ -2,7 +2,7 @@
 
 namespace StlVault.Config
 {
-    internal class MetaData : Dictionary<string, PreviewInfo>
+    internal class MetaData : List<PreviewInfo>
     {
     }
 }

@@ -1,11 +1,11 @@
 using System;
+using System.ComponentModel;
 using System.Windows.Input;
-using StlVault.Util;
 using StlVault.Util.Commands;
 
 namespace StlVault.ViewModels
 {
-    internal class SuggestionModel : ModelBase
+    internal class SuggestionModel
     {
         public string Text { get; }
         public ICommand SelectSuggestionCommand { get; }

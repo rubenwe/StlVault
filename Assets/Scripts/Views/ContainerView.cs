@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using StlVault.Util;
 using StlVault.Util.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using NotifyCollectionChangedAction = System.Collections.Specialized.NotifyCollectionChangedAction;
 using NotifyCollectionChangedEventArgs = System.Collections.Specialized.NotifyCollectionChangedEventArgs;
 
@@ -14,9 +14,9 @@ using NotifyCollectionChangedEventArgs = System.Collections.Specialized.NotifyCo
 namespace StlVault.Views
 {
     internal abstract class ContainerView<TModel, TChildView, TChildModel> : ViewBase<TModel>
-        where TModel : class, INotifyPropertyChanged
+        where TModel : class
         where TChildView : ViewBase<TChildModel>
-        where TChildModel : class, INotifyPropertyChanged
+        where TChildModel : class
     {
         [SerializeField] private TChildView _itemPrefab;
         [SerializeField] protected Transform _itemsContainer;
@@ -38,6 +38,11 @@ namespace StlVault.Views
                 await AddNewItems(args.NewItems.OfType<TChildModel>().ToList(), token);
             else if (args.Action == NotifyCollectionChangedAction.Remove)
                 await RemoveOldItems(args.OldItems.OfType<TChildModel>().ToHashSet(), token);
+
+            if (_itemsContainer is RectTransform container)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(container);
+            }
         }
 
         private async Task AddNewItems(IReadOnlyList<TChildModel> newViewModels, CancellationToken token)
@@ -45,8 +50,13 @@ namespace StlVault.Views
             await newViewModels.ChunkedForEach(viewModel =>
             {
                 var view = Instantiate(_itemPrefab, _itemsContainer);
+                OnChildViewInstantiated(view);
                 view.BindTo(viewModel);
             }, token);
+        }
+
+        protected virtual void OnChildViewInstantiated(TChildView view)
+        {
         }
 
         private async Task RemoveOldItems(HashSet<TChildModel> oldViewModels, CancellationToken token)

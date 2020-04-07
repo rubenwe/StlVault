@@ -4,27 +4,28 @@ using System.Linq;
 using JetBrains.Annotations;
 using StlVault.Config;
 using StlVault.Util.Collections;
+using StlVault.ViewModels;
 
 namespace StlVault.Services
 {
-    internal sealed class PreviewList : ObservableList<PreviewInfo>, IPreviewList
+    internal sealed class PreviewList : ObservableList<ItemPreviewModel>, IPreviewList
     {
         [NotNull] private readonly Action<PreviewList> _disposeCallback;
-        [NotNull] private readonly Func<IReadOnlyCollection<PreviewInfo>, IReadOnlyCollection<PreviewInfo>> _filter;
+        [NotNull] private readonly Func<IReadOnlyCollection<ItemPreviewModel>, IReadOnlyCollection<ItemPreviewModel>> _filter;
 
-        public PreviewList([NotNull] Action<PreviewList> disposeCallback, [NotNull] Func<IReadOnlyCollection<PreviewInfo>, IReadOnlyCollection<PreviewInfo>> filter)
+        public PreviewList([NotNull] Action<PreviewList> disposeCallback, [NotNull] Func<IReadOnlyCollection<ItemPreviewModel>, IReadOnlyCollection<ItemPreviewModel>> filter)
         {
             _disposeCallback = disposeCallback ?? throw new ArgumentNullException(nameof(disposeCallback));
             _filter = filter ?? throw new ArgumentNullException(nameof(filter));
         }
 
-        public void AddFiltered(IReadOnlyCollection<PreviewInfo> previewInfos)
+        public void AddFiltered(IReadOnlyCollection<ItemPreviewModel> previewInfos)
         {
             var filtered = _filter.Invoke(previewInfos);
             AddRange(filtered);
         }
 
-        public void AddFiltered(PreviewInfo previewInfo)
+        public void AddFiltered(ItemPreviewModel previewInfo)
         {
             var array = new[] {previewInfo};
             var filtered = _filter.Invoke(array);
@@ -36,7 +37,7 @@ namespace StlVault.Services
             _disposeCallback.Invoke(this);
         }
 
-        public void RemoveRange(HashSet<PreviewInfo> itemsToRemove)
+        public void RemoveRange(HashSet<ItemPreviewModel> itemsToRemove)
         {
             using (EnterMassUpdate())
             {

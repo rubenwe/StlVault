@@ -25,12 +25,11 @@ namespace StlVault.Views
             _panel = transform.GetChild(0);
         }
 
-        protected override void OnViewModelPropertyChanged(string propertyName)
+        protected virtual void OnShownChanged(bool shown)
         {
-            if (propertyName != nameof(ViewModel.Shown)) return;
             _fade?.Kill();
 
-            if (ViewModel.Shown)
+            if (shown)
             {
                 _canvasGroup.blocksRaycasts = true;
                 gameObject.SetActive(true);
@@ -58,6 +57,7 @@ namespace StlVault.Views
             _panel.localScale = Vector3.zero;
 
             gameObject.SetActive(false);
+            ViewModel.Shown.ValueChanged += OnShownChanged;
         }
 
         private void Update()

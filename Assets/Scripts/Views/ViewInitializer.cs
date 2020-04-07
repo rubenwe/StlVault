@@ -1,11 +1,13 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using StlVault.Services;
 using StlVault.Util.Logging;
 using StlVault.Util.Messaging;
 using StlVault.ViewModels;
 using UnityEngine;
+using UnityEngine.UI;
 
 #pragma warning disable 0649
 
@@ -18,8 +20,11 @@ namespace StlVault.Views
         [SerializeField] private SavedSearchesView _savedSearchesView;
         [SerializeField] private CollectionsView _collectionsView;
 
-        [Category("Main Area")] 
-        [SerializeField] private SearchView _searchView;
+        [Category("Detail Menu")]
+        [SerializeField] private DetailMenu _detailMenu;
+        
+        [Category("Main Area")]
+        [SerializeField] private TagInputView _searchView;
         [SerializeField] private ItemsView _itemsView;
 
         [Category("Dialogs")] 
@@ -30,6 +35,9 @@ namespace StlVault.Views
         [Category("Misc")] 
         [SerializeField] private PreviewCam _previewBuilder;
         [SerializeField] private ApplicationView _applicationView;
+        [SerializeField] private ProgressView _progressView;
+        
+        private Library _library;
 
         private void Awake()
         {
@@ -45,18 +53,23 @@ namespace StlVault.Views
             IConfigStore configStore = new AppDataConfigStore();
             IPreviewImageStore previewStore = new AppDataPreviewImageStore();
             
-            var library = new Library(configStore, _previewBuilder, previewStore);
-            var factory = new ImportFolderFactory(library);
+            
+            _library = new Library(configStore, _previewBuilder, previewStore, relay);
+            var factory = new ImportFolderFactory(_library);
 
             // Main View
+            var progressModel = new ProgressModel();
             var applicationModel = new ApplicationModel(relay);
-            var searchViewModel = new SearchModel(library, relay);
-            var itemsViewModel = new ItemsModel(library, previewStore);
+            var searchViewModel = new SearchModel(_library, relay);
+            var itemsViewModel = new ItemsModel(_library, relay);
 
             // Main Menu
             var importFoldersViewModel = new ImportFoldersModel(configStore, factory, relay);
             var savedSearchesViewModel = new SavedSearchesModel(configStore, relay);
             var collectionsViewModel = new CollectionsModel(configStore, relay);
+
+            // Detail Menu
+            var detailMenuModel = new DetailMenuModel(_library);
 
             // Dialogs
             var addSavedSearchViewModel = new AddSavedSearchModel(relay);
@@ -69,18 +82,22 @@ namespace StlVault.Views
             // Also restores app settings for import etc.
             await applicationSettingsModel.InitializeAsync();
             
-            await library.InitializeAsync();
+            await _library.InitializeAsync();
             await InitializeViewModels();
 
             aggregator.Subscribe(
                 // Main View
+                progressModel,
                 searchViewModel,
                 itemsViewModel,
-
+                
                 // Main Menu
                 importFoldersViewModel,
                 savedSearchesViewModel,
                 collectionsViewModel,
+                
+                // DetailMenu
+                detailMenuModel,
 
                 // Dialogs
                 addSavedSearchViewModel,
@@ -91,7 +108,7 @@ namespace StlVault.Views
             {
                 var rt = applicationSettingsModel.RuntimeSettings;
 
-                rt.ImportParallelism.ValueChanged += factor => library.Parallelism = factor;
+                rt.ImportParallelism.ValueChanged += factor => _library.Parallelism = factor;
                 rt.LogLevel.ValueChanged += logLevel => UnityLogger.LogLevel = logLevel;
                 
                 rt.UiScalePercent.ValueChanged += factor =>
@@ -101,11 +118,23 @@ namespace StlVault.Views
                         canvas.scaleFactor = applicationSettingsModel.UiScalePercent / 125f;
                     }
                 };
+
+                rt.ScrollSensitivity.ValueChanged += sensitivity =>
+                {
+                    foreach (var area in FindObjectsOfType<ScrollRect>())
+                    {
+                        area.scrollSensitivity = sensitivity;
+                    }
+                };
+                
+                rt.PreviewResolution.ValueChanged += res => _previewBuilder.PreviewResolution.Value = Mathf.RoundToInt(Mathf.Pow(2f, res));
+                rt.PreviewJpegQuality.ValueChanged += quality => _previewBuilder.Quality = quality;
             }
 
             void BindViewModels()
             {
                 // Main View
+                _progressView.BindTo(progressModel);
                 _applicationView.BindTo(applicationModel);
                 _searchView.BindTo(searchViewModel);
                 _itemsView.BindTo(itemsViewModel);
@@ -115,6 +144,9 @@ namespace StlVault.Views
                 _savedSearchesView.BindTo(savedSearchesViewModel);
                 _collectionsView.BindTo(collectionsViewModel);
 
+                // Detail Menu
+                _detailMenu.BindTo(detailMenuModel);
+                
                 // Dialogs
                 _addImportFolderDialog.BindTo(addImportFolderViewModel);
                 _addSavedSearchDialog.BindTo(addSavedSearchViewModel);
@@ -129,5 +161,9 @@ namespace StlVault.Views
             }
         }
 
+        private async void OnApplicationQuit()
+        {
+            await _library.StoreChangesAsync();
+        }
     }
 }

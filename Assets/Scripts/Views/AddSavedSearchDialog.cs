@@ -21,20 +21,16 @@ namespace StlVault.Views
         protected override void OnViewModelBound()
         {
             base.OnViewModelBound();
-            _aliasField.onValueChanged.AddListener(text => ViewModel.Alias = text);
+            _aliasField.Bind(ViewModel.Alias);
         }
 
-        protected override void OnViewModelPropertyChanged(string propertyName)
+        protected override void OnShownChanged(bool shown)
         {
-            base.OnViewModelPropertyChanged(propertyName);
-            switch (propertyName)
+            base.OnShownChanged(shown);
+            
+            if (shown)
             {
-                case nameof(ViewModel.Alias):
-                    _aliasField.text = ViewModel.Alias;
-                    break;
-                case nameof(ViewModel.Shown) when ViewModel.Shown:
-                    _eventSystem.SetSelectedGameObject(_aliasField.gameObject, null);
-                    break;
+                _eventSystem.SetSelectedGameObject(_aliasField.gameObject, null);
             }
         }
     }

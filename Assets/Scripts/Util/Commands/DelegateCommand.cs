@@ -46,7 +46,11 @@ namespace StlVault.Util.Commands
         private readonly Action<T> _executeAction;
         private readonly Func<T, bool> _canExecuteFunc;
 
-        public DelegateCommand(Action<T> executeAction, Func<T, bool> canExecuteFunc = null)
+        public DelegateCommand(Action<T> executeAction) : this(null, executeAction)
+        {
+        }
+        
+        public DelegateCommand(Func<T, bool> canExecuteFunc, Action<T> executeAction)
         {
             _executeAction = executeAction ?? throw new ArgumentNullException(nameof(executeAction));
             _canExecuteFunc = canExecuteFunc;

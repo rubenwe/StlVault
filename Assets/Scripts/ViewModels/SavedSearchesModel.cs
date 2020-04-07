@@ -1,22 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using JetBrains.Annotations;
-using StlVault.AppModel.Messages;
 using StlVault.Config;
 using StlVault.Messages;
 using StlVault.Services;
-using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
 using StlVault.Util.Messaging;
 
 namespace StlVault.ViewModels
 {
-    internal class SavedSearchesModel : ModelBase,
-        IMessageReceiver<SearchChangedMessage>,
+    internal class SavedSearchesModel : IMessageReceiver<SearchChangedMessage>,
         IMessageReceiver<SaveSearchMessage>
     {
         private IReadOnlyList<string> _currentSearchTags;

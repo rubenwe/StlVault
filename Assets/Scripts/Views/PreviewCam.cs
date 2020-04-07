@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using StlVault.Services;
+using StlVault.Util;
 using StlVault.Util.Unity;
 using UnityEngine;
 
@@ -9,23 +10,41 @@ namespace StlVault.Views
 {
     internal class PreviewCam : MonoBehaviour, IPreviewBuilder
     {
+        public BindableProperty<int> PreviewResolution { get; } = new BindableProperty<int>();
+        public int Quality { get; set; }
+
         [SerializeField] private Camera _camera;
         [SerializeField] private MeshFilter _meshFilter;
-        [SerializeField] private int _previewResolution = 1024;
         [SerializeField] private int _scaleFactor = 8;
 
         private RenderTexture _renderTexture;
         private Texture2D _texture2D;
 
+        private void Awake()
+        {
+            PreviewResolution.ValueChanged += SetupTextures;
+        }
+
         private void Start()
         {
             _camera.aspect = 1.0f;
-            _renderTexture = new RenderTexture(_previewResolution, _previewResolution, 24);
-            _camera.targetTexture = _renderTexture;
-            _texture2D = new Texture2D(_previewResolution, _previewResolution, TextureFormat.RGB24, false);
         }
 
-        private byte[] GetSnapshot(Mesh mesh, Vector3? objRotation, int quality)
+        private void SetupTextures(int res)
+        {
+            if (_renderTexture != null)
+            {
+                _camera.targetTexture = null;
+                Destroy(_renderTexture);
+                Destroy(_texture2D);
+            }
+            
+            _renderTexture = new RenderTexture(res, res, 24);
+            _camera.targetTexture = _renderTexture;
+            _texture2D = new Texture2D(res, res, TextureFormat.RGB24, false);
+        }
+
+        private byte[] GetSnapshot(Mesh mesh, Vector3? objRotation)
         {
             if (objRotation != null)
             {
@@ -37,10 +56,10 @@ namespace StlVault.Views
             _camera.Render();
 
             RenderTexture.active = _renderTexture;
-            _texture2D.ReadPixels(new Rect(0, 0, _previewResolution, _previewResolution), 0, 0);
+            _texture2D.ReadPixels(new Rect(0, 0, _texture2D.width, _texture2D.height), 0, 0);
             RenderTexture.active = null;
 
-            return _texture2D.EncodeToJPG(quality);
+            return _texture2D.EncodeToJPG(Quality);
         }
 
         private static float Max(Vector3 size)
@@ -63,13 +82,13 @@ namespace StlVault.Views
             return max;
         }
 
-        public Task<byte[]> GetPreviewImageDataAsync(Mesh mesh, Vector3? objRotation)
+        public Task<(byte[] imageData, int resolution)> GetPreviewImageDataAsync(Mesh mesh, Vector3? objRotation)
         {
-            var tcs = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<(byte[], int)>(TaskCreationOptions.RunContinuationsAsynchronously);
             GuiCallbackQueue.Enqueue(() =>
             {
-                var data = GetSnapshot(mesh, objRotation, 70);
-                tcs.SetResult(data);
+                var data = GetSnapshot(mesh, objRotation);
+                tcs.SetResult((data, PreviewResolution.Value));
             });
 
             return tcs.Task;

@@ -20,11 +20,11 @@ This version is currently under development
 - [x] Allow to search for tagged items
 - [x] Save previous searches
 - [ ] User defined collections of items
-- [ ] Basic Operations (Single file + Batch)
-  - [ ] Allow editing of tags
-  - [ ] Non-Destructive Editing
+- [x] Basic Operations (Single file + Batch)
+  - [x] Allow editing of tags
+  - [x] Non-Destructive Editing
     - [ ] Scale (Resize)
-    - [ ] Rotate
+    - [x] Rotate
 - [ ] Export for printing
 
 ### Version 2.0 (Q2 2020)

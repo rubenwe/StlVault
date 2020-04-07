@@ -22,6 +22,17 @@ namespace StlVault.Views
             button.onClick.AddListener(command.Execute);
         }
 
+        public static void Bind<T>(this SimpleButton button, ICommand command, T param)
+        {
+            void OnChange(object sender, EventArgs args) => button.Enabled.Value = command.CanExecute(param);
+            void OnButtonOnClicked() => command.Execute(param);
+            
+            command.CanExecuteChanged += OnChange;
+            button.Enabled.Value = command.CanExecute(param);
+
+            button.Clicked += OnButtonOnClicked;
+        }
+
         public static void Bind<T>(this TMP_InputField inputField, BindableProperty<T> property)
         {
             property.ValueChanged += OnPropertyChanged;
@@ -32,18 +43,30 @@ namespace StlVault.Views
             void OnDisplayValueChanged(string newValue) => property.Value = (T) Convert.ChangeType(newValue, typeof(T));
         }
 
-        public static void Bind<T>(this TMP_Text text, BindableProperty<T> property)
+        public static void Bind<T>(this TMP_Text text, BindableProperty<T> property, string formatString = null)
         {
             property.ValueChanged += OnPropertyChanged;
             OnPropertyChanged(property);
 
-            void OnPropertyChanged(T newValue) => text.text = newValue?.ToString();
+            void OnPropertyChanged(T newValue) => text.text = formatString != null 
+                ? string.Format(formatString, newValue)
+                : newValue?.ToString();
+        }
+        
+        public static void Bind<T>(this TMP_Text text, BindableProperty<T> property, Func<T, object> compute, string formatString = null)
+        {
+            property.ValueChanged += OnPropertyChanged;
+            OnPropertyChanged(property);
+
+            void OnPropertyChanged(T newValue) => text.text = formatString != null 
+                ? string.Format(formatString, compute(newValue))
+                : compute(newValue)?.ToString();
         }
 
         public static void Bind(
             this (TMP_InputField x, TMP_InputField y, TMP_InputField z) fields,
             BindableProperty<Vector3> property,
-            string format = "F0")
+            string formatString = "F0")
         {
             var (x, y, z) = fields;
 
@@ -57,9 +80,9 @@ namespace StlVault.Views
 
             void OnPropertyChanged(Vector3 newValue)
             {
-                x.text = newValue.x.ToString(format, CultureInfo.InvariantCulture);
-                y.text = newValue.y.ToString(format, CultureInfo.InvariantCulture);
-                z.text = newValue.z.ToString(format, CultureInfo.InvariantCulture);
+                x.text = newValue.x.ToString(formatString, CultureInfo.InvariantCulture);
+                y.text = newValue.y.ToString(formatString, CultureInfo.InvariantCulture);
+                z.text = newValue.z.ToString(formatString, CultureInfo.InvariantCulture);
             }
 
             void OnDisplayValueChanged(string newValue)

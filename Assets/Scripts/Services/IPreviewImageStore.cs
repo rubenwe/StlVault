@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using StlVault.Config;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace StlVault.Services
 {

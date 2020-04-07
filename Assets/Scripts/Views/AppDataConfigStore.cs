@@ -1,6 +1,9 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using Ionic.Zip;
+using Ionic.Zlib;
 using Newtonsoft.Json;
 using StlVault.Services;
 using StlVault.Util.Logging;
@@ -10,7 +13,11 @@ namespace StlVault.Views
     internal class AppDataConfigStore : IConfigStore
     {
         private static readonly ILogger Logger = UnityLogger.Instance;
-        
+
+        private static readonly JsonSerializerSettings JsonSerializerSettings 
+            = new JsonSerializerSettings {DefaultValueHandling = DefaultValueHandling.Ignore};
+
+        // ReSharper disable once UnusedTypeParameter
         private static class Lock<T>
         {
             // ReSharper disable once StaticMemberInGenericType
@@ -28,7 +35,21 @@ namespace StlVault.Views
                     string text;
                     lock (Lock<T>.SyncRoot)
                     {
-                        text = File.ReadAllText(jsonFileName);
+                        try
+                        {
+                            text = File.ReadAllText(jsonFileName);
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            var zipName = Path.ChangeExtension(jsonFileName, "zip");
+                            var innerName = Path.GetFileName(jsonFileName);
+                            using (var zipFile = ZipFile.Read(zipName))
+                            {
+                                var ms = new MemoryStream();
+                                zipFile[innerName].Extract(ms);
+                                text = Encoding.UTF8.GetString(ms.GetBuffer());
+                            }
+                        }
                     }
                 
                     return JsonConvert.DeserializeObject<T>(text);
@@ -48,7 +69,7 @@ namespace StlVault.Views
             return Path.Combine(appData, "StlVault", "Config", typeName + ".json");
         }
 
-        public Task StoreAsync<T>(T config)
+        public Task StoreAsync<T>(T config, bool compress = false)
         {
             var jsonFileName = GetFileNameForConfig<T>();
 
@@ -58,10 +79,25 @@ namespace StlVault.Views
                 {
                     var dir = Path.GetDirectoryName(jsonFileName) ?? Throw();
                     Directory.CreateDirectory(dir);
-                    var json = JsonConvert.SerializeObject(config, Formatting.Indented);
+                    var json = JsonConvert.SerializeObject(config, Formatting.Indented, JsonSerializerSettings);
                     lock (Lock<T>.SyncRoot)
                     {
-                        File.WriteAllText(jsonFileName, json);
+                        if (!compress)
+                        {
+                            File.WriteAllText(jsonFileName, json);
+                        }
+                        else
+                        {
+                            var zipName = Path.ChangeExtension(jsonFileName, "zip");
+                            var innerName = Path.GetFileName(jsonFileName);
+                            using (var file = new ZipFile(Encoding.UTF8))
+                            {
+                                file.CompressionLevel = CompressionLevel.BestCompression;
+                                file.CompressionMethod = CompressionMethod.BZip2;
+                                file.AddEntry(innerName, json);
+                                file.Save(zipName);
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)

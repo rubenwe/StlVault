@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using StlVault.Messages;
+using StlVault.Util;
 using StlVault.Util.Messaging;
 
 namespace StlVault.ViewModels
@@ -7,19 +8,14 @@ namespace StlVault.ViewModels
     internal class AddSavedSearchModel : DialogModelBase<RequestShowSaveSearchDialogMessage>
     {
         private readonly IMessageRelay _relay;
-        private string _alias;
         private IReadOnlyList<string> _searchTags;
 
-        public string Alias
+        public BindableProperty<string> Alias { get; } = new BindableProperty<string>();
+        public AddSavedSearchModel(IMessageRelay relay)
         {
-            get => _alias;
-            set
-            {
-                if (SetValueAndNotify(ref _alias, value)) CanAcceptChanged();
-            }
+            _relay = relay;
+            Alias.ValueChanged += alias => CanAcceptChanged();
         }
-
-        public AddSavedSearchModel(IMessageRelay relay) => _relay = relay;
 
         protected override bool CanAccept() => !string.IsNullOrWhiteSpace(Alias);
 
@@ -34,7 +30,7 @@ namespace StlVault.ViewModels
 
         protected override void Reset()
         {
-            Alias = string.Empty;
+            Alias.Value = string.Empty;
             _searchTags = null;
         }
 

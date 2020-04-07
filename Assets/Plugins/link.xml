@@ -1,0 +1,4 @@
+<linker>
+    <assembly fullname="I18N" preserve="all"/>
+    <assembly fullname="I18N.West" preserve="all"/>
+</linker>

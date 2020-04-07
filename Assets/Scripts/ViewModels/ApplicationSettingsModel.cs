@@ -15,6 +15,9 @@ namespace StlVault.ViewModels
         public BindableProperty<ushort> UiScalePercent { get; } = new BindableProperty<ushort>();
         public BindableProperty<ushort> ImportParallelism { get; } = new BindableProperty<ushort>();
         public BindableProperty<LogLevel> LogLevel { get; } = new BindableProperty<LogLevel>();
+        public BindableProperty<ushort> PreviewResolution { get; } = new BindableProperty<ushort>();
+        public BindableProperty<ushort> PreviewJpegQuality { get; } = new BindableProperty<ushort>();
+        public BindableProperty<ushort> ScrollSensitivity { get; } = new BindableProperty<ushort>();
 
         public ApplicationSettingsModel(IConfigStore store = null)
         {
@@ -51,7 +54,10 @@ namespace StlVault.ViewModels
             {
                 ImportParallelism = ImportParallelism,
                 LogLevel = LogLevel,
-                UiScalePercent = UiScalePercent
+                UiScalePercent = UiScalePercent,
+                PreviewResolution = PreviewResolution,
+                PreviewJpegQuality = PreviewJpegQuality,
+                ScrollSensitivity = ScrollSensitivity
             };
         }
 
@@ -60,6 +66,9 @@ namespace StlVault.ViewModels
             ImportParallelism.Value = settings.ImportParallelism;
             LogLevel.Value = settings.LogLevel;
             UiScalePercent.Value = settings.UiScalePercent;
+            PreviewResolution.Value = settings.PreviewResolution;
+            PreviewJpegQuality.Value = settings.PreviewJpegQuality;
+            ScrollSensitivity.Value = settings.ScrollSensitivity;
         }
     }
 }

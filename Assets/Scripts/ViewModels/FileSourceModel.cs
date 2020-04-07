@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Windows.Input;
 using JetBrains.Annotations;
 using StlVault.Services;
@@ -7,7 +8,7 @@ using StlVault.Util.Commands;
 
 namespace StlVault.ViewModels
 {
-    internal class FileSourceModel : ModelBase
+    internal class FileSourceModel 
     {
         public BindableProperty<string> Path { get; } = new BindableProperty<string>();
 

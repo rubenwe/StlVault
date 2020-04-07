@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows.Input;
 using StlVault.Util;
 using StlVault.Util.Commands;
@@ -5,20 +6,14 @@ using StlVault.Util.Messaging;
 
 namespace StlVault.ViewModels
 {
-    internal abstract class DialogModelBase<TShowMessage> : ModelBase, IDialogModel, IMessageReceiver<TShowMessage>
+    internal abstract class DialogModelBase<TShowMessage> : IDialogModel, IMessageReceiver<TShowMessage>
     {
-        private bool _shown;
-
-        public bool Shown
-        {
-            get => _shown;
-            private set => SetValueAndNotify(ref _shown, value);
-        }
+        public BindableProperty<bool> Shown { get; } = new BindableProperty<bool>();
 
         public ICommand AcceptCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public DialogModelBase()
+        protected DialogModelBase()
         {
             AcceptCommand = new DelegateCommand(CanAccept, Accept);
             CancelCommand = new DelegateCommand(CanCancel, Cancel);
@@ -31,7 +26,7 @@ namespace StlVault.ViewModels
         private void Accept()
         {
             OnAccept();
-            Shown = false;
+            Shown.Value = false;
             Reset();
         }
 
@@ -45,7 +40,7 @@ namespace StlVault.ViewModels
         private void Cancel()
         {
             OnCancel();
-            Shown = false;
+            Shown.Value = false;
             Reset();
         }
 
@@ -59,7 +54,7 @@ namespace StlVault.ViewModels
         {
             Reset();
             OnShown(message);
-            Shown = true;
+            Shown.Value = true;
         }
 
         protected abstract void Reset();
