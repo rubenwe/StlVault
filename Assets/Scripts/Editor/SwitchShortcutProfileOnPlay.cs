@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.ShortcutManagement;
@@ -78,3 +80,5 @@ namespace StlVault.Editor
         }
     }
 }
+
+#endif
