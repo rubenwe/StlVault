@@ -59,16 +59,14 @@ namespace StlVault.Services
             return previewList;
         }
 
-        public async Task AddTagAsync(IEnumerable<string> hashes, string tag)
+        public void AddTag(IEnumerable<string> hashes, string tag)
         {
             UpdateTags(TagAction.Add, hashes, tag);
-            await StoreChangesAsync();
         }
 
-        public async Task RemoveTagAsync(IEnumerable<string> hashes, string tag)
+        public void RemoveTag(IEnumerable<string> hashes, string tag)
         {
             UpdateTags(TagAction.Remove, hashes, tag);
-            await StoreChangesAsync();
         }
 
         public async Task RotateAsync(ItemPreviewModel previewModel, Vector3 newRotation)
@@ -88,10 +86,9 @@ namespace StlVault.Services
             {
                 previewModel.PreviewResolution = resolution;
                 previewModel.GeometryInfo.Value = geoInfo;
-                previewModel.OnPreviewChanged();
             });
-
-            await StoreChangesAsync();
+            
+            previewModel.OnPreviewChanged();
         }
 
         private enum TagAction
@@ -126,7 +123,9 @@ namespace StlVault.Services
         [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
         public async Task InitializeAsync()
         {
-            var metaData = await _configStore.LoadAsyncOrDefault<MetaData>();
+            var metaData = await _configStore.LoadAsyncOrDefault<MetaData>()
+                .Timed("Loading metadata file");
+            
             _trie.Insert(metaData.SelectMany(info => info.Tags).ToList());
             _previewModels.Initialize(metaData);
         }
@@ -166,7 +165,6 @@ namespace StlVault.Services
             });
 
             await ImportBatched(source, itemsForImport);
-            await StoreChangesAsync();
         }
 
         private async Task ImportBatched(IFileSource source, List<IFileInfo> itemsForImport)
@@ -203,14 +201,13 @@ namespace StlVault.Services
                 ItemName = Path.GetFileName(file.Path),
                 FileHash = hash,
                 Tags = tags.ToHashSet(),
-                GeometryInfo = geoInfo,
                 Resolution = resolution
             };
 
             WriteLocked(() =>
             {
                 _trie.Insert(tags);
-                var model = _previewModels.AddOrUpdate(source, file, previewInfo);
+                var model = _previewModels.AddOrUpdate(source, file, previewInfo, geoInfo);
                 _previewStreams.ForEach(stream => stream.AddFiltered(model));
             });
         }
@@ -244,7 +241,7 @@ namespace StlVault.Services
         }
 
 
-        public async Task OnItemsRemovedAsync(IFileSource source, IReadOnlyCollection<string> removedItems)
+        public void OnItemsRemoved(IFileSource source, IReadOnlyCollection<string> removedItems)
         {
             WriteLocked(() =>
             {
@@ -257,11 +254,9 @@ namespace StlVault.Services
 
                 _previewStreams.ForEach(stream => stream.RemoveRange(itemsToRemove));
             });
-
-            await StoreChangesAsync();
         }
 
-        private async Task StoreChangesAsync()
+        public async Task StoreChangesAsync()
         {
             await Task.Run(() =>
             {
@@ -269,7 +264,10 @@ namespace StlVault.Services
                 {
                     _lock.EnterReadLock();
                     var metaData = _previewModels.GetMetaData();
-                    _configStore.StoreAsync(metaData).Wait();;
+                    
+                    _configStore.StoreAsync(metaData, true)
+                        .Timed("Writing metadata file")
+                        .Wait();
                 }
                 finally
                 {

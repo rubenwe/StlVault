@@ -103,7 +103,7 @@ namespace StlVault.Services
                     }
                 });
 
-                if (removeFiles.Any()) await Subscriber.OnItemsRemovedAsync(this, removeFiles);
+                if (removeFiles.Any()) Subscriber.OnItemsRemoved(this, removeFiles);
                 if (importFiles.Any()) await Subscriber.OnItemsAddedAsync(this, importFiles);
             }
             catch (Exception ex)
@@ -156,9 +156,9 @@ namespace StlVault.Services
             _watcher?.Dispose();
         }
 
-        public async Task OnDeletedAsync()
+        public void OnDeleted()
         {
-            await Subscriber.OnItemsRemovedAsync(this, _knownFiles.Keys.ToList());
+            Subscriber.OnItemsRemoved(this, _knownFiles.Keys.ToList());
             Dispose();
         }
     }

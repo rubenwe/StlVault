@@ -9,6 +9,7 @@ using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.FileSystem;
 using StlVault.Util.Messaging;
+using UnityEngine;
 
 namespace StlVault.ViewModels
 {
@@ -42,7 +43,17 @@ namespace StlVault.ViewModels
 
           Name = previewInfo.ItemName;
           FileHash = previewInfo.FileHash;
-          GeometryInfo.Value = previewInfo.GeometryInfo;
+          
+          GeometryInfo.Value = new GeometryInfo
+          {
+              Rotation = previewInfo.Rotation ?? Vector3.zero,
+              Scale = previewInfo.Scale ?? Vector3.one,
+              Size = previewInfo.Size,
+              Volume = previewInfo.Volume,
+              TriangleCount = previewInfo.VertexCount / 3,
+              VertexCount = previewInfo.VertexCount
+          };
+
           Tags.AddRange(previewInfo.Tags);
           Sources = previewInfo.Sources?.ToList() ?? new List<ImportedFileInfo>();
           PreviewResolution = previewInfo.Resolution;

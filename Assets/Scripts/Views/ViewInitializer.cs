@@ -33,6 +33,8 @@ namespace StlVault.Views
         [Category("Misc")] 
         [SerializeField] private PreviewCam _previewBuilder;
         [SerializeField] private ApplicationView _applicationView;
+        
+        private Library _library;
 
         private void Awake()
         {
@@ -49,13 +51,13 @@ namespace StlVault.Views
             IPreviewImageStore previewStore = new AppDataPreviewImageStore();
             
             
-            var library = new Library(configStore, _previewBuilder, previewStore, relay);
-            var factory = new ImportFolderFactory(library);
+            _library = new Library(configStore, _previewBuilder, previewStore, relay);
+            var factory = new ImportFolderFactory(_library);
 
             // Main View
             var applicationModel = new ApplicationModel(relay);
-            var searchViewModel = new SearchModel(library, relay);
-            var itemsViewModel = new ItemsModel(library, relay);
+            var searchViewModel = new SearchModel(_library, relay);
+            var itemsViewModel = new ItemsModel(_library, relay);
 
             // Main Menu
             var importFoldersViewModel = new ImportFoldersModel(configStore, factory, relay);
@@ -63,7 +65,7 @@ namespace StlVault.Views
             var collectionsViewModel = new CollectionsModel(configStore, relay);
 
             // Detail Menu
-            var detailMenuModel = new DetailMenuModel(library);
+            var detailMenuModel = new DetailMenuModel(_library);
 
             // Dialogs
             var addSavedSearchViewModel = new AddSavedSearchModel(relay);
@@ -76,7 +78,7 @@ namespace StlVault.Views
             // Also restores app settings for import etc.
             await applicationSettingsModel.InitializeAsync();
             
-            await library.InitializeAsync();
+            await _library.InitializeAsync();
             await InitializeViewModels();
 
             aggregator.Subscribe(
@@ -101,7 +103,7 @@ namespace StlVault.Views
             {
                 var rt = applicationSettingsModel.RuntimeSettings;
 
-                rt.ImportParallelism.ValueChanged += factor => library.Parallelism = factor;
+                rt.ImportParallelism.ValueChanged += factor => _library.Parallelism = factor;
                 rt.LogLevel.ValueChanged += logLevel => UnityLogger.LogLevel = logLevel;
                 
                 rt.UiScalePercent.ValueChanged += factor =>
@@ -145,5 +147,9 @@ namespace StlVault.Views
             }
         }
 
+        private async void OnApplicationQuit()
+        {
+            await _library.StoreChangesAsync();
+        }
     }
 }

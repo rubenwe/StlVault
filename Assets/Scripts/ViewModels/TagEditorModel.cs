@@ -86,7 +86,7 @@ namespace StlVault.ViewModels
             : _detailMenu.Selection.Select(pi => pi.FileHash);
 
         protected override bool CanPinCurrentInput() => _detailMenu.AnythingSelected.Value;
-        protected override void OnTagAdded(string tag) => _library.AddTagAsync(Hashes, tag);
-        protected override void OnTagRemoved(string tag) => _library.RemoveTagAsync(Hashes, tag);
+        protected override void OnTagAdded(string tag) => _library.AddTag(Hashes, tag);
+        protected override void OnTagRemoved(string tag) => _library.RemoveTag(Hashes, tag);
     }
 }

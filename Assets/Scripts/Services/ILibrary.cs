@@ -13,8 +13,8 @@ namespace StlVault.Services
     {
         IPreviewList GetItemPreviewMetadata(IReadOnlyList<string> filters);
 
-        Task AddTagAsync(IEnumerable<string> hashes, string tag);
-        Task RemoveTagAsync(IEnumerable<string> hashes, string tag);
+        void AddTag(IEnumerable<string> hashes, string tag);
+        void RemoveTag(IEnumerable<string> hashes, string tag);
         Task RotateAsync(ItemPreviewModel previewModel, Vector3 newRotation);
     }
 }

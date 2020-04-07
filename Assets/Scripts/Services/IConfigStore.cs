@@ -5,6 +5,6 @@ namespace StlVault.Services
     internal interface IConfigStore
     {
         Task<T> LoadAsyncOrDefault<T>() where T : class, new();
-        Task StoreAsync<T>(T config);
+        Task StoreAsync<T>(T config, bool compress = false);
     }
 }

@@ -113,8 +113,8 @@ namespace StlVault.ViewModels
                 var importFolder = (ImportFolder) model.FileSource;
 
                 currentFolders.Remove(importFolder);
+                importFolder.OnDeleted();
                 
-                await importFolder.OnDeletedAsync();
                 await SaveAndRefreshAsync(currentFolders);
             }
         }

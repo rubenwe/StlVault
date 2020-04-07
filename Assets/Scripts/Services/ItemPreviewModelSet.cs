@@ -10,6 +10,7 @@ using StlVault.Util.Collections;
 using StlVault.Util.FileSystem;
 using StlVault.Util.Messaging;
 using StlVault.ViewModels;
+using UnityEngine;
 using NotifyCollectionChangedEventHandler = System.Collections.Specialized.NotifyCollectionChangedEventHandler;
 
 namespace StlVault.Services
@@ -54,12 +55,14 @@ namespace StlVault.Services
                 .ToDictionary(info => info.FilePath);
         }
 
-        public ItemPreviewModel AddOrUpdate(IFileSource source, IFileInfo file, PreviewInfo info)
+        public ItemPreviewModel AddOrUpdate(IFileSource source, IFileInfo file, PreviewInfo info, GeometryInfo geoInfo)
         {
             var hash = info.FileHash;
             if (!_modelsByHash.TryGetValue(hash, out var model))
             {
                 model = _modelsByHash[hash] = new ItemPreviewModel(_store, _relay, info);
+                model.GeometryInfo.Value = geoInfo;
+                
                 _models.Add(model);
             }
 
@@ -72,7 +75,10 @@ namespace StlVault.Services
         public ItemPreviewModel RemoveOrUpdate(IFileSource source, string relativePath)
         {
             _sources[source.DisplayName] = source;
-            bool IsFile(ImportedFileInfo info) => info.FilePath == relativePath && info.SourceId == source.DisplayName;
+            bool IsFile(ImportedFileInfo info)
+            {
+                return info.FilePath == relativePath && info.SourceId == source.DisplayName;
+            }
 
             foreach (var model in _models)
             {
@@ -99,7 +105,18 @@ namespace StlVault.Services
                     Sources = model.Sources.ToList(),
                     Tags = model.Tags.ToHashSet(),
                     FileHash = model.FileHash,
-                    GeometryInfo = model.GeometryInfo
+                    Resolution = model.PreviewResolution,
+                    
+                    Volume = model.GeometryInfo.Value.Volume,
+                    Size = model.GeometryInfo.Value.Size,
+                    VertexCount = model.GeometryInfo.Value.VertexCount,
+                    
+                    Rotation = model.GeometryInfo.Value.Rotation == Vector3.zero 
+                        ? (ConfigVector3?) null 
+                        : model.GeometryInfo.Value.Rotation,
+                    Scale = model.GeometryInfo.Value.Scale == Vector3.one 
+                        ? (ConfigVector3?) null 
+                        : model.GeometryInfo.Value.Scale
                 }));
 
             return metaData;
