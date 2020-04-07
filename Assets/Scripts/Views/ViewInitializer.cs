@@ -1,11 +1,13 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using StlVault.Services;
 using StlVault.Util.Logging;
 using StlVault.Util.Messaging;
 using StlVault.ViewModels;
 using UnityEngine;
+using UnityEngine.UI;
 
 #pragma warning disable 0649
 
@@ -114,6 +116,14 @@ namespace StlVault.Views
                     foreach (var canvas in FindObjectsOfType<Canvas>())
                     {
                         canvas.scaleFactor = applicationSettingsModel.UiScalePercent / 125f;
+                    }
+                };
+
+                rt.ScrollSensitivity.ValueChanged += sensitivity =>
+                {
+                    foreach (var area in FindObjectsOfType<ScrollRect>())
+                    {
+                        area.scrollSensitivity = sensitivity;
                     }
                 };
                 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using StlVault.Config;
 using StlVault.Messages;
 using StlVault.Services;
@@ -18,6 +17,7 @@ namespace StlVault.ViewModels
         public BindableProperty<LogLevel> LogLevel { get; } = new BindableProperty<LogLevel>();
         public BindableProperty<ushort> PreviewResolution { get; } = new BindableProperty<ushort>();
         public BindableProperty<ushort> PreviewJpegQuality { get; } = new BindableProperty<ushort>();
+        public BindableProperty<ushort> ScrollSensitivity { get; } = new BindableProperty<ushort>();
 
         public ApplicationSettingsModel(IConfigStore store = null)
         {
@@ -56,7 +56,8 @@ namespace StlVault.ViewModels
                 LogLevel = LogLevel,
                 UiScalePercent = UiScalePercent,
                 PreviewResolution = PreviewResolution,
-                PreviewJpegQuality = PreviewJpegQuality
+                PreviewJpegQuality = PreviewJpegQuality,
+                ScrollSensitivity = ScrollSensitivity
             };
         }
 
@@ -67,6 +68,7 @@ namespace StlVault.ViewModels
             UiScalePercent.Value = settings.UiScalePercent;
             PreviewResolution.Value = settings.PreviewResolution;
             PreviewJpegQuality.Value = settings.PreviewJpegQuality;
+            ScrollSensitivity.Value = settings.ScrollSensitivity;
         }
     }
 }
