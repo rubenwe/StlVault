@@ -62,7 +62,7 @@ namespace StlVault.ViewModels
             _ = folder.InitializeAsync();
             
             // Switch to added folder
-            _relay.Send(this, new SearchChangedMessage {SearchTags = new[] {"Folder: " + newConfig.FullPath}});
+            _relay.Send(this, new SearchChangedMessage {SearchTags = new[] {"folder: " + newConfig.FullPath.ToLowerInvariant()}});
         }
 
         public async Task InitializeAsync()
