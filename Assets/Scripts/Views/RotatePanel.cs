@@ -2,6 +2,8 @@
 using StlVault.ViewModels;
 using UnityEngine;
 
+#pragma warning disable 0649
+
 namespace StlVault.Views
 {
     internal class RotatePanel : ViewBase<RotateModel>
