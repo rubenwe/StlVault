@@ -1,12 +1,10 @@
 using System;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using Ionic.Zip;
-using Ionic.Zlib;
 using Newtonsoft.Json;
 using StlVault.Services;
 using StlVault.Util.Logging;
+using System.IO.Compression;
 
 namespace StlVault.Views
 {
@@ -43,11 +41,10 @@ namespace StlVault.Views
                         {
                             var zipName = Path.ChangeExtension(jsonFileName, "zip");
                             var innerName = Path.GetFileName(jsonFileName);
-                            using (var zipFile = ZipFile.Read(zipName))
+                            using (var zipFile = ZipFile.OpenRead(zipName))
+                            using (var reader = new StreamReader(zipFile.GetEntry(innerName).Open()))
                             {
-                                var ms = new MemoryStream();
-                                zipFile[innerName].Extract(ms);
-                                text = Encoding.UTF8.GetString(ms.GetBuffer());
+                                text = reader.ReadToEnd();
                             }
                         }
                     }
@@ -90,12 +87,11 @@ namespace StlVault.Views
                         {
                             var zipName = Path.ChangeExtension(jsonFileName, "zip");
                             var innerName = Path.GetFileName(jsonFileName);
-                            using (var file = new ZipFile(Encoding.UTF8))
+                            if(File.Exists(zipName)) File.Delete(zipName);
+                            using (var file = ZipFile.Open(zipName, ZipArchiveMode.Create))
+                            using (var writer = new StreamWriter(file.CreateEntry(innerName).Open()))
                             {
-                                file.CompressionLevel = CompressionLevel.BestCompression;
-                                file.CompressionMethod = CompressionMethod.BZip2;
-                                file.AddEntry(innerName, json);
-                                file.Save(zipName);
+                                writer.Write(json);
                             }
                         }
                     }
