@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Linq;
 using System.Windows.Input;
 using JetBrains.Annotations;
@@ -62,14 +62,15 @@ namespace StlVault.ViewModels
 
         private static Vector3 GetRotation(Vector3 current, Rotation rotation)
         {
+            var cur = Quaternion.Euler(current);
             switch (rotation)
             {
-                case Rotation.XClockwise: return current + new Vector3(90, 0, 0);
-                case Rotation.XCounterClockwise: return current - new Vector3(90, 0, 0);
-                case Rotation.YClockwise: return current + new Vector3(0, 0, 90);
-                case Rotation.YCounterClockwise:return current - new Vector3(0, 0, 90);
-                case Rotation.ZClockwise:return current + new Vector3(0, 90, 0);
-                case Rotation.ZCounterClockwise:return current - new Vector3(0, 90, 0);
+                case Rotation.XClockwise:        return (Quaternion.AngleAxis(+90, Vector3.right)   * cur).eulerAngles;
+                case Rotation.XCounterClockwise: return (Quaternion.AngleAxis(-90, Vector3.right)   * cur).eulerAngles;
+                case Rotation.YClockwise:        return (Quaternion.AngleAxis(+90, Vector3.up)      * cur).eulerAngles;
+                case Rotation.YCounterClockwise: return (Quaternion.AngleAxis(-90, Vector3.up)      * cur).eulerAngles;
+                case Rotation.ZClockwise:        return (Quaternion.AngleAxis(+90, Vector3.forward) * cur).eulerAngles;
+                case Rotation.ZCounterClockwise: return (Quaternion.AngleAxis(-90, Vector3.forward) * cur).eulerAngles;
             }
 
             return current;

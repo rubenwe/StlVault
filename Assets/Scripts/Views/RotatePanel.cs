@@ -1,29 +1,28 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using StlVault.Util.Unity;
+﻿using StlVault.Util.Unity;
 using StlVault.ViewModels;
+using UnityEngine;
 
 namespace StlVault.Views
 {
     internal class RotatePanel : ViewBase<RotateModel>
     {
-        private List<SimpleButton> _buttons;
-
-        private void Awake()
-        {
-            _buttons = GetComponentsInChildren<SimpleButton>().ToList();
-        }
+        [SerializeField] private SimpleButton _xClockwise;
+        [SerializeField] private SimpleButton _xCounterClockwise;
+        [SerializeField] private SimpleButton _yClockwise;
+        [SerializeField] private SimpleButton _yCounterClockwise;
+        [SerializeField] private SimpleButton _zClockwise;
+        [SerializeField] private SimpleButton _zCounterClockwise;
 
         protected override void OnViewModelBound()
         {
             base.OnViewModelBound();
 
-            _buttons[0].Bind(ViewModel.RotateCommand, Rotation.XClockwise);
-            _buttons[1].Bind(ViewModel.RotateCommand, Rotation.XCounterClockwise);
-            _buttons[2].Bind(ViewModel.RotateCommand, Rotation.ZClockwise);
-            _buttons[3].Bind(ViewModel.RotateCommand, Rotation.ZCounterClockwise);
-            _buttons[4].Bind(ViewModel.RotateCommand, Rotation.YClockwise);
-            _buttons[5].Bind(ViewModel.RotateCommand, Rotation.YCounterClockwise);
+            _xClockwise.Bind(ViewModel.RotateCommand, Rotation.XClockwise);
+            _xCounterClockwise.Bind(ViewModel.RotateCommand, Rotation.XCounterClockwise);
+            _zClockwise.Bind(ViewModel.RotateCommand, Rotation.ZClockwise);
+            _zCounterClockwise.Bind(ViewModel.RotateCommand, Rotation.ZCounterClockwise);
+            _yClockwise.Bind(ViewModel.RotateCommand, Rotation.YClockwise);
+            _yCounterClockwise.Bind(ViewModel.RotateCommand, Rotation.YCounterClockwise);
         }
     }
 }

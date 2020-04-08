@@ -51,6 +51,14 @@ namespace StlVault.Views
             Application.wantsToQuit += OnQuitRequested;
         }
 
+        #if UNITY_EDITOR
+        private async void OnDestroy()
+        {
+            await _library.StoreChangesAsync();
+            Debug.Log("Saved");
+        }
+        #endif
+
         private bool OnQuitRequested()
         {
             Application.wantsToQuit -= OnQuitRequested;
@@ -186,5 +194,7 @@ namespace StlVault.Views
                 await collectionsViewModel.Initialize();
             }
         }
+        
+        
     }
 }
