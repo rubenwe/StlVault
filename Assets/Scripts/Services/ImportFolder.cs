@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using JetBrains.Annotations;
 using StlVault.Config;
 using StlVault.Util;
@@ -13,7 +10,6 @@ using StlVault.Util.FileSystem;
 using StlVault.Util.Logging;
 using static StlVault.Constants;
 using static StlVault.Services.FileSourceState;
-using Timer = System.Timers.Timer;
 
 namespace StlVault.Services
 {
@@ -22,8 +18,8 @@ namespace StlVault.Services
     {
         private readonly Dictionary<string, IFileInfo> _knownFiles = new Dictionary<string, IFileInfo>();
         
-        [CanBeNull] private IFolderWatcher _watcher;
-        [NotNull] private readonly Timer _timer;
+        // [CanBeNull] private IFolderWatcher _watcher;
+        // [NotNull] private readonly Timer _timer;
         [NotNull] private readonly IFileSystem _fileSystem;
         [NotNull] private readonly ImportFolderConfig _config;
         [NotNull] public override FileSourceConfig Config => _config;
@@ -36,14 +32,14 @@ namespace StlVault.Services
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 
-            _timer = new Timer(500) {AutoReset = false, Enabled = false};
-            _timer.Elapsed += TimerOnElapsed;
+            // _timer = new Timer(500) {AutoReset = false, Enabled = false};
+            // _timer.Elapsed += TimerOnElapsed;
         }
 
         public override async Task InitializeAsync()
         {
             await RescanItemsAsync();
-            await InitializeWatcherAsync();
+            // await InitializeWatcherAsync();
         }
 
         public override Task<byte[]> GetFileBytesAsync(string resourcePath)
@@ -115,47 +111,52 @@ namespace StlVault.Services
             _rescanRunning = false;
         }
         
-        private async Task InitializeWatcherAsync()
-        {
-            if (_watcher == null)
-            {
-                await Task.Run(() =>
-                {
-                    _watcher = _fileSystem.CreateWatcher(SupportedFilePattern, _config.ScanSubDirectories);
-                    _watcher.FileAdded += WatcherOnFileAdded;
-                    _watcher.FileRemoved += WatcherOnFileRemoved;
-                });
-            }
-        }
+        // private async Task InitializeWatcherAsync()
+        // {
+        //     if (_watcher == null)
+        //     {
+        //         await Task.Run(() =>
+        //         {
+        //             _watcher = _fileSystem.CreateWatcher(SupportedFilePattern, _config.ScanSubDirectories);
+        //             _watcher.FileAdded += WatcherOnFileAdded;
+        //             _watcher.FileRemoved += WatcherOnFileRemoved;
+        //         });
+        //     }
+        // }
 
-        private void WatcherOnFileRemoved(object sender, string e) => ResetTimer();
-        private void WatcherOnFileAdded(object sender, string e) => ResetTimer();
+        // private void WatcherOnFileRemoved(object sender, string e) => ResetTimer();
+        // private void WatcherOnFileAdded(object sender, string e) => ResetTimer();
 
-        private async void TimerOnElapsed(object sender, ElapsedEventArgs e)
-        {
-            while (_rescanRunning)
-            {
-                await Task.Delay(200);
-            }
-            
-            await Task.Run(RescanItemsAsync);
-        }
+        // private async void TimerOnElapsed(object sender, ElapsedEventArgs e)
+        // {
+        //     while (_rescanRunning)
+        //     {
+        //         await Task.Delay(200);
+        //     }
+        //     
+        //     await Task.Run(RescanItemsAsync);
+        // }
         
-        private void ResetTimer()
-        {
-            lock (_timer)
-            {
-                _timer.Stop();
-                _timer.Start();
-            }
-        }
- 
+        // private void ResetTimer()
+        // {
+        //     lock (_timer)
+        //     {
+        //         _timer.Stop();
+        //         _timer.Start();
+        //     }
+        // }
+        //
+        // public override void Dispose()
+        // {
+        //     _watcher?.Dispose();
+        //     _timer?.Dispose();
+        // }
+
         public override void Dispose()
         {
-            _timer?.Dispose();
-            _watcher?.Dispose();
         }
 
+        
         public void OnDeleted()
         {
             Subscriber.OnItemsRemoved(this, _knownFiles.Keys.ToList());

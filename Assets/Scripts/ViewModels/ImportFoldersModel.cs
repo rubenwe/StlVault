@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,12 +11,11 @@ using StlVault.Services;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
 using StlVault.Util.Messaging;
-using StlVault.Views;
 using UnityEngine;
 
 namespace StlVault.ViewModels
 {
-    internal sealed class ImportFoldersModel : IMessageReceiver<AddImportFolderMessage>
+    internal sealed class ImportFoldersModel : IMessageReceiver<AddImportFolderMessage>, IDisposable
     {
         [NotNull] private readonly IConfigStore _store;
         [NotNull] private readonly IMessageRelay _relay;
@@ -130,13 +128,15 @@ namespace StlVault.ViewModels
             RefreshItems(folders);
         }
 
-        ~ImportFoldersModel()
+        public void Dispose()
         {
-            // Kill file watcher
-            foreach (var folder in Folders.Select(model => model.FileSource).OfType<IImportFolder>())
+            foreach (var model in Folders)
             {
-                folder.Dispose();
+                // Kill file watcher
+               model.FileSource.Dispose();
             }
         }
+
+        ~ImportFoldersModel() => Dispose();
     }
 }

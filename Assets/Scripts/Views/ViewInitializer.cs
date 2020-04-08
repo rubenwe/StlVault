@@ -1,10 +1,13 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
+using StlVault.Messages;
 using StlVault.Services;
 using StlVault.Util.Logging;
 using StlVault.Util.Messaging;
+using StlVault.Util.Unity;
 using StlVault.ViewModels;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,53 +34,74 @@ namespace StlVault.Views
         [SerializeField] private AddSavedSearchDialog _addSavedSearchDialog;
         [SerializeField] private AddImportFolderDialog _addImportFolderDialog;
         [SerializeField] private ApplicationSettingsDialog _applicationSettingsDialog;
+        [SerializeField] private ExitingDialog _exitingDialog;
 
         [Category("Misc")] 
         [SerializeField] private PreviewCam _previewBuilder;
         [SerializeField] private ApplicationView _applicationView;
         [SerializeField] private ProgressView _progressView;
         
+        private readonly List<IDisposable> _disposables = new List<IDisposable>();
+        private MessageAggregator _relay;
         private Library _library;
 
         private void Awake()
         {
             Texture.allowThreadedTextureCreation = true;
+            Application.wantsToQuit += OnQuitRequested;
         }
+
+        private bool OnQuitRequested()
+        {
+            Application.wantsToQuit -= OnQuitRequested;
+            
+            foreach (var disposable in _disposables)
+            {
+                disposable.Dispose();
+            }
+            
+            GuiCallbackQueue.Enqueue(() => _relay.Send<RequestShowExitingDialogMessage>(this));
+            
+            return false;
+        }
+        
+        private static void OnShutdownComplete() => Application.Quit();
 
         [SuppressMessage("ReSharper", "RedundantTypeArgumentsOfMethod")]
         private async void Start()
         {
             var aggregator = new MessageAggregator();
 
-            IMessageRelay relay = aggregator;
+            _relay = aggregator;
             IConfigStore configStore = new AppDataConfigStore();
             IPreviewImageStore previewStore = new AppDataPreviewImageStore();
             
-            
-            _library = new Library(configStore, _previewBuilder, previewStore, relay);
+            _library = new Library(configStore, _previewBuilder, previewStore, _relay);
             var factory = new ImportFolderFactory(_library);
 
             // Main View
             var progressModel = new ProgressModel();
-            var applicationModel = new ApplicationModel(relay);
-            var searchViewModel = new SearchModel(_library, relay);
-            var itemsViewModel = new ItemsModel(_library, relay);
+            var applicationModel = new ApplicationModel(_relay);
+            var searchViewModel = new SearchModel(_library, _relay);
+            var itemsViewModel = new ItemsModel(_library, _relay);
 
             // Main Menu
-            var importFoldersViewModel = new ImportFoldersModel(configStore, factory, relay);
-            var savedSearchesViewModel = new SavedSearchesModel(configStore, relay);
-            var collectionsViewModel = new CollectionsModel(configStore, relay);
+            var importFoldersViewModel = new ImportFoldersModel(configStore, factory, _relay);
+            var savedSearchesViewModel = new SavedSearchesModel(configStore, _relay);
+            var collectionsViewModel = new CollectionsModel(configStore, _relay);
 
             // Detail Menu
             var detailMenuModel = new DetailMenuModel(_library);
 
             // Dialogs
-            var addSavedSearchViewModel = new AddSavedSearchModel(relay);
-            var addImportFolderViewModel = new AddImportFolderModel(relay);
+            var addSavedSearchViewModel = new AddSavedSearchModel(_relay);
+            var addImportFolderViewModel = new AddImportFolderModel(_relay);
             var applicationSettingsModel = new ApplicationSettingsModel(configStore);
+            var exitingModel = new ExitingModel(_library, OnShutdownComplete);
             
             BindViewModels();
             BindSettings();
+            _disposables.Add(importFoldersViewModel);
 
             // Also restores app settings for import etc.
             await applicationSettingsModel.InitializeAsync();
@@ -102,7 +126,8 @@ namespace StlVault.Views
                 // Dialogs
                 addSavedSearchViewModel,
                 addImportFolderViewModel,
-                applicationSettingsModel);
+                applicationSettingsModel,
+                exitingModel);
 
             void BindSettings()
             {
@@ -151,6 +176,7 @@ namespace StlVault.Views
                 _addImportFolderDialog.BindTo(addImportFolderViewModel);
                 _addSavedSearchDialog.BindTo(addSavedSearchViewModel);
                 _applicationSettingsDialog.BindTo(applicationSettingsModel);
+                _exitingDialog.BindTo(exitingModel);
             }
 
             async Task InitializeViewModels()
@@ -159,11 +185,6 @@ namespace StlVault.Views
                 await importFoldersViewModel.InitializeAsync();
                 await collectionsViewModel.Initialize();
             }
-        }
-
-        private async void OnApplicationQuit()
-        {
-            await _library.StoreChangesAsync();
         }
     }
 }
