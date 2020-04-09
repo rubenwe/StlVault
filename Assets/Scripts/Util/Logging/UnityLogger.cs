@@ -1,4 +1,6 @@
-﻿namespace StlVault.Util.Logging
+﻿using System;
+
+namespace StlVault.Util.Logging
 {
     public class UnityLogger : ILogger
     {
@@ -41,7 +43,8 @@
         {
             if (LogLevel >= LogLevel.Warn)
             {
-                _unityLogger.LogWarning(message, string.Format(message, args));
+                var formatted = string.Format(message, args);
+                _unityLogger.LogWarning(formatted, formatted);
             }
         }
 
@@ -49,7 +52,17 @@
         {
             if (LogLevel >= LogLevel.Error)
             {
-                _unityLogger.LogError(message, string.Format(message, args));
+                var formatted = string.Format(message, args);
+                _unityLogger.LogError(formatted, formatted);
+            }
+        }
+
+        public void Error(Exception ex, string message, params object[] args)
+        {
+            if (LogLevel >= LogLevel.Error)
+            {
+                var formatted = string.Format(message, args);
+                _unityLogger.LogError(formatted, ex.Message);
             }
         }
     }

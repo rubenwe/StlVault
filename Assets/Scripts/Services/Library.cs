@@ -10,15 +10,18 @@ using StlVault.Config;
 using StlVault.Messages;
 using StlVault.Util;
 using StlVault.Util.FileSystem;
+using StlVault.Util.Logging;
 using StlVault.Util.Messaging;
 using StlVault.Util.Stl;
 using StlVault.ViewModels;
 using UnityEngine;
+using ILogger = StlVault.Util.Logging.ILogger;
 
 namespace StlVault.Services
 {
     internal class Library : ILibrary, IFileSourceSubscriber
     {
+        private static readonly ILogger Logger = UnityLogger.Instance;
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private readonly List<PreviewList> _previewStreams = new List<PreviewList>();
         private readonly ItemPreviewModelSet _previewModels;
@@ -72,24 +75,30 @@ namespace StlVault.Services
 
         public async Task RotateAsync(ItemPreviewModel previewModel, Vector3 newRotation)
         {
-            IFileSource source = null;
-            string filePath = null;
-            ReadLocked(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
-            
-            if (source == null || filePath == null) return;
-            
-            var (_, geoInfo, resolution) = await RebuildPreview(
-                source, filePath, 
-                newRotation, previewModel.GeometryInfo.Value.Scale, 
-                previewModel.FileHash);
-            
-            WriteLocked(() =>
+            try
             {
-                previewModel.PreviewResolution = resolution;
-                previewModel.GeometryInfo.Value = geoInfo;
-            });
+                IFileSource source = null;
+                string filePath = null;
+                ReadLocked(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
             
-            previewModel.OnPreviewChanged();
+                if (source == null || filePath == null) return;
+                var (_, geoInfo, resolution) = await RebuildPreview(
+                    source, filePath,
+                    newRotation, previewModel.GeometryInfo.Value.Scale,
+                    previewModel.FileHash);
+
+                WriteLocked(() =>
+                {
+                    previewModel.PreviewResolution = resolution;
+                    previewModel.GeometryInfo.Value = geoInfo;
+                });
+
+                previewModel.OnPreviewChanged();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error while rotating `{0}`", previewModel.Name);
+            }
         }
 
         public IEnumerable<ItemPreviewModel> GetAllItems() => _previewModels;
@@ -195,28 +204,38 @@ namespace StlVault.Services
             IFileSource source,
             IFileInfo file)
         {
-            var scale = source.Config.Scale;
-            var rotation = source.Config.Rotation;
-
-            var (hash, geoInfo, resolution) = await RebuildPreview(source, file.Path, rotation, scale);
-
-            var tags = source.GetTags(file.Path);
             var fileName = Path.GetFileName(file.Path);
-            var previewInfo = new PreviewInfo
+            
+            try
             {
-                ItemName = fileName,
-                FileHash = hash,
-                Tags = tags.ToHashSet(),
-                Resolution = resolution
-            };
+                var scale = source.Config.Scale;
+                var rotation = source.Config.Rotation;
 
-            WriteLocked(() =>
+                var (hash, geoInfo, resolution) = await RebuildPreview(source, file.Path, rotation, scale);
+
+                var tags = source.GetTags(file.Path);
+                var previewInfo = new PreviewInfo
+                {
+                    ItemName = fileName,
+                    FileHash = hash,
+                    Tags = tags.ToHashSet(),
+                    Resolution = resolution
+                };
+
+                WriteLocked(() =>
+                {
+                    _trie.Insert(tags);
+                    var model = _previewModels.AddOrUpdate(source, file, previewInfo, geoInfo);
+                    _previewStreams.ForEach(stream => stream.AddFiltered(model));
+                    _relay.Send(this, new ProgressMessage {Text = $"Imported `{fileName}`"});
+                });
+            }
+            catch (Exception ex)
             {
-                _trie.Insert(tags);
-                var model = _previewModels.AddOrUpdate(source, file, previewInfo, geoInfo);
-                _previewStreams.ForEach(stream => stream.AddFiltered(model));
-                _relay.Send(this, new ProgressMessage{Text = $"Imported `{fileName}`"});
-            });
+                var text = $"Error while importing `{fileName}`";
+                _relay.Send<ProgressMessage>(new ProgressMessage {Text = text});
+                Logger.Error(ex, text);
+            }
         }
 
         private async Task<(string hash, GeometryInfo geoInfo, int resolution)> RebuildPreview(
