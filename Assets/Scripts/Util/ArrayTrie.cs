@@ -10,6 +10,7 @@ namespace StlVault.Util
     {
         private readonly Node _head = new Node(ReadOnlySpan<char>.Empty);
         private int _maxLength;
+        private bool _anyInserted;
 
         internal class Node
         {
@@ -37,7 +38,8 @@ namespace StlVault.Util
         public bool Insert(ReadOnlySpan<char> word)
         {
             if (word.IsEmpty) ThrowHelper.CantStoreEmptyWord(nameof(word));
-
+            _anyInserted = true;
+            
             _maxLength = Math.Max(_maxLength, word.Length);
 
             var current = _head;
@@ -80,6 +82,8 @@ namespace StlVault.Util
         [PublicAPI, SuppressMessage("ReSharper", "ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator")]
         public IEnumerable<(string word, int occurrences)> Find(string start)
         {
+            if(!_anyInserted) yield break;
+            
             // Walk down the trie to the subtree of words starting with "start"
             var current = _head;
             foreach (var key in start)

@@ -43,7 +43,7 @@ namespace StlVault.ViewModels
         private void SaveCurrentSearch()
         {
             if (!CanSaveCurrentSearch()) return;
-            _relay.Send(this, new RequestShowSaveSearchDialogMessage {SearchTags = _currentSearchTags});
+            _relay.Send(this, new RequestShowDialogMessage.SaveSearch {SearchTags = _currentSearchTags});
         }
 
         public async void Receive(SaveSearchMessage message)

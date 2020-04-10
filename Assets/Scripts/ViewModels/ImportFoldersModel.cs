@@ -34,7 +34,7 @@ namespace StlVault.ViewModels
             _importFolderFactory = importFolderFactory ?? throw new ArgumentNullException(nameof(importFolderFactory));
 
             AddImportFolderCommand =
-                new DelegateCommand(() => relay.Send<RequestShowAddImportFolderDialogMessage>(this));
+                new DelegateCommand(() => relay.Send<RequestShowDialogMessage.AddImportFolder>(this));
         }
 
         public async void Receive(AddImportFolderMessage message)

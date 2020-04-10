@@ -3,7 +3,7 @@ using StlVault.Messages;
 
 namespace StlVault.ViewModels
 {
-    internal class AddCollectionModel : DialogModelBase<RequestShowAddCollectionDialogMessage>
+    internal class AddCollectionModel : DialogModelBase<RequestShowDialogMessage.AddCollection>
     {
         protected override void OnAccept()
         {

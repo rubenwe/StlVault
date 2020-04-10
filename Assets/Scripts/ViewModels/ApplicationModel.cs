@@ -5,19 +5,27 @@ using JetBrains.Annotations;
 using StlVault.Messages;
 using StlVault.Util.Commands;
 using StlVault.Util.Messaging;
+using UnityEngine;
 
 namespace StlVault.ViewModels
 {
     internal class ApplicationModel
     {
-        [NotNull] private readonly IMessageRelay _relay;
-        
         public ICommand ShowAppSettingsCommand { get; }
+        public ICommand ShowFeedbackCommand { get; }
+        public ICommand ShowHelpCommand { get; }
 
         public ApplicationModel([NotNull] IMessageRelay relay)
         {
-            _relay = relay ?? throw new ArgumentNullException(nameof(relay));
-            ShowAppSettingsCommand = new DelegateCommand(() => _relay.Send<RequestShowAppSettingsDialogMessage>(this));
+           if(relay is null) throw new ArgumentNullException(nameof(relay));
+            ShowAppSettingsCommand = new DelegateCommand(() => relay.Send<RequestShowDialogMessage.AppSettings>(this));
+            ShowFeedbackCommand = new DelegateCommand(() => relay.Send<RequestShowDialogMessage.UserFeedback>(this));
+            ShowHelpCommand = new DelegateCommand(OpenWiki);
+        }
+
+        private void OpenWiki()
+        {
+            Application.OpenURL(@"https://github.com/rubenwe/StlVault/wiki");
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using JetBrains.Annotations;
 
 namespace StlVault.Util.Logging
@@ -18,5 +19,8 @@ namespace StlVault.Util.Logging
 
         [StringFormatMethod("message")]
         void Error(string message, params object[] args);
+        
+        [StringFormatMethod("message")]
+        void Error(Exception ex, string message, params object[] args);
     }
 }

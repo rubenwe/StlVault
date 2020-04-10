@@ -34,6 +34,7 @@ namespace StlVault.Views
         [SerializeField] private AddSavedSearchDialog _addSavedSearchDialog;
         [SerializeField] private AddImportFolderDialog _addImportFolderDialog;
         [SerializeField] private ApplicationSettingsDialog _applicationSettingsDialog;
+        [SerializeField] private UserFeedbackDialog _userFeedbackDialog;
         [SerializeField] private ExitingDialog _exitingDialog;
 
         [Category("Misc")] 
@@ -68,7 +69,7 @@ namespace StlVault.Views
                 disposable.Dispose();
             }
             
-            GuiCallbackQueue.Enqueue(() => _relay.Send<RequestShowExitingDialogMessage>(this));
+            GuiCallbackQueue.Enqueue(() => _relay.Send<RequestShowDialogMessage.ExitingDialog>(this));
             
             return false;
         }
@@ -105,6 +106,7 @@ namespace StlVault.Views
             var addSavedSearchViewModel = new AddSavedSearchModel(_relay);
             var addImportFolderViewModel = new AddImportFolderModel(_relay);
             var applicationSettingsModel = new ApplicationSettingsModel(configStore);
+            var userFeedbackModel = new UserFeedbackModel();
             var exitingModel = new ExitingModel(_library, OnShutdownComplete);
             
             BindViewModels();
@@ -135,6 +137,7 @@ namespace StlVault.Views
                 addSavedSearchViewModel,
                 addImportFolderViewModel,
                 applicationSettingsModel,
+                userFeedbackModel,
                 exitingModel);
 
             void BindSettings()
@@ -184,6 +187,7 @@ namespace StlVault.Views
                 _addImportFolderDialog.BindTo(addImportFolderViewModel);
                 _addSavedSearchDialog.BindTo(addSavedSearchViewModel);
                 _applicationSettingsDialog.BindTo(applicationSettingsModel);
+                _userFeedbackDialog.BindTo(userFeedbackModel);
                 _exitingDialog.BindTo(exitingModel);
             }
 
