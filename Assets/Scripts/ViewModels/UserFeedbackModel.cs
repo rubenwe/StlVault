@@ -81,19 +81,29 @@ namespace StlVault.ViewModels
 
         private static void ShowInExplorer(string zipPath)
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "explorer",
-                Arguments = $"/e, /select, \"{zipPath}\""
-            });
+            NativeMethods.BrowseTo(zipPath);
         }
 
         private static void Add(ZipArchive archive, string folder, string fileName)
         {
-            var filePath = Path.Combine(folder, fileName);
-            if (!File.Exists(filePath)) return;
+            var sourceFilePath = Path.Combine(folder, fileName);
+            if (!File.Exists(sourceFilePath)) return;
             
-            archive.CreateEntryFromFile(filePath, fileName);
+            using (var stream =  File.Open(sourceFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                var zipArchiveEntry = archive.CreateEntry(fileName);
+                var dateTime = File.GetLastWriteTime(sourceFilePath);
+                if (dateTime.Year < 1980 || dateTime.Year > 2107)
+                {
+                    dateTime = new DateTime(1980, 1, 1, 0, 0, 0);
+                }
+                
+                zipArchiveEntry.LastWriteTime = dateTime;
+                using (var targetStream = zipArchiveEntry.Open())
+                {
+                    stream.CopyTo(targetStream);
+                }
+            }
         }
 
         protected override void OnAccept()
