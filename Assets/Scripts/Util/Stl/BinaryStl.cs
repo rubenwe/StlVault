@@ -11,17 +11,27 @@ namespace StlVault.Util.Stl
         /// </summary>
         public static bool IsBinary(byte[] fileBytes)
         {
+            // Minimum length for header + one facet
             if (fileBytes.Length < 130) return false;
 
             for (var i = 0; i < 80; i++)
             {
+                // Null bytes should be used for empty header bytes
                 if (fileBytes[i] == 0x0)
                 {
                     return true;
                 }
             }
 
-            return Encoding.UTF8.GetString(fileBytes, 0, 6) != "solid ";
+            for (var i = 80; i < 130; i++)
+            {
+                // Chars outside of ASCII range are likely for binary files
+                if (fileBytes[i] > 126) return true;
+            }
+
+            // According to spec this should no be the case for binary files!
+            // But nobody seems to care - so this is a last ditch effort..
+            return Encoding.ASCII.GetString(fileBytes, 0, 6) != "solid ";
         }
 
         /// <summary>
