@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace StlVault.ViewModels
 {
-    internal class AddImportFolderModel : DialogModelBase<RequestShowAddImportFolderDialogMessage>
+    internal class AddImportFolderModel : DialogModelBase<RequestShowDialogMessage.AddImportFolder>
     {
         private readonly IMessageRelay _relay;
 

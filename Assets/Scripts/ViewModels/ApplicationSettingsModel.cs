@@ -7,7 +7,7 @@ using StlVault.Util.Logging;
 
 namespace StlVault.ViewModels
 {
-    internal class ApplicationSettingsModel : DialogModelBase<RequestShowAppSettingsDialogMessage>
+    internal class ApplicationSettingsModel : DialogModelBase<RequestShowDialogMessage.AppSettings>
     {
         private readonly IConfigStore _store;
         public ApplicationSettingsModel RuntimeSettings { get; }

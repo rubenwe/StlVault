@@ -7,7 +7,7 @@ using StlVault.Util.Logging;
 
 namespace StlVault.ViewModels
 {
-    internal class ExitingModel : DialogModelBase<RequestShowExitingDialogMessage>
+    internal class ExitingModel : DialogModelBase<RequestShowDialogMessage.ExitingDialog>
     {
         private static readonly ILogger Logger = UnityLogger.Instance;
         private readonly Library _library;
@@ -27,7 +27,7 @@ namespace StlVault.ViewModels
         {
         }
 
-        protected override async void OnShown(RequestShowExitingDialogMessage message)
+        protected override async void OnShown(RequestShowDialogMessage.ExitingDialog message)
         {
             await Task.Delay(100);
 

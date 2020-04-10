@@ -5,7 +5,7 @@ using StlVault.Util.Messaging;
 
 namespace StlVault.ViewModels
 {
-    internal class AddSavedSearchModel : DialogModelBase<RequestShowSaveSearchDialogMessage>
+    internal class AddSavedSearchModel : DialogModelBase<RequestShowDialogMessage.SaveSearch>
     {
         private readonly IMessageRelay _relay;
         private IReadOnlyList<string> _searchTags;
@@ -34,7 +34,7 @@ namespace StlVault.ViewModels
             _searchTags = null;
         }
 
-        protected override void OnShown(RequestShowSaveSearchDialogMessage message)
+        protected override void OnShown(RequestShowDialogMessage.SaveSearch message)
         {
             _searchTags = message.SearchTags;
         }
