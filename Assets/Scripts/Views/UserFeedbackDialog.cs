@@ -2,6 +2,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+#pragma warning disable 0649
+
 namespace StlVault.Views
 {
     internal class UserFeedbackDialog : DialogView<UserFeedbackModel>
