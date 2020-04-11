@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using StlVault.Util.Unity;
 using UnityEngine;
 
 namespace RuntimeSceneGizmo
@@ -6,11 +7,9 @@ namespace RuntimeSceneGizmo
 	public class CameraGizmoListener : MonoBehaviour
 	{
 #pragma warning disable 0649
-		[SerializeField]
-		private float cameraAdjustmentSpeed = 3f;
-
-		[SerializeField]
-		private float projectionTransitionSpeed = 2f;
+		[SerializeField] private float cameraAdjustmentSpeed = 3f;
+		[SerializeField] private float projectionTransitionSpeed = 2f;
+		[SerializeField] private MaxCamera _maxCamera;
 #pragma warning restore 0649
 
 		private Camera mainCamera;
@@ -33,18 +32,18 @@ namespace RuntimeSceneGizmo
 		{
 			if( component == GizmoComponent.Center )
 				SwitchOrthographicMode();
-			else if( component == GizmoComponent.XNegative )
-				RotateCameraInDirection( Vector3.right );
+			else if (component == GizmoComponent.XNegative)
+				_maxCamera.SetRotation(90, 0);
 			else if( component == GizmoComponent.XPositive )
-				RotateCameraInDirection( -Vector3.right );
+				_maxCamera.SetRotation(-90, 0);
 			else if( component == GizmoComponent.YNegative )
-				RotateCameraInDirection( Vector3.up );
+				_maxCamera.SetRotation(_maxCamera.XDeg, -90);
 			else if( component == GizmoComponent.YPositive )
-				RotateCameraInDirection( -Vector3.up );
+				_maxCamera.SetRotation(_maxCamera.XDeg, 90);
 			else if( component == GizmoComponent.ZNegative )
-				RotateCameraInDirection( Vector3.forward );
+				_maxCamera.SetRotation(0, 0);
 			else
-				RotateCameraInDirection( -Vector3.forward );
+				_maxCamera.SetRotation(180, 0);
 		}
 
 		public void SwitchOrthographicMode()
@@ -56,14 +55,7 @@ namespace RuntimeSceneGizmo
 			StartCoroutine( projectionChangeCoroutine );
 		}
 
-		public void RotateCameraInDirection( Vector3 direction )
-		{
-			if( cameraRotateCoroutine != null )
-				return;
-
-			cameraRotateCoroutine = SetCameraRotation( direction );
-			StartCoroutine( cameraRotateCoroutine );
-		}
+		
 
 		// Credit: https://forum.unity.com/threads/smooth-transition-between-perspective-and-orthographic-modes.32765/#post-212814
 		private IEnumerator SwitchProjection()
@@ -97,44 +89,6 @@ namespace RuntimeSceneGizmo
 			projectionChangeCoroutine = null;
 		}
 
-		private IEnumerator SetCameraRotation( Vector3 targetForward )
-		{
-			Quaternion initialRotation = mainCamParent.localRotation;
-			Quaternion targetRotation;
-			if( Mathf.Abs( targetForward.y ) < 0.99f )
-				targetRotation = Quaternion.LookRotation( targetForward );
-			else
-			{
-				Vector3 cameraForward = mainCamParent.forward;
-				if( cameraForward.x == 0f && cameraForward.z == 0f )
-					cameraForward.y = 1f;
-				else if( Mathf.Abs( cameraForward.x ) > Mathf.Abs( cameraForward.z ) )
-				{
-					cameraForward.x = Mathf.Sign( cameraForward.x );
-					cameraForward.y = 0f;
-					cameraForward.z = 0f;
-				}
-				else
-				{
-					cameraForward.x = 0f;
-					cameraForward.y = 0f;
-					cameraForward.z = Mathf.Sign( cameraForward.z );
-				}
-
-				if( targetForward.y > 0f )
-					cameraForward = -cameraForward;
-
-				targetRotation = Quaternion.LookRotation( targetForward, cameraForward );
-			}
-
-			for( float t = 0f; t < 1f; t += Time.unscaledDeltaTime * cameraAdjustmentSpeed )
-			{
-				mainCamParent.localRotation = Quaternion.LerpUnclamped( initialRotation, targetRotation, t );
-				yield return null;
-			}
-
-			mainCamParent.localRotation = targetRotation;
-			cameraRotateCoroutine = null;
-		}
+		
 	}
 }

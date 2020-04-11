@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace StlVault.Util.Unity
@@ -16,9 +17,11 @@ namespace StlVault.Util.Unity
         [SerializeField] private int _zoomRate = 40;
         [SerializeField] private float _panSpeed = 0.3f;
         [SerializeField] private float _zoomDampening = 5.0f;
- 
-        private float _xDeg = 0.0f;
-        private float _yDeg = 0.0f;
+        [SerializeField] private float _startX;
+        [SerializeField] private float _startY;
+
+        private float _xDeg;
+        private float _yDeg;
         private float _currentDistance;
         private float _desiredDistance;
         private Quaternion _currentRotation;
@@ -27,13 +30,15 @@ namespace StlVault.Util.Unity
         private Vector3 _position;
         private Camera _camera;
 
+        public float XDeg => _xDeg;
+        public float YDeg => _yDeg;
+
         private void Start() => Init();
         private void OnEnable() => Init();
 
         private void Init()
         {
-            _distance = Vector3.Distance(transform.position, _target.position);
-            _currentDistance = _distance;
+            _currentDistance = Vector3.Distance(transform.position, _target.position);
             _desiredDistance = _distance;
  
             //be sure to grab the current rotations as starting points.
@@ -41,10 +46,10 @@ namespace StlVault.Util.Unity
             _rotation = transform.rotation;
             _currentRotation = transform.rotation;
             _desiredRotation = transform.rotation;
- 
-            _xDeg = Vector3.Angle(Vector3.right, transform.right );
-            _yDeg = Vector3.Angle(Vector3.up, transform.up );
-            _camera = GetComponent<Camera>();
+
+            _xDeg = _startX;
+            _yDeg = _startY;
+            _camera = GetComponentInChildren<Camera>();
         }
  
         private void LateUpdate()
@@ -59,17 +64,6 @@ namespace StlVault.Util.Unity
             {
                 _xDeg += Input.GetAxis("Mouse X") * _xSpeed * 0.02f;
                 _yDeg -= Input.GetAxis("Mouse Y") * _ySpeed * 0.02f;
- 
-                ////////OrbitAngle
- 
-                //Clamp the vertical axis for the orbit
-                _yDeg = ClampAngle(_yDeg, _yMinLimit, _yMaxLimit);
-                // set camera rotation 
-                _desiredRotation = Quaternion.Euler(_yDeg, _xDeg, 0);
-                _currentRotation = transform.rotation;
- 
-                _rotation = Quaternion.Lerp(_currentRotation, _desiredRotation, Time.deltaTime * _zoomDampening);
-                transform.rotation = _rotation;
             }
             // otherwise if middle mouse is selected, we pan by way of transforming the target in screenspace
             else if (Input.GetMouseButton(2))
@@ -80,6 +74,17 @@ namespace StlVault.Util.Unity
                 _target.Translate(-Input.GetAxis("Mouse Y") * _panSpeed * transform.up, Space.World);
             }
  
+            ////////OrbitAngle
+ 
+            //Clamp the vertical axis for the orbit
+            _yDeg = ClampAngle(_yDeg, _yMinLimit, _yMaxLimit);
+            // set camera rotation 
+            _desiredRotation = Quaternion.Euler(_yDeg, _xDeg, 0);
+            _currentRotation = transform.rotation;
+ 
+            _rotation = Quaternion.Lerp(_currentRotation, _desiredRotation, Time.deltaTime * _zoomDampening);
+            transform.rotation = _rotation;
+            
             ////////Orbit Position
  
             // affect the desired Zoom distance if we roll the scrollwheel
@@ -102,6 +107,12 @@ namespace StlVault.Util.Unity
             if (angle > 360) angle -= 360;
 
             return Mathf.Clamp(angle, min, max);
+        }
+
+        public void SetRotation(float x, float y)
+        {
+            _xDeg = x;
+            _yDeg = y;
         }
     }
 }
