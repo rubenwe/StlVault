@@ -198,7 +198,5 @@ namespace StlVault.Views
                 await collectionsViewModel.Initialize();
             }
         }
-        
-        
     }
 }

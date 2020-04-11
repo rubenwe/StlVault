@@ -16,7 +16,6 @@ namespace StlVault.Util.Unity
         [SerializeField] private Color _hoverColor;
         [SerializeField] private Color _pressedColor;
         [SerializeField] private Color _disabledColor;
-        [SerializeField] private bool _enabled = true;
         private Color _normalColor;
 
         public event Action Clicked;
@@ -53,7 +52,6 @@ namespace StlVault.Util.Unity
             var childColor = childImage.color;
 
             Enabled.ValueChanged += on => childImage.color = on ? childColor : _disabledColor;
-            Enabled.Value = _enabled;
         }
 
         public void OnPointerEnter(PointerEventData eventData) => _pointerInside.Value = true;
