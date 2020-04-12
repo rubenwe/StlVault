@@ -19,7 +19,7 @@ namespace StlVault.Util.Unity
         private Color _normalColor;
 
         public event Action Clicked;
-        public BindableProperty<bool> Enabled { get; } = new BindableProperty<bool>();
+        public BindableProperty<bool> Enabled { get; } = new BindableProperty<bool>(true);
         private readonly BindableProperty<bool> _pointerInside = new BindableProperty<bool>();
         private readonly BindableProperty<bool> _pointerDown = new BindableProperty<bool>();
         private readonly IBindableProperty<Color> _currentColor;
@@ -42,16 +42,20 @@ namespace StlVault.Util.Unity
 
         private void Awake()
         {
-            if (_image == null) _image = GetComponentInChildren<Image>();
-            _normalColor = _image.color;
-            _currentColor.ValueChanged += color => _image.color = color;
+            // ReSharper disable once Unity.NoNullCoalescing
+            var mainImage = _image ?? GetComponentInChildren<Image>();
+            
+            _normalColor = mainImage.color;
+            _currentColor.ValueChanged += color => mainImage.color = color;
             
             var childImage = GetComponentsInChildren<Image>()
-                .First(c => c.gameObject != gameObject);
+                .FirstOrDefault(c => c.gameObject != gameObject) ?? mainImage;
 
-            var childColor = childImage.color;
-
-            Enabled.ValueChanged += on => childImage.color = on ? childColor : _disabledColor;
+            if (childImage != null)
+            {
+                var childColor = childImage.color;
+                Enabled.ValueChanged += on => childImage.color = on ? childColor : _disabledColor;
+            }
         }
 
         public void OnPointerEnter(PointerEventData eventData) => _pointerInside.Value = true;

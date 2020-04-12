@@ -17,14 +17,12 @@ namespace StlVault.Views
 
         protected override void OnViewModelBound()
         {
-            base.OnViewModelBound();
-
-            _xClockwise.Bind(ViewModel.RotateCommand, Rotation.XClockwise);
-            _xCounterClockwise.Bind(ViewModel.RotateCommand, Rotation.XCounterClockwise);
-            _zClockwise.Bind(ViewModel.RotateCommand, Rotation.ZClockwise);
-            _zCounterClockwise.Bind(ViewModel.RotateCommand, Rotation.ZCounterClockwise);
-            _yClockwise.Bind(ViewModel.RotateCommand, Rotation.YClockwise);
-            _yCounterClockwise.Bind(ViewModel.RotateCommand, Rotation.YCounterClockwise);
+            _xClockwise.BindTo(ViewModel.RotateCommand, Rotation.XClockwise);
+            _xCounterClockwise.BindTo(ViewModel.RotateCommand, Rotation.XCounterClockwise);
+            _zClockwise.BindTo(ViewModel.RotateCommand, Rotation.ZClockwise);
+            _zCounterClockwise.BindTo(ViewModel.RotateCommand, Rotation.ZCounterClockwise);
+            _yClockwise.BindTo(ViewModel.RotateCommand, Rotation.YClockwise);
+            _yCounterClockwise.BindTo(ViewModel.RotateCommand, Rotation.YCounterClockwise);
         }
     }
 }

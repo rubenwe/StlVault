@@ -18,6 +18,7 @@ namespace StlVault.Views
         [SerializeField] private StatsPanel _statsPanel;
         [SerializeField] private TagInputView _tagsPanel;
         [SerializeField] private RotatePanel _rotatePanel;
+        [SerializeField] private ViewPanel _viewPanel;
         
         private Image _currentImage;
         private Image _selectedImage;
@@ -30,10 +31,8 @@ namespace StlVault.Views
 
         protected override void OnViewModelBound()
         {
-            base.OnViewModelBound();
-            
-            _currentButton.Bind(ViewModel.SwitchToCurrentModeCommand);
-            _selectionButton.Bind(ViewModel.SwitchToSelectionModeCommand);
+            _currentButton.BindTo(ViewModel.SwitchToCurrentModeCommand);
+            _selectionButton.BindTo(ViewModel.SwitchToSelectionModeCommand);
             
             ViewModel.Mode.ValueChanged += ModeOnValueChanged;
             ModeOnValueChanged(ViewModel.Mode);
@@ -41,6 +40,7 @@ namespace StlVault.Views
             _statsPanel.BindTo(ViewModel.StatsModel);
             _tagsPanel.BindTo(ViewModel.TagEditorModel);
             _rotatePanel.BindTo(ViewModel.RotateModel);
+            _viewPanel.BindTo(ViewModel.ViewPanelModel);
         }
 
         private void ModeOnValueChanged(SelectionMode mode)

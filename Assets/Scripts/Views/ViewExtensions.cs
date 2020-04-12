@@ -14,7 +14,7 @@ namespace StlVault.Views
 {
     internal static class ViewExtensions
     {
-        public static void Bind(this Button button, ICommand command)
+        public static void BindTo(this Button button, ICommand command)
         {
             command.CanExecuteChanged += (sender, args) => button.interactable = command.CanExecute();
             button.interactable = command.CanExecute();
@@ -22,7 +22,7 @@ namespace StlVault.Views
             button.onClick.AddListener(command.Execute);
         }
 
-        public static void Bind<T>(this SimpleButton button, ICommand command, T param)
+        public static void BindTo<T>(this SimpleButton button, ICommand command, T param)
         {
             void OnChange(object sender, EventArgs args) => button.Enabled.Value = command.CanExecute(param);
             void OnButtonOnClicked() => command.Execute(param);
@@ -32,8 +32,19 @@ namespace StlVault.Views
 
             button.Clicked += OnButtonOnClicked;
         }
+        
+        public static void BindTo(this SimpleButton button, ICommand command)
+        {
+            void OnChange(object sender, EventArgs args) => button.Enabled.Value = command.CanExecute();
+            void OnButtonOnClicked() => command.Execute();
+            
+            command.CanExecuteChanged += OnChange;
+            button.Enabled.Value = command.CanExecute();
 
-        public static void Bind<T>(this TMP_InputField inputField, BindableProperty<T> property)
+            button.Clicked += OnButtonOnClicked;
+        }
+
+        public static void BindTo<T>(this TMP_InputField inputField, BindableProperty<T> property)
         {
             property.ValueChanged += OnPropertyChanged;
             inputField.onValueChanged.AddListener(OnDisplayValueChanged);
@@ -43,7 +54,7 @@ namespace StlVault.Views
             void OnDisplayValueChanged(string newValue) => property.Value = (T) Convert.ChangeType(newValue, typeof(T));
         }
 
-        public static void Bind<T>(this TMP_Text text, BindableProperty<T> property, string formatString = null)
+        public static void BindTo<T>(this TMP_Text text, BindableProperty<T> property, string formatString = null)
         {
             property.ValueChanged += OnPropertyChanged;
             OnPropertyChanged(property);
@@ -53,7 +64,7 @@ namespace StlVault.Views
                 : newValue?.ToString();
         }
         
-        public static void Bind<T>(this TMP_Text text, BindableProperty<T> property, Func<T, object> compute, string formatString = null)
+        public static void BindTo<T>(this TMP_Text text, BindableProperty<T> property, Func<T, object> compute, string formatString = null)
         {
             property.ValueChanged += OnPropertyChanged;
             OnPropertyChanged(property);
@@ -63,7 +74,7 @@ namespace StlVault.Views
                 : compute(newValue)?.ToString();
         }
 
-        public static void Bind(
+        public static void BindTo(
             this (TMP_InputField x, TMP_InputField y, TMP_InputField z) fields,
             BindableProperty<Vector3> property,
             string formatString = "F0")
@@ -94,7 +105,7 @@ namespace StlVault.Views
             }
         }
 
-        public static void Bind(this Toggle toggle, BindableProperty<bool> property)
+        public static void BindTo(this Toggle toggle, BindableProperty<bool> property)
         {
             property.ValueChanged += OnPropertyChanged;
             toggle.onValueChanged.AddListener(OnDisplayValueChanged);
@@ -104,7 +115,7 @@ namespace StlVault.Views
             void OnDisplayValueChanged(bool newValue) => property.Value = newValue;
         }
 
-        public static void Bind(this Slider slider, BindableProperty<ushort> property)
+        public static void BindTo(this Slider slider, BindableProperty<ushort> property)
         {
             property.ValueChanged += OnPropertyChanged;
             slider.onValueChanged.AddListener(OnDisplayValueChanged);
@@ -114,7 +125,7 @@ namespace StlVault.Views
             void OnDisplayValueChanged(float newValue) => property.Value = (ushort) newValue;
         }
         
-        public static void Bind(this Slider slider, BindableProperty<LogLevel> property)
+        public static void BindTo(this Slider slider, BindableProperty<LogLevel> property)
         {
             property.ValueChanged += OnPropertyChanged;
             slider.onValueChanged.AddListener(OnDisplayValueChanged);

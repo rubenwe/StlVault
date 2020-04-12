@@ -23,9 +23,9 @@ namespace StlVault.Views
         private CancellationTokenSource _source;
 
 
-        protected abstract IReadOnlyObservableList<TChildModel> Items { get; }
+        protected abstract IReadOnlyObservableList<TChildModel> ChildModels { get; }
 
-        protected override void OnViewModelBound() => Items.OnMainThread().CollectionChanged += UpdateDisplayedItems;
+        protected override void OnViewModelBound() => ChildModels.OnMainThread().CollectionChanged += UpdateDisplayedItems;
 
         protected async void UpdateDisplayedItems(object sender, NotifyCollectionChangedEventArgs args)
         {
@@ -74,7 +74,7 @@ namespace StlVault.Views
             var children = _itemsContainer.Cast<Transform>().ToList();
             await children.ChunkedForEach(child => Destroy(child.gameObject), token);
 
-            await AddNewItems(Items.ToList(), token);
+            await AddNewItems(ChildModels.ToList(), token);
         }
     }
 }

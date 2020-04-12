@@ -18,11 +18,11 @@ namespace StlVault.Views
         {
             base.OnViewModelBound();
             
-            _includeDataToggle.Bind(ViewModel.IncludeUserData);
-            _createArchiveButton.Bind(ViewModel.CreateArchiveCommand);
-            _createIssueButton.Bind(ViewModel.CreateIssueCommand);
-            _openFeatureRequestsButton.Bind(ViewModel.OpenFeatureRequestsCommand);
-            _joinDiscordButton.Bind(ViewModel.JoinDiscordCommand);
+            _includeDataToggle.BindTo(ViewModel.IncludeUserData);
+            _createArchiveButton.BindTo(ViewModel.CreateArchiveCommand);
+            _createIssueButton.BindTo(ViewModel.CreateIssueCommand);
+            _openFeatureRequestsButton.BindTo(ViewModel.OpenFeatureRequestsCommand);
+            _joinDiscordButton.BindTo(ViewModel.JoinDiscordCommand);
         }
     }
 }

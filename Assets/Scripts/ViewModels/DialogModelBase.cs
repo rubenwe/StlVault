@@ -27,7 +27,7 @@ namespace StlVault.ViewModels
         {
             OnAccept();
             Shown.Value = false;
-            Reset();
+            Reset(true);
         }
 
         protected void CanCancelChanged() => CancelCommand.OnCanExecuteChanged();
@@ -41,7 +41,7 @@ namespace StlVault.ViewModels
         {
             OnCancel();
             Shown.Value = false;
-            Reset();
+            Reset(true);
         }
 
         public void Receive(TShowMessage message) => Show(message);
@@ -52,11 +52,11 @@ namespace StlVault.ViewModels
 
         private void Show(TShowMessage message)
         {
-            Reset();
+            Reset(false);
             OnShown(message);
             Shown.Value = true;
         }
 
-        protected abstract void Reset();
+        protected abstract void Reset(bool closing);
     }
 }

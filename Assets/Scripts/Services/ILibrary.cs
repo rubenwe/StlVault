@@ -17,5 +17,7 @@ namespace StlVault.Services
         void RemoveTag(IEnumerable<string> hashes, string tag);
         Task RotateAsync(ItemPreviewModel previewModel, Vector3 newRotation);
         IEnumerable<ItemPreviewModel> GetAllItems();
+        Task<Mesh> GetMeshAsync(ItemPreviewModel model);
+        bool TryGetLocalPath(ItemPreviewModel model, out string localPath);
     }
 }

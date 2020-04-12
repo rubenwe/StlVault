@@ -28,7 +28,7 @@ namespace StlVault.ViewModels
             });
         }
 
-        protected override void Reset()
+        protected override void Reset(bool closing)
         {
             Alias.Value = string.Empty;
             _searchTags = null;

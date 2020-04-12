@@ -8,6 +8,7 @@ using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
 using StlVault.Util.Messaging;
+using UnityEditor;
 
 namespace StlVault.ViewModels
 {
@@ -27,16 +28,19 @@ namespace StlVault.ViewModels
         public StatsModel StatsModel { get; }
         public TagEditorModel TagEditorModel { get; }
         public RotateModel RotateModel { get; }
-
+        public ViewPanelModel ViewPanelModel { get; }
+        
         public IBindableProperty<bool> AnythingSelected { get; }
+        
 
         private bool IsSomethingSelected() => Mode == SelectionMode.Current
             ? Current.Value != null
             : Selection.Any();
 
-        public DetailMenuModel([NotNull] ILibrary library)
+        public DetailMenuModel([NotNull] ILibrary library, [NotNull] IMessageRelay relay)
         {
             if (library == null) throw new ArgumentNullException(nameof(library));
+            if (relay == null) throw new ArgumentNullException(nameof(relay));
 
             SwitchToCurrentModeCommand = new DelegateCommand(
                 () => Mode != SelectionMode.Current,
@@ -56,6 +60,7 @@ namespace StlVault.ViewModels
             StatsModel = new StatsModel(this);
             TagEditorModel = new TagEditorModel(this, library);
             RotateModel = new RotateModel(this, library);
+            ViewPanelModel = new ViewPanelModel(this, library, relay);
         }
 
         private void ModeOnValueChanged(SelectionMode obj)
@@ -69,6 +74,7 @@ namespace StlVault.ViewModels
             var sender = message.Sender;
             if (sender.Selected)
             {
+                if (Current.Value != null) Mode.Value = SelectionMode.Selection;
                 Current.Value = sender;
                 Selection.Add(sender);
             }
@@ -76,6 +82,7 @@ namespace StlVault.ViewModels
             {
                 Current.Value = null;
                 Selection.Remove(sender);
+                if (Selection.Count == 1) Mode.Value = SelectionMode.Current;
             }
         }
 

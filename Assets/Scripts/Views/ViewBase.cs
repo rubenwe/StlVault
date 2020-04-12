@@ -13,8 +13,6 @@ namespace StlVault.Views
             OnViewModelBound();
         }
 
-        protected virtual void OnViewModelBound()
-        {
-        }
+        protected abstract void OnViewModelBound();
     }
 }

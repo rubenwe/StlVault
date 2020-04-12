@@ -10,13 +10,13 @@ namespace StlVault.Views
     internal class ImportFoldersView : ContainerView<ImportFoldersModel, ImportFolderView, FileSourceModel>
     {
         [SerializeField] private Button _addButton;
-        protected override IReadOnlyObservableList<FileSourceModel> Items => ViewModel.Folders;
+        protected override IReadOnlyObservableList<FileSourceModel> ChildModels => ViewModel.Folders;
 
         protected override void OnViewModelBound()
         {
             base.OnViewModelBound();
 
-            _addButton.Bind(ViewModel.AddImportFolderCommand);
+            _addButton.BindTo(ViewModel.AddImportFolderCommand);
         }
     }
 }

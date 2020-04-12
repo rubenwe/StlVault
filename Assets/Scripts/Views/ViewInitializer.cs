@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using StlVault.Messages;
@@ -18,26 +17,28 @@ namespace StlVault.Views
 {
     public class ViewInitializer : MonoBehaviour
     {
-        [Category("Main Menu")] 
+        [Header("Main Menu")] 
         [SerializeField] private ImportFoldersView _importFoldersView;
         [SerializeField] private SavedSearchesView _savedSearchesView;
         [SerializeField] private CollectionsView _collectionsView;
 
-        [Category("Detail Menu")]
+        [Header("Detail Menu")]
         [SerializeField] private DetailMenu _detailMenu;
         
-        [Category("Main Area")]
+        [Header("Main Area")]
         [SerializeField] private TagInputView _searchView;
         [SerializeField] private ItemsView _itemsView;
-
-        [Category("Dialogs")] 
+        [SerializeField] private CanvasGroup _mainGroup;
+        
+        [Header("Dialogs")] 
         [SerializeField] private AddSavedSearchDialog _addSavedSearchDialog;
         [SerializeField] private AddImportFolderDialog _addImportFolderDialog;
         [SerializeField] private ApplicationSettingsDialog _applicationSettingsDialog;
         [SerializeField] private UserFeedbackDialog _userFeedbackDialog;
         [SerializeField] private ExitingDialog _exitingDialog;
+        [SerializeField] private EditScreen _editScreen;
 
-        [Category("Misc")] 
+        [Header("Misc")] 
         [SerializeField] private PreviewCam _previewBuilder;
         [SerializeField] private ApplicationView _applicationView;
         [SerializeField] private ProgressView _progressView;
@@ -100,7 +101,7 @@ namespace StlVault.Views
             var collectionsViewModel = new CollectionsModel(configStore, _relay);
 
             // Detail Menu
-            var detailMenuModel = new DetailMenuModel(_library);
+            var detailMenuModel = new DetailMenuModel(_library, _relay);
 
             // Dialogs
             var addSavedSearchViewModel = new AddSavedSearchModel(_relay);
@@ -108,16 +109,20 @@ namespace StlVault.Views
             var applicationSettingsModel = new ApplicationSettingsModel(configStore);
             var userFeedbackModel = new UserFeedbackModel();
             var exitingModel = new ExitingModel(_library, OnShutdownComplete);
+            var editScreenModel = new EditScreenModel(_library);
             
             BindViewModels();
             BindSettings();
+            
+            // Wire up misc items
             _disposables.Add(importFoldersViewModel);
-
+            _editScreen.MainView = _mainGroup;
+            
             // Also restores app settings for import etc.
             await applicationSettingsModel.InitializeAsync();
             
             await _library.InitializeAsync();
-            await InitializeViewModels();
+            InitializeViewModelsAsync();
 
             aggregator.Subscribe(
                 // Main View
@@ -138,8 +143,34 @@ namespace StlVault.Views
                 addImportFolderViewModel,
                 applicationSettingsModel,
                 userFeedbackModel,
-                exitingModel);
+                exitingModel,
+                editScreenModel);
 
+            void BindViewModels()
+            {
+                // Main View
+                _progressView.BindTo(progressModel);
+                _applicationView.BindTo(applicationModel);
+                _searchView.BindTo(searchViewModel);
+                _itemsView.BindTo(itemsViewModel);
+
+                // Main Menu
+                _importFoldersView.BindTo(importFoldersViewModel);
+                _savedSearchesView.BindTo(savedSearchesViewModel);
+                _collectionsView.BindTo(collectionsViewModel);
+
+                // Detail Menu
+                _detailMenu.BindTo(detailMenuModel);
+                
+                // Dialogs
+                _addImportFolderDialog.BindTo(addImportFolderViewModel);
+                _addSavedSearchDialog.BindTo(addSavedSearchViewModel);
+                _applicationSettingsDialog.BindTo(applicationSettingsModel);
+                _userFeedbackDialog.BindTo(userFeedbackModel);
+                _exitingDialog.BindTo(exitingModel);
+                _editScreen.BindTo(editScreenModel);
+            }
+            
             void BindSettings()
             {
                 var rt = applicationSettingsModel.RuntimeSettings;
@@ -167,35 +198,11 @@ namespace StlVault.Views
                 rt.PreviewJpegQuality.ValueChanged += quality => _previewBuilder.Quality = quality;
             }
 
-            void BindViewModels()
-            {
-                // Main View
-                _progressView.BindTo(progressModel);
-                _applicationView.BindTo(applicationModel);
-                _searchView.BindTo(searchViewModel);
-                _itemsView.BindTo(itemsViewModel);
-
-                // Main Menu
-                _importFoldersView.BindTo(importFoldersViewModel);
-                _savedSearchesView.BindTo(savedSearchesViewModel);
-                _collectionsView.BindTo(collectionsViewModel);
-
-                // Detail Menu
-                _detailMenu.BindTo(detailMenuModel);
-                
-                // Dialogs
-                _addImportFolderDialog.BindTo(addImportFolderViewModel);
-                _addSavedSearchDialog.BindTo(addSavedSearchViewModel);
-                _applicationSettingsDialog.BindTo(applicationSettingsModel);
-                _userFeedbackDialog.BindTo(userFeedbackModel);
-                _exitingDialog.BindTo(exitingModel);
-            }
-
-            async Task InitializeViewModels()
+            async void InitializeViewModelsAsync()
             {
                 await savedSearchesViewModel.InitializeAsync();
                 await importFoldersViewModel.InitializeAsync();
-                await collectionsViewModel.Initialize();
+                await collectionsViewModel.InitializeAsync();
             }
         }
     }

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace StlVault.Views
 {
-    internal class StatsPanel : ViewBase<StatsModel>
+    internal class StatsPanel : ViewBase<IStatsModel>
     {
         [SerializeField] private TMP_Text _fileText;
         [SerializeField] private TMP_Text _vertexText;
@@ -18,15 +18,13 @@ namespace StlVault.Views
 
         protected override void OnViewModelBound()
         {
-            base.OnViewModelBound();
-
-            _fileText.Bind(ViewModel.FileName);
-            _vertexText.Bind(ViewModel.VertexCount);
-            _triangleText.Bind(ViewModel.TriangleCount);
-            _volumeText.Bind(ViewModel.Volume, "{0:F2} mL");
-            _widthText.Bind(ViewModel.Width, "{0:F1} mm");
-            _heightText.Bind(ViewModel.Height, "{0:F1} mm");
-            _depthText.Bind(ViewModel.Depth, "{0:F1} mm");
+            _fileText.BindTo(ViewModel.FileName);
+            _vertexText.BindTo(ViewModel.VertexCount);
+            _triangleText.BindTo(ViewModel.TriangleCount);
+            _volumeText.BindTo(ViewModel.Volume, "{0:F2} mL");
+            _widthText.BindTo(ViewModel.Width, "{0:F1} mm");
+            _heightText.BindTo(ViewModel.Height, "{0:F1} mm");
+            _depthText.BindTo(ViewModel.Depth, "{0:F1} mm");
         }
     }
 }

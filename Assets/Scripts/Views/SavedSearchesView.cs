@@ -11,13 +11,13 @@ namespace StlVault.Views
     {
         [SerializeField] private Button _addButton;
 
-        protected override IReadOnlyObservableList<SavedSearchModel> Items => ViewModel.SavedSearches;
+        protected override IReadOnlyObservableList<SavedSearchModel> ChildModels => ViewModel.SavedSearches;
 
         protected override void OnViewModelBound()
         {
             base.OnViewModelBound();
 
-            _addButton.Bind(ViewModel.SaveCurrentSearchCommand);
+            _addButton.BindTo(ViewModel.SaveCurrentSearchCommand);
         }
     }
 }

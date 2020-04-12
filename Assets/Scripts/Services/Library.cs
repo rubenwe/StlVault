@@ -102,6 +102,46 @@ namespace StlVault.Services
         }
 
         public IEnumerable<ItemPreviewModel> GetAllItems() => _previewModels;
+        
+        public async Task<Mesh> GetMeshAsync(ItemPreviewModel previewModel)
+        {
+            IFileSource source = null;
+            string filePath = null;
+            ReadLocked(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
+            
+            if (source == null || filePath == null) return null;
+            
+            var fileName = Path.GetFileName(filePath);
+
+            var fileBytes = await source
+                .GetFileBytesAsync(filePath)
+                .Timed("Reading file {0}", fileName);
+
+            var (mesh, _) = await StlImporter
+                .ImportMeshAsync(fileName, fileBytes, centerVertices: false, computeHash: false)
+                .Timed("Imported {0}", fileName);
+
+            return mesh;
+        }
+
+        public bool TryGetLocalPath(ItemPreviewModel previewModel, out string localPath)
+        {
+            try
+            {
+                IFileSource source = null;
+                string filePath = null;
+                ReadLocked(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
+
+                localPath = Path.Combine(source.DisplayName, filePath);
+                return File.Exists(localPath);
+            }
+            catch
+            {
+                localPath = null;
+            }
+
+            return false;
+        }
 
         private enum TagAction
         {

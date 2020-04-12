@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using StlVault.ViewModels;
 
 namespace StlVault.Messages
 {
@@ -13,6 +14,11 @@ namespace StlVault.Messages
         public class SaveSearch
         {
             public IReadOnlyList<string> SearchTags { get; set; }
+        }
+
+        internal class EditScreen
+        {
+            public IReadOnlyList<ItemPreviewModel> SelectedItems { get; set; }
         }
     }
 }

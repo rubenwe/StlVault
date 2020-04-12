@@ -14,9 +14,7 @@ namespace StlVault.Views
 
         protected override void OnViewModelBound()
         {
-            base.OnViewModelBound();
-
-            _text.Bind(ViewModel.Name);
+            _text.BindTo(ViewModel.Name);
         }
     }
 }
