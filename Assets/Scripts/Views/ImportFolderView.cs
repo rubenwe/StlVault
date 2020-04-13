@@ -28,15 +28,13 @@ namespace StlVault.Views
 
         protected override void OnViewModelBound()
         {
-            base.OnViewModelBound();
-
-            _selectButton.Bind(ViewModel.SelectCommand);
-            _deleteButton.Bind(ViewModel.DeleteCommand);
+            _selectButton.BindTo(ViewModel.SelectCommand);
+            _deleteButton.BindTo(ViewModel.DeleteCommand);
 
             ViewModel.State.OnMainThread().ValueChanged += UpdateStateIcon;
             UpdateStateIcon(ViewModel.State);
             
-            _text.Bind(ViewModel.Path);
+            _text.BindTo(ViewModel.Path);
             ViewModel.Path.ValueChanged += OnPathOnValueChanged;
 
             void OnPathOnValueChanged(string s)

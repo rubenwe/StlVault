@@ -10,7 +10,7 @@ namespace StlVault.ViewModels
             throw new NotImplementedException();
         }
 
-        protected override void Reset()
+        protected override void Reset(bool closing)
         {
             throw new NotImplementedException();
         }

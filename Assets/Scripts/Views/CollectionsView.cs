@@ -5,6 +5,6 @@ namespace StlVault.Views
 {
     internal class CollectionsView : ContainerView<CollectionsModel, CollectionView, CollectionModel>
     {
-        protected override IReadOnlyObservableList<CollectionModel> Items => ViewModel.Collections;
+        protected override IReadOnlyObservableList<CollectionModel> ChildModels => ViewModel.Collections;
     }
 }

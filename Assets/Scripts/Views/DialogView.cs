@@ -11,7 +11,7 @@ namespace StlVault.Views
     [RequireComponent(typeof(CanvasGroup))]
     internal abstract class DialogView<T> : ViewBase<T> where T : class, IDialogModel
     {
-        private const float FadeDuration = 0.25f;
+        protected const float FadeDuration = 0.25f;
         [SerializeField] private Button _okButton;
         [SerializeField] private Button _cancelButton;
 
@@ -50,16 +50,15 @@ namespace StlVault.Views
 
         protected override void OnViewModelBound()
         {
-            base.OnViewModelBound();
-
-            _okButton.Bind(ViewModel.AcceptCommand);
-            _cancelButton.Bind(ViewModel.CancelCommand);
+            if(_okButton != null) _okButton.BindTo(ViewModel.AcceptCommand);
+            if (_cancelButton != null) _cancelButton.BindTo(ViewModel.CancelCommand);
+            
             _panel.localScale = Vector3.zero;
 
             gameObject.SetActive(false);
             ViewModel.Shown.ValueChanged += OnShownChanged;
         }
-
+        
         private void Update()
         {
             if (!ViewModel.Shown) return;

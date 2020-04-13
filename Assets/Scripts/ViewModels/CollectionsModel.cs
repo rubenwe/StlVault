@@ -23,7 +23,7 @@ namespace StlVault.ViewModels
             _relay = relay ?? throw new ArgumentNullException(nameof(relay));
         }
 
-        public async Task Initialize()
+        public async Task InitializeAsync()
         {
             var data = await _store.LoadAsyncOrDefault<CollectionsConfigFile>();
             foreach (var config in data)

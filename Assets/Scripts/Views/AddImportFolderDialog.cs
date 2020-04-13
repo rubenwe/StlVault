@@ -40,20 +40,20 @@ namespace StlVault.Views
             base.OnViewModelBound();
 
             // Folder Path
-            _importPathField.Bind(ViewModel.FolderPath);
+            _importPathField.BindTo(ViewModel.FolderPath);
             _browseButton.onClick.AddListener(BrowseButtonClicked);
-            _scanSubDirsToggle.Bind(ViewModel.ScanSubDirectories);
+            _scanSubDirsToggle.BindTo(ViewModel.ScanSubDirectories);
 
             // Tags
-            _tagsField.Bind(ViewModel.Tags);
+            _tagsField.BindTo(ViewModel.Tags);
 
             // Auto Rotate
-            _rotateFilesToggle.Bind(ViewModel.RotateOnImport);
-            (_xRotationField, _yRotationField, _zRotationField).Bind(ViewModel.Rotation);
+            _rotateFilesToggle.BindTo(ViewModel.RotateOnImport);
+            (_xRotationField, _yRotationField, _zRotationField).BindTo(ViewModel.Rotation);
 
             // Auto Scale
-            _scaleFilesToggle.Bind(ViewModel.ScaleOnImport);
-            (_xScaleField, _yScaleField, _zScaleField).Bind(ViewModel.Scale);
+            _scaleFilesToggle.BindTo(ViewModel.ScaleOnImport);
+            (_xScaleField, _yScaleField, _zScaleField).BindTo(ViewModel.Scale);
         }
 
         private void BrowseButtonClicked()

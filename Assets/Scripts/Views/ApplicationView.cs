@@ -1,4 +1,5 @@
-﻿using StlVault.ViewModels;
+﻿using StlVault.Messages;
+using StlVault.ViewModels;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,11 +15,9 @@ namespace StlVault.Views
 
         protected override void OnViewModelBound()
         {
-            base.OnViewModelBound();
-
-            _showSettingsButton.Bind(ViewModel.ShowAppSettingsCommand);
-            _showFeedbackButton.Bind(ViewModel.ShowFeedbackCommand);
-            _showHelpButton.Bind(ViewModel.ShowHelpCommand);
+            _showSettingsButton.BindTo(ViewModel.ShowAppSettingsCommand);
+            _showFeedbackButton.BindTo(ViewModel.ShowFeedbackCommand);
+            _showHelpButton.BindTo(ViewModel.ShowHelpCommand);
         }
     }
 }

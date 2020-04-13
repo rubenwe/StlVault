@@ -6,7 +6,7 @@ namespace StlVault.Views
 {
     internal class ItemsView : ContainerView<ItemsModel, ItemView, ItemPreviewModel>
     {
-        protected override IReadOnlyObservableList<ItemPreviewModel> Items => ViewModel.Items;
+        protected override IReadOnlyObservableList<ItemPreviewModel> ChildModels => ViewModel.Items;
 
         private void Update()
         {

@@ -42,7 +42,7 @@ namespace StlVault.ViewModels
             await _store.StoreAsync(settings);
         }
         
-        protected override void Reset()
+        protected override void Reset(bool closing)
         {
             var settings = RuntimeSettings.GetSettings();
             ApplySettings(settings);

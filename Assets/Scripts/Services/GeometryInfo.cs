@@ -37,29 +37,32 @@ namespace StlVault.Services
 
                 var vertices = mesh.vertices;
 
-                var volume = 0f;
-                for (var i = 0; i < vertices.Length; i += 3)
+                Task.Run(() =>
                 {
-                    var a = vertices[i + 0];
-                    var b = vertices[i + 1];
-                    var c = vertices[i + 2];
+                    var volume = 0f;
+                    for (var i = 0; i < vertices.Length; i += 3)
+                    {
+                        var a = vertices[i + 0];
+                        var b = vertices[i + 1];
+                        var c = vertices[i + 2];
 
-                    volume += Vector3.Dot(Vector3.Cross(a, b), c) / 6f;
-                }
+                        volume += Vector3.Dot(Vector3.Cross(a, b), c) / 6f;
+                    }
 
-                volume = Mathf.Abs(volume * scl.x * scl.y * scl.z) / 1000f;
+                    volume = Mathf.Abs(volume * scl.x * scl.y * scl.z) / 1000f;
 
-                var info =  new GeometryInfo
-                {
-                    Rotation = rot,
-                    Scale = scl,
-                    Size = size,
-                    Volume = volume,
-                    VertexCount = vertices.Length,
-                    TriangleCount = vertices.Length / 3
-                };
+                    var info = new GeometryInfo
+                    {
+                        Rotation = rot,
+                        Scale = scl,
+                        Size = size,
+                        Volume = volume,
+                        VertexCount = vertices.Length,
+                        TriangleCount = vertices.Length / 3
+                    };
 
-                tcs.SetResult(info);
+                    tcs.SetResult(info);
+                });
             });
 
             return tcs.Task;

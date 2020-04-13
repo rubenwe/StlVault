@@ -34,19 +34,19 @@ namespace StlVault.Views
             InitSlider(_previewQualitySlider, 10, 80);
             InitSlider(_scrollSensitivitySlider, 60, 300);
 
-            _parallelismSlider.Bind(ViewModel.ImportParallelism);
-            _uiScaleSlider.Bind(ViewModel.UiScalePercent);
-            _logLevelSlider.Bind(ViewModel.LogLevel);
-            _previewResolutionSlider.Bind(ViewModel.PreviewResolution);
-            _previewQualitySlider.Bind(ViewModel.PreviewJpegQuality);
-            _scrollSensitivitySlider.Bind(ViewModel.ScrollSensitivity);
+            _parallelismSlider.BindTo(ViewModel.ImportParallelism);
+            _uiScaleSlider.BindTo(ViewModel.UiScalePercent);
+            _logLevelSlider.BindTo(ViewModel.LogLevel);
+            _previewResolutionSlider.BindTo(ViewModel.PreviewResolution);
+            _previewQualitySlider.BindTo(ViewModel.PreviewJpegQuality);
+            _scrollSensitivitySlider.BindTo(ViewModel.ScrollSensitivity);
             
-            _parallelismLabel.Bind(ViewModel.ImportParallelism, "{0} Worker");
-            _uiScaleLabel.Bind(ViewModel.UiScalePercent, "{0}%");
-            _logLevelLabel.Bind(ViewModel.LogLevel);
-            _previewResolutionLabel.Bind(ViewModel.PreviewResolution, v => Mathf.Pow(2f, v), "{0:N0}");
-            _previewQualityLabel.Bind(ViewModel.PreviewJpegQuality, "{0} %");
-            _scrollSensitivityLabel.Bind(ViewModel.ScrollSensitivity, v => v/300f * 200, "{0:N0} %");
+            _parallelismLabel.BindTo(ViewModel.ImportParallelism, "{0} Worker");
+            _uiScaleLabel.BindTo(ViewModel.UiScalePercent, "{0}%");
+            _logLevelLabel.BindTo(ViewModel.LogLevel);
+            _previewResolutionLabel.BindTo(ViewModel.PreviewResolution, v => Mathf.Pow(2f, v), "{0:N0}");
+            _previewQualityLabel.BindTo(ViewModel.PreviewJpegQuality, "{0} %");
+            _scrollSensitivityLabel.BindTo(ViewModel.ScrollSensitivity, v => v/300f * 200, "{0:N0} %");
         }
 
         private static void InitSlider(Slider slider, int min, int max)

@@ -66,7 +66,7 @@ namespace StlVault.ViewModels
             });
         }
 
-        protected override void Reset()
+        protected override void Reset(bool closing)
         {
             FolderPath.Value = string.Empty;
             ScanSubDirectories.Value = true;

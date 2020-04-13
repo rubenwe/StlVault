@@ -9,7 +9,7 @@ using NotifyCollectionChangedEventArgs = System.Collections.Specialized.NotifyCo
 
 namespace StlVault.ViewModels
 {
-    internal class StatsModel 
+    internal class StatsModel : IStatsModel
     {
         public BindableProperty<string> FileName { get; } = new BindableProperty<string>();
         public BindableProperty<int> VertexCount { get; } = new BindableProperty<int>();

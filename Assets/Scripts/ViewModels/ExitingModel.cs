@@ -23,7 +23,7 @@ namespace StlVault.ViewModels
         {
         }
 
-        protected override void Reset()
+        protected override void Reset(bool closing)
         {
         }
 

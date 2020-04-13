@@ -18,8 +18,6 @@ namespace StlVault.Views
 
         protected override void OnViewModelBound()
         {
-            base.OnViewModelBound();
-            
             ViewModel.ProgressText.OnMainThread().ValueChanged += OnValueChanged;
         }
 

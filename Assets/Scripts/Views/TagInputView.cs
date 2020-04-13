@@ -29,7 +29,7 @@ namespace StlVault.Views
         private EventSystem _eventSystem;
         private WrapGroup _wrapGroup;
 
-        protected override IReadOnlyObservableList<TagModel> Items => ViewModel.Tags;
+        protected override IReadOnlyObservableList<TagModel> ChildModels => ViewModel.Tags;
 
         private void Awake()
         {
