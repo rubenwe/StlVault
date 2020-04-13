@@ -1,5 +1,4 @@
-﻿using StlVault.Util;
-using StlVault.Util.Logging;
+﻿using StlVault.Util.Logging;
 
 namespace StlVault.Config
 {

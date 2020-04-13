@@ -1,8 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using StlVault.Config;
-using StlVault.Util;
-using StlVault.Util.Collections;
 using StlVault.ViewModels;
 using UnityEngine;
 

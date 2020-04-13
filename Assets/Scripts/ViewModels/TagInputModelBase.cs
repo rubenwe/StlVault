@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Linq;
+﻿using System.Linq;
 using System.Windows.Input;
 using StlVault.Services;
 using StlVault.Util;

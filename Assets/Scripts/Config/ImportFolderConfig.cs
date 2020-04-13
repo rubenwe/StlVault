@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using StlVault.Services;
 
 namespace StlVault.Config
 {

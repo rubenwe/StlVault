@@ -8,7 +8,6 @@ using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
 using StlVault.Util.Messaging;
-using UnityEditor;
 
 namespace StlVault.ViewModels
 {

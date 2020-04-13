@@ -1,5 +1,4 @@
-﻿using System;
-using DG.Tweening;
+﻿using DG.Tweening;
 using StlVault.Util.Unity;
 using StlVault.ViewModels;
 using UnityEngine;
