@@ -3,17 +3,19 @@ using System.Collections.Specialized;
 using System.Linq;
 using StlVault.ViewModels;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 #pragma warning disable 0649
 
 namespace StlVault.Views
 {
-    internal class ViewPort : ViewBase<ViewPortModel>
+    internal class ViewPort : ViewBase<ViewPortModel>, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private Material _material;
         [SerializeField] private Transform _meshParent;
         
         private readonly Dictionary<Mesh, GameObject> _lookup = new Dictionary<Mesh, GameObject>();
+        public bool ContainsMousePointer { get; private set; }
 
         protected override void OnViewModelBound()
         {
@@ -80,6 +82,16 @@ namespace StlVault.Views
             meshRenderer.sharedMaterial = _material;
 
             _lookup.Add(mesh, newGameObj);
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            ContainsMousePointer = true;
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            ContainsMousePointer = false;
         }
     }
 }

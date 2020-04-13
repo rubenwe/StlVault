@@ -1,4 +1,6 @@
+using StlVault.Views;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 #pragma warning disable 0649
 
@@ -20,6 +22,7 @@ namespace StlVault.Util.Unity
         [SerializeField] private float _zoomDampening = 5.0f;
         [SerializeField] private float _startX;
         [SerializeField] private float _startY;
+        [SerializeField] private ViewPort _viewPort;
 
         private float _xDeg;
         private float _yDeg;
@@ -30,6 +33,7 @@ namespace StlVault.Util.Unity
         private Quaternion _rotation;
         private Vector3 _position;
         private Camera _camera;
+        private EventSystem _eventSystem;
 
         public float XDeg => _xDeg;
         public float YDeg => _yDeg;
@@ -55,26 +59,32 @@ namespace StlVault.Util.Unity
  
         private void LateUpdate()
         {
-            // If Control and Alt and Middle button? ZOOM!
-            if (Input.GetMouseButton(2) && Input.GetKey(KeyCode.LeftAlt) && Input.GetKey(KeyCode.LeftControl))
+            if (_viewPort.ContainsMousePointer)
             {
-                _desiredDistance -= Input.GetAxis("Mouse Y") * Time.deltaTime * _zoomRate*0.125f * Mathf.Abs(_desiredDistance);
+                // If Control and Alt and Middle button? ZOOM!
+                if (Input.GetMouseButton(2) && Input.GetKey(KeyCode.LeftAlt) && Input.GetKey(KeyCode.LeftControl))
+                {
+                    _desiredDistance -= Input.GetAxis("Mouse Y") * Time.deltaTime * _zoomRate * 0.125f * Mathf.Abs(_desiredDistance);
+                }
+                // If middle mouse and left alt are selected? ORBIT
+                else if (Input.GetMouseButton(2) && (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.LeftShift)))
+                {
+                    _xDeg += Input.GetAxis("Mouse X") * _xSpeed * 0.02f;
+                    _yDeg -= Input.GetAxis("Mouse Y") * _ySpeed * 0.02f;
+                }
+                // otherwise if middle mouse is selected, we pan by way of transforming the target in screenspace
+                else if (Input.GetMouseButton(2))
+                {
+                    //grab the rotation of the camera so we can move in a psuedo local XY space
+                    _target.rotation = transform.rotation;
+                    _target.Translate(-Input.GetAxis("Mouse X") * _panSpeed * Vector3.right);
+                    _target.Translate(-Input.GetAxis("Mouse Y") * _panSpeed * transform.up, Space.World);
+                }
+
+                // affect the desired Zoom distance if we roll the scrollwheel
+                _desiredDistance -= Input.GetAxis("Mouse ScrollWheel") * Time.deltaTime * _zoomRate * Mathf.Abs(_desiredDistance);
             }
-            // If middle mouse and left alt are selected? ORBIT
-            else if (Input.GetMouseButton(2) && (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.LeftShift)))
-            {
-                _xDeg += Input.GetAxis("Mouse X") * _xSpeed * 0.02f;
-                _yDeg -= Input.GetAxis("Mouse Y") * _ySpeed * 0.02f;
-            }
-            // otherwise if middle mouse is selected, we pan by way of transforming the target in screenspace
-            else if (Input.GetMouseButton(2))
-            {
-                //grab the rotation of the camera so we can move in a psuedo local XY space
-                _target.rotation = transform.rotation;
-                _target.Translate(-Input.GetAxis("Mouse X") * _panSpeed * Vector3.right);
-                _target.Translate(-Input.GetAxis("Mouse Y") * _panSpeed * transform.up, Space.World);
-            }
- 
+
             ////////OrbitAngle
  
             //Clamp the vertical axis for the orbit
@@ -88,8 +98,6 @@ namespace StlVault.Util.Unity
             
             ////////Orbit Position
  
-            // affect the desired Zoom distance if we roll the scrollwheel
-            _desiredDistance -= Input.GetAxis("Mouse ScrollWheel") * Time.deltaTime * _zoomRate * Mathf.Abs(_desiredDistance);
             //clamp the zoom min/max
             _desiredDistance = Mathf.Clamp(_desiredDistance, _minDistance, _maxDistance);
             // For smoothing of the zoom, lerp distance

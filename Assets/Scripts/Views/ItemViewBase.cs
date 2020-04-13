@@ -107,9 +107,14 @@ namespace StlVault.Views
             _isLoaded = false;
         }
 
-        protected void SelectedChanged(bool selected) => _image.color = selected
-            ? _selectedColor
-            : _normalColor;
+        protected void SelectedChanged(bool selected)
+        {
+            if (_image == null) return;
+            
+            _image.color = selected
+                ? _selectedColor
+                : _normalColor;
+        }
 
         private void OnDestroy()
         {

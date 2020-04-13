@@ -74,7 +74,7 @@ namespace StlVault.ViewModels
             var sender = message.Sender;
             if (sender.Selected)
             {
-                if (Current.Value != null) Mode.Value = SelectionMode.Selection;
+                if (Selection.Count == 1) Mode.Value = SelectionMode.Selection;
                 Current.Value = sender;
                 Selection.Add(sender);
             }

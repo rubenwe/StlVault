@@ -32,6 +32,7 @@ namespace StlVault.ViewModels
         {
             _library = library ?? throw new ArgumentNullException(nameof(library));
             _relay = relay ?? throw new ArgumentNullException(nameof(relay));
+            _items.SetSource(new ObservableList<ItemPreviewModel>());
         }
 
         public void Receive(SearchChangedMessage message)

@@ -2697,6 +2697,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: StatusBar
       objectReference: {fileID: 0}
+    - target: {fileID: 8275590331501317616, guid: bf36136cf2e3c364b934c8b9f1a24175,
+        type: 3}
+      propertyPath: m_MinValue
+      value: 300
+      objectReference: {fileID: 0}
+    - target: {fileID: 8275590331501317616, guid: bf36136cf2e3c364b934c8b9f1a24175,
+        type: 3}
+      propertyPath: m_MaxValue
+      value: 800
+      objectReference: {fileID: 0}
+    - target: {fileID: 8275590331501317616, guid: bf36136cf2e3c364b934c8b9f1a24175,
+        type: 3}
+      propertyPath: m_Value
+      value: 400
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bf36136cf2e3c364b934c8b9f1a24175, type: 3}
 --- !u!224 &6984308347156055533 stripped
