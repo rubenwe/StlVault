@@ -12,8 +12,8 @@ namespace StlVault.ViewModels
 {
     internal class ViewPortModel
     {
-        public ObservableList<Mesh> Meshes { get; } = new ObservableList<Mesh>();
-        private readonly Dictionary<ItemPreviewModel, Mesh> _lookup = new Dictionary<ItemPreviewModel, Mesh>();
+        public ObservableList<(Mesh, ItemPreviewModel)> Meshes { get; } = new ObservableList<(Mesh, ItemPreviewModel)>();
+        private readonly Dictionary<ItemPreviewModel, (Mesh, ItemPreviewModel)> _lookup = new Dictionary<ItemPreviewModel, (Mesh, ItemPreviewModel)>();
         private readonly ItemSelectorModel _selector;
         private readonly ILibrary _library;
         
@@ -64,8 +64,9 @@ namespace StlVault.ViewModels
         private async Task AddMeshAsync(ItemPreviewModel model)
         {
             var mesh = await _library.GetMeshAsync(model);
-            _lookup.Add(model, mesh);
-            Meshes.Add(mesh);
+            var tuple = (mesh, model);
+            _lookup.Add(model, tuple);
+            Meshes.Add(tuple);
         }
     }
 }

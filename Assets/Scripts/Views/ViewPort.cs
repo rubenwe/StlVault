@@ -26,15 +26,15 @@ namespace StlVault.Views
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (Mesh mesh in e.NewItems)
+                    foreach (var (mesh, model) in e.NewItems.OfType<(Mesh, ItemPreviewModel)>())
                     {
-                        InstantiateMesh(mesh);
+                        InstantiateMesh(mesh, model);
                     }
                     
                     break;
                 
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (Mesh mesh in e.OldItems)
+                    foreach (var(mesh, _) in e.OldItems.OfType<(Mesh, ItemPreviewModel)>())
                     {
                         DestroyMesh(mesh);
                     }
@@ -61,16 +61,17 @@ namespace StlVault.Views
             }
         }
 
-        private void InstantiateMesh(Mesh mesh)
+        private void InstantiateMesh(Mesh mesh, ItemPreviewModel model)
         {
             if (_lookup.ContainsKey(mesh)) return;
             
             var newGameObj = new GameObject(mesh.name);
             newGameObj.transform.SetParent(_meshParent);
             
+            var geoInfo = model.GeometryInfo.Value;
             newGameObj.transform.localPosition = Vector3.zero;
-            newGameObj.transform.localScale = 0.1f * Vector3.one;
-            newGameObj.transform.localRotation = Quaternion.identity;
+            newGameObj.transform.localScale = 0.1f * geoInfo.Scale;
+            newGameObj.transform.localRotation = Quaternion.Euler(geoInfo.Rotation);
             
             var meshFilter = newGameObj.AddComponent<MeshFilter>();
             meshFilter.sharedMesh = mesh;
