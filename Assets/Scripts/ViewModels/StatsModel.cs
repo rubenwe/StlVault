@@ -1,10 +1,7 @@
-﻿using System.ComponentModel;
-using System.Linq;
-using StlVault.Config;
+﻿using System.Linq;
 using StlVault.Services;
 using StlVault.Util;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 using NotifyCollectionChangedEventArgs = System.Collections.Specialized.NotifyCollectionChangedEventArgs;
 
 namespace StlVault.ViewModels

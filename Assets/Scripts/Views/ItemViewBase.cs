@@ -2,10 +2,11 @@
 using System.Threading.Tasks;
 using DG.Tweening;
 using StlVault.ViewModels;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+#pragma warning disable 0649
 
 namespace StlVault.Views
 {

@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Windows.Input;
 using StlVault.Util;
 using StlVault.Util.Commands;

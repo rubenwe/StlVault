@@ -1,5 +1,4 @@
-﻿using StlVault.Messages;
-using StlVault.ViewModels;
+﻿using StlVault.ViewModels;
 using UnityEngine;
 using UnityEngine.UI;
 

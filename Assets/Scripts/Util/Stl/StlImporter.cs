@@ -2,6 +2,7 @@ using System;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using StlVault.Util.Unity;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -64,20 +65,34 @@ namespace StlVault.Util.Stl
                 var mesh = new Mesh
                 {
                     name = fileName,
-                    indexFormat = IndexFormat.UInt32,
-                    vertices = vertices,
-                    normals = normals,
-                    triangles = triangles,
                     hideFlags = HideFlags.HideAndDontSave
                 };
+
+                var vertexCount = facets.Length * 3;
                 
+                mesh.SetVertexBufferParams(
+                    vertexCount,
+                    new VertexAttributeDescriptor(VertexAttribute.Position, stream: 0),
+                    new VertexAttributeDescriptor(VertexAttribute.Normal, stream: 1)
+                );
+                
+                mesh.SetVertexBufferData(vertices, 0, 0, vertexCount, stream:0);
+                mesh.SetVertexBufferData(normals, 0, 0, vertexCount, stream:1);
+                
+                mesh.SetIndexBufferParams(vertexCount, IndexFormat.UInt32);
+                mesh.SetIndexBufferData(triangles, 0, 0, vertexCount);
+                
+                mesh.SetSubMesh(0, new SubMeshDescriptor(0, vertexCount));
+                
+                mesh.RecalculateBounds();
+               
                 if (centerVertices)
                 {
                     var currentCenter = mesh.bounds.center;
                     await Task.Run(() => CenterVertices(vertices, currentCenter))
                         .Timed("Centering vertices of {0}", fileName);
-
-                    mesh.vertices = vertices;
+                
+                    mesh.SetVertexBufferData(vertices, 0, 0, vertexCount, stream:0);
                     mesh.RecalculateBounds();
                 }
 
@@ -105,11 +120,10 @@ namespace StlVault.Util.Stl
         private static (Vector3[] vertices, Vector3[] normals, int[] triangles) BuildMesh(Facet[] facets)
         {
             var meshSize = facets.Length * 3;
-
-            var triangles = new int[meshSize];
             var vertices = new Vector3[meshSize];
             var normals = new Vector3[meshSize];
-
+            var triangles = new int[meshSize];
+            
             void WriteFacet(int currentFacet)
             {
                 var i = currentFacet * 3;

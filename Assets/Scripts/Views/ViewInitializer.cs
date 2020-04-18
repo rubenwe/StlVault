@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using StlVault.Messages;
 using StlVault.Services;
 using StlVault.Util.Logging;
@@ -27,8 +26,8 @@ namespace StlVault.Views
         
         [Header("Main Area")]
         [SerializeField] private TagInputView _searchView;
-        [SerializeField] private ItemsView _itemsView;
         [SerializeField] private CanvasGroup _mainGroup;
+        [SerializeField] private LibraryView _libraryView;
         
         [Header("Dialogs")] 
         [SerializeField] private AddSavedSearchDialog _addSavedSearchDialog;
@@ -152,7 +151,7 @@ namespace StlVault.Views
                 _progressView.BindTo(progressModel);
                 _applicationView.BindTo(applicationModel);
                 _searchView.BindTo(searchViewModel);
-                _itemsView.BindTo(itemsViewModel);
+                _libraryView.BindTo(itemsViewModel);
 
                 // Main Menu
                 _importFoldersView.BindTo(importFoldersViewModel);

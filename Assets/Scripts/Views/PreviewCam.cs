@@ -1,8 +1,11 @@
+using System;
 using System.Threading.Tasks;
 using StlVault.Services;
 using StlVault.Util;
+using StlVault.Util.Logging;
 using StlVault.Util.Unity;
 using UnityEngine;
+using ILogger = StlVault.Util.Logging.ILogger;
 
 #pragma warning disable 0649
 
@@ -10,6 +13,7 @@ namespace StlVault.Views
 {
     internal class PreviewCam : MonoBehaviour, IPreviewBuilder
     {
+        private static readonly ILogger Logger = UnityLogger.Instance;
         public BindableProperty<int> PreviewResolution { get; } = new BindableProperty<int>();
         public int Quality { get; set; }
 
@@ -87,8 +91,16 @@ namespace StlVault.Views
             var tcs = new TaskCompletionSource<(byte[], int)>(TaskCreationOptions.RunContinuationsAsynchronously);
             GuiCallbackQueue.Enqueue(() =>
             {
-                var data = GetSnapshot(mesh, objRotation);
-                tcs.SetResult((data, PreviewResolution.Value));
+                try
+                {
+                    var data = GetSnapshot(mesh, objRotation);
+                    tcs.SetResult((data, PreviewResolution.Value));
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Error while creating snapshot of {0}", mesh.name);
+                    tcs.SetException(ex);
+                }
             });
 
             return tcs.Task;

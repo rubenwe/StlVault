@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using StlVault.Config;
 using StlVault.Util.Logging;
 
 namespace StlVault.Services

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Windows.Input;
 using JetBrains.Annotations;
 using StlVault.Config;

@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Windows.Input;
 using JetBrains.Annotations;
 using StlVault.Services;
