@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using StlVault.Util.Unity;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -9,6 +11,8 @@ namespace StlVault.Util.Stl
 {
     public static class StlImporter
     {
+        private static readonly Dictionary<Mesh, IDisposable[]> _bufferLookup = new Dictionary<Mesh, IDisposable[]>();
+        
         public static async Task<(Mesh mesh, string fileHash)> ImportMeshAsync(
             string fileName, 
             byte[] fileBytes, 
@@ -64,20 +68,39 @@ namespace StlVault.Util.Stl
                 var mesh = new Mesh
                 {
                     name = fileName,
-                    indexFormat = IndexFormat.UInt32,
-                    vertices = vertices,
-                    normals = normals,
-                    triangles = triangles,
                     hideFlags = HideFlags.HideAndDontSave
                 };
+
+                var vertexCount = facets.Length * 3;
+                
+                mesh.SetVertexBufferParams(
+                    vertexCount,
+                    new VertexAttributeDescriptor(VertexAttribute.Position, stream: 0),
+                    new VertexAttributeDescriptor(VertexAttribute.Normal, stream: 1)
+                );
+                
+                mesh.SetVertexBufferData(vertices, 0, 0, vertexCount, stream:0);
+                mesh.SetVertexBufferData(normals, 0, 0, vertexCount, stream:1);
+                
+                mesh.SetIndexBufferParams(vertexCount, IndexFormat.UInt32);
+                mesh.SetIndexBufferData(triangles, 0, 0, vertexCount);
+                
+                mesh.SetSubMesh(0, new SubMeshDescriptor(0, vertexCount));
+                
+                mesh.RecalculateBounds();
+
+                lock (_bufferLookup)
+                {
+                    _bufferLookup[mesh] = new IDisposable[] {vertices, normals, triangles};
+                }
                 
                 if (centerVertices)
                 {
                     var currentCenter = mesh.bounds.center;
                     await Task.Run(() => CenterVertices(vertices, currentCenter))
                         .Timed("Centering vertices of {0}", fileName);
-
-                    mesh.vertices = vertices;
+                
+                    mesh.SetVertexBufferData(vertices, 0, 0, vertexCount, stream:0);
                     mesh.RecalculateBounds();
                 }
 
@@ -96,20 +119,27 @@ namespace StlVault.Util.Stl
             }
         }
 
-        private static void CenterVertices(Vector3[] vertices, Vector3 correction)
+        private static void CenterVertices(NativeArray<Vector3> vertices, Vector3 correction)
         {
             void MoveVertex(int i) => vertices[i] -= correction;
             Parallel.For(0, vertices.Length, MoveVertex);
         }
 
-        private static (Vector3[] vertices, Vector3[] normals, int[] triangles) BuildMesh(Facet[] facets)
+        private static (NativeArray<Vector3> vertices, NativeArray<Vector3> normals, NativeArray<int> triangles) BuildMesh(Facet[] facets)
         {
+            NativeArray<T> GetBuffer<T>(int meshSize1) where T : struct
+            {
+                return new NativeArray<T>(
+                    meshSize1, Allocator.Persistent,
+                    NativeArrayOptions.UninitializedMemory
+                );
+            }
+
             var meshSize = facets.Length * 3;
-
-            var triangles = new int[meshSize];
-            var vertices = new Vector3[meshSize];
-            var normals = new Vector3[meshSize];
-
+            var vertices = GetBuffer<Vector3>(meshSize);
+            var normals = GetBuffer<Vector3>(meshSize);
+            var triangles = GetBuffer<int>(meshSize);
+            
             void WriteFacet(int currentFacet)
             {
                 var i = currentFacet * 3;
@@ -144,7 +174,19 @@ namespace StlVault.Util.Stl
         
         public static void Destroy(Mesh mesh)
         {
-            GuiCallbackQueue.Enqueue(() => UnityEngine.Object.Destroy(mesh));
+            GuiCallbackQueue.Enqueue(() =>
+            {
+                lock (_bufferLookup)
+                {
+                    var disposables = _bufferLookup[mesh];
+                    foreach (var disposable in disposables)
+                    {
+                        disposable.Dispose();
+                    }
+                }
+                
+                UnityEngine.Object.Destroy(mesh);
+            });
         }
     }
 }

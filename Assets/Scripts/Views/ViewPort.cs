@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using StlVault.Util.Stl;
 using StlVault.ViewModels;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -58,7 +59,7 @@ namespace StlVault.Views
             if (_lookup.TryGetValue(mesh, out var gameObj))
             {
                 Destroy(gameObj);
-                Destroy(mesh);
+                StlImporter.Destroy(mesh);
                 _lookup.Remove(mesh);
             }
         }

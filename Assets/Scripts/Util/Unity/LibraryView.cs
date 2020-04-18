@@ -1,15 +1,18 @@
-using StlVault.Util.Collections;
+﻿using StlVault.Util.Collections;
 using StlVault.ViewModels;
+using StlVault.Views;
 using UnityEngine;
 
-namespace StlVault.Views
+namespace StlVault.Util.Unity
 {
-    internal class ItemsView : ContainerView<ItemsModel, ItemView, ItemPreviewModel>
+    internal class LibraryView : VirtualGridLayoutGroup<ItemsModel, ItemView, ItemPreviewModel>
     {
-        protected override IReadOnlyObservableList<ItemPreviewModel> ChildModels => ViewModel.Items;
-
-        private void Update()
+        protected override IReadOnlyObservableList<ItemPreviewModel> ChildModels => ViewModel?.Items;
+        
+        protected override void Update()
         {
+            if (ViewModel == null) return;
+            
             var ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             if (ctrl && Input.GetKeyDown(KeyCode.A))
             {
@@ -23,6 +26,8 @@ namespace StlVault.Views
 
             var shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             ViewModel.SelectRange = shift;
+            
+            base.Update();
         }
     }
 }
