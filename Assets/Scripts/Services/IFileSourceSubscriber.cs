@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using StlVault.Util.FileSystem;
 
@@ -9,7 +10,7 @@ namespace StlVault.Services
         /// <summary>
         /// Call for files added during the lifetime of the <see cref="IFileSource"/>
         /// </summary>
-        Task OnItemsAddedAsync(IFileSource source, IReadOnlyCollection<IFileInfo> addedFiles); 
+        Task OnItemsAddedAsync(IFileSource source, IReadOnlyCollection<IFileInfo> addedFiles, CancellationToken token); 
         
         /// <summary>
         /// Call for files removed during the lifetime of the <see cref="IFileSource"/>

@@ -201,7 +201,10 @@ namespace StlVault.Services
             return recommendations;
         }
 
-        public async Task OnItemsAddedAsync(IFileSource source, IReadOnlyCollection<IFileInfo> addedFiles)
+        public async Task OnItemsAddedAsync(
+            IFileSource source, 
+            IReadOnlyCollection<IFileInfo> addedFiles, 
+            CancellationToken token)
         {
             if (addedFiles?.Any() != true) return;
 
@@ -216,10 +219,13 @@ namespace StlVault.Services
                     .ToList();
             });
 
-            await ImportBatched(source, itemsForImport);
+            await ImportBatched(source, itemsForImport, token);
         }
 
-        private async Task ImportBatched(IFileSource source, List<IFileInfo> itemsForImport)
+        private async Task ImportBatched(
+            IFileSource source, 
+            List<IFileInfo> itemsForImport, 
+            CancellationToken token)
         {
             var current = -1;
             var tasks = new Task[Parallelism];
@@ -230,9 +236,11 @@ namespace StlVault.Services
                     int next;
                     while ((next = Interlocked.Increment(ref current)) < itemsForImport.Count)
                     {
-                        await ImportFile(source, itemsForImport[next]);
+                        if (token.IsCancellationRequested) return;
+                        
+                        await ImportFile(source, itemsForImport[next], token);
                     }
-                });
+                }, token);
             }
 
             await Task.WhenAll(tasks);
@@ -242,7 +250,8 @@ namespace StlVault.Services
 
         private async Task ImportFile(
             IFileSource source,
-            IFileInfo file)
+            IFileInfo file, 
+            CancellationToken token)
         {
             var fileName = Path.GetFileName(file.Path);
             
@@ -263,7 +272,9 @@ namespace StlVault.Services
                 };
 
                 WriteLocked(() =>
-                {
+                { 
+                    if (token.IsCancellationRequested) return;
+                    
                     _trie.Insert(tags);
                     var model = _previewModels.AddOrUpdate(source, file, previewInfo, geoInfo);
                     _previewStreams.ForEach(stream => stream.AddFiltered(model));

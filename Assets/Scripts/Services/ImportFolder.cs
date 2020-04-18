@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using StlVault.Config;
@@ -25,6 +26,8 @@ namespace StlVault.Services
         [NotNull] public override FileSourceConfig Config => _config;
         [NotNull] public override string DisplayName => _config.FullPath;
 
+        private CancellationTokenSource _tokenSource;
+        
         public ImportFolder(
             [NotNull] ImportFolderConfig config,
             [NotNull] IFileSystem fileSystem)
@@ -59,6 +62,8 @@ namespace StlVault.Services
             if (_rescanRunning) return;
             _rescanRunning = true;
             
+            _tokenSource = new CancellationTokenSource();
+
             State.Value = Refreshing;
             
             try
@@ -99,15 +104,18 @@ namespace StlVault.Services
                     }
                 });
 
+                var token = _tokenSource.Token;
+                if (token.IsCancellationRequested) return;
+
                 if (removeFiles.Any()) Subscriber.OnItemsRemoved(this, removeFiles);
-                if (importFiles.Any()) await Subscriber.OnItemsAddedAsync(this, importFiles);
+                if (importFiles.Any()) await Subscriber.OnItemsAddedAsync(this, importFiles, token);
             }
             catch (Exception ex)
             {
                 UnityLogger.Instance.Error(ex.Message);
             }
 
-            State.Value = Ok;
+            if(State == Refreshing) State.Value = Ok;
             _rescanRunning = false;
         }
         
@@ -152,15 +160,20 @@ namespace StlVault.Services
         //     _timer?.Dispose();
         // }
 
-        public override void Dispose()
-        {
-        }
+        public override void Dispose() => _tokenSource?.Cancel();
 
-        
-        public void OnDeleted()
+        public async Task OnDeletedAsync()
         {
-            Subscriber.OnItemsRemoved(this, _knownFiles.Keys.ToList());
+            State.Value = Deleting;
+            
             Dispose();
+            
+            while (_rescanRunning)
+            {
+                await Task.Delay(10);
+            }
+            
+            Subscriber.OnItemsRemoved(this, _knownFiles.Keys.ToList());
         }
     }
 }

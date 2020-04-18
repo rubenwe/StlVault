@@ -55,7 +55,13 @@ namespace StlVault.Views
             if (Time.time > 0.2f)
             {
                 _icon.rectTransform.DOPunchScale(-0.7f * Vector3.one, 0.3f, 10, 0.5f)
-                    .OnKill(() => _icon.rectTransform.localScale = Vector3.one);
+                    .OnKill(() =>
+                    {
+                        if (_icon != null && _icon.rectTransform != null)
+                        {
+                            _icon.rectTransform.localScale = Vector3.one;
+                        }
+                    });
             }
 
             if (state == Ok)
@@ -70,7 +76,17 @@ namespace StlVault.Views
                 var color = _icon.color;
                 _icon.DOColor(_highlightColor, duration: 0.7f)
                     .SetLoops(-1, LoopType.Yoyo)
-                    .OnKill(() => _icon.color = color);
+                    .OnKill(() =>
+                    {
+                        if(_icon != null) _icon.color = color;
+                    });
+            }
+            else if (state == Deleting)
+            {
+                var color = new Color(0.8f, 0.2f, 0.3f);
+                _icon.sprite = _okSprite;
+                _text.DOColor(color, 0.1f);
+                _icon.DOColor(color, 0.1f);
             }
         }
 
