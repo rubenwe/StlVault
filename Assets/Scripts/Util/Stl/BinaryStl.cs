@@ -1,11 +1,16 @@
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using StlVault.Util.Logging;
+using ILogger = StlVault.Util.Logging.ILogger;
 
 namespace StlVault.Util.Stl
 {
     internal static class BinaryStl
     {
+        private static readonly ILogger Logger = UnityLogger.Instance;
+        
         /// <summary>
         /// Determine whether this file is a binary stl format or not.
         /// </summary>
@@ -49,16 +54,25 @@ namespace StlVault.Util.Stl
         public static Facet[] FromBytes(byte[] fileBytes)
         {
             // Discard header
-            var facetCount = BitConverter.ToUInt32(fileBytes, 80);
-            var facets = new Facet[facetCount];
+            var dataFacetCount = BitConverter.ToUInt32(fileBytes, 80);
+            var calculatedCount = (uint) ((fileBytes.LongLength - 84) / 50);
 
+            if (dataFacetCount > calculatedCount)
+                throw new InvalidDataException("The facet count specified in the STL file is too big for the file!");
+
+            if (dataFacetCount != calculatedCount)
+                Logger.Warn("Calculated facet count and the one in STL file don't match up!");
+
+            var usedCount = Math.Min(dataFacetCount, calculatedCount);
+            var facets = new Facet[usedCount];
+            
             unsafe
             {
                 fixed (byte* fileStart = fileBytes)
                 fixed (Facet* destination = facets)
                 {
                     var source = fileStart + 84;
-                    Unsafe.CopyBlockUnaligned(destination, source, facetCount * 50);
+                    Unsafe.CopyBlockUnaligned(destination, source, usedCount * 50);
                 }
             }
 

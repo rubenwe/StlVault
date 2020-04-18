@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using StlVault.Util.Collections;
 using StlVault.Views;
 using UnityEngine;
 using UnityEngine.UI;
+
+#pragma warning disable 0649
 
 namespace StlVault.Util.Unity
 {
