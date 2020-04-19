@@ -1,8 +1,8 @@
 using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using StlVault.Util.Unity;
-using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -16,6 +16,8 @@ namespace StlVault.Util.Stl
             bool centerVertices = true, 
             bool computeHash = true)
         {
+            if (fileBytes.Length < 112) throw new InvalidDataException($"File `{fileName}` is too small to be any kind of valid STL.");
+
             var isBinary = BinaryStl.IsBinary(fileBytes);
 
             Task<string> ComputeHash()
