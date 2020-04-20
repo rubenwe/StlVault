@@ -16,5 +16,6 @@ namespace StlVault.Services
         IEnumerable<ItemPreviewModel> GetAllItems();
         Task<Mesh> GetMeshAsync(ItemPreviewModel model);
         bool TryGetLocalPath(ItemPreviewModel model, out string localPath);
+        Vector3 GetImportRotation(ItemPreviewModel previewModel);
     }
 }

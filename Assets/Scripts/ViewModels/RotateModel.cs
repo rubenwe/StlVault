@@ -1,13 +1,15 @@
 ﻿﻿using System;
 using System.Linq;
-using System.Windows.Input;
+ using System.Threading.Tasks;
+ using System.Windows.Input;
 using JetBrains.Annotations;
 using StlVault.Services;
 using StlVault.Util;
 using StlVault.Util.Commands;
 using UnityEngine;
+ using static StlVault.ViewModels.RotationDirection;
 
-namespace StlVault.ViewModels
+ namespace StlVault.ViewModels
 {
     internal class RotateModel
     {
@@ -16,7 +18,8 @@ namespace StlVault.ViewModels
         private readonly ILibrary _library;
         private SelectionMode Mode => _detailMenu.Mode;
         
-        public ICommand RotateCommand { get; }
+        public ICommand<Rotation> RotateCommand { get; }
+        public ICommand ResetRotationCommand { get; }
         
         public RotateModel([NotNull] DetailMenuModel detailMenu, [NotNull] ILibrary library)
         {
@@ -26,13 +29,43 @@ namespace StlVault.ViewModels
             RotateCommand = new DelegateCommand<Rotation>(CanRotate, Rotate)
                 .UpdateOn(_detailMenu.AnythingSelected)
                 .UpdateOn(_running);
+
+            ResetRotationCommand = new DelegateCommand(() => CanRotate(null), ResetRotation)
+                .UpdateOn(_detailMenu.AnythingSelected)
+                .UpdateOn(_running);
+        }
+
+        private async void ResetRotation()
+        {
+            if (!CanRotate(null)) return;
+            _running.Value = true;
+
+            async Task ResetModel(ItemPreviewModel itemPreviewModel)
+            {
+                var rotation = _library.GetImportRotation(itemPreviewModel);
+                await _library.RotateAsync(itemPreviewModel, rotation);
+            }
+
+            if (Mode == SelectionMode.Current)
+            {
+                await ResetModel(_detailMenu.Current.Value);
+            }
+            else if (Mode == SelectionMode.Selection)
+            {
+                foreach (var previewInfo in _detailMenu.Selection.ToList())
+                {
+                    await ResetModel(previewInfo);
+                }
+            }
+
+            _running.Value = false;
         }
 
         private bool CanRotate(Rotation rot) => _detailMenu.AnythingSelected.Value && !_running;
 
-        private async void Rotate(Rotation rotation)
+        private async void Rotate(Rotation rotationDirection)
         {
-            if (!CanRotate(rotation)) return;
+            if (!CanRotate(rotationDirection)) return;
             _running.Value = true;
             
             switch (Mode)
@@ -40,7 +73,7 @@ namespace StlVault.ViewModels
                 case SelectionMode.Current:
                 {
                     var previewInfo = _detailMenu.Current.Value;
-                    var newRotation = GetRotation(previewInfo.GeometryInfo.Value.Rotation, rotation);
+                    var newRotation = GetRotation(previewInfo.GeometryInfo.Value.Rotation, rotationDirection);
                     await _library.RotateAsync(previewInfo, newRotation);
                     
                     break;
@@ -49,7 +82,7 @@ namespace StlVault.ViewModels
                 {
                     foreach (var previewInfo in _detailMenu.Selection.ToList())
                     {
-                        var newRotation = GetRotation(previewInfo.GeometryInfo.Value.Rotation, rotation);
+                        var newRotation = GetRotation(previewInfo.GeometryInfo.Value.Rotation, rotationDirection);
                         await _library.RotateAsync(previewInfo, newRotation);
                     }
 
@@ -63,21 +96,23 @@ namespace StlVault.ViewModels
         private static Vector3 GetRotation(Vector3 current, Rotation rotation)
         {
             var cur = Quaternion.Euler(current);
-            switch (rotation)
+            var amount = rotation.Kind == RotationKind.Big ? 90 : 10;
+            
+            switch (rotation.Direction)
             {
-                case Rotation.XClockwise:        return (Quaternion.AngleAxis(+90, Vector3.right)   * cur).eulerAngles;
-                case Rotation.XCounterClockwise: return (Quaternion.AngleAxis(-90, Vector3.right)   * cur).eulerAngles;
-                case Rotation.YClockwise:        return (Quaternion.AngleAxis(+90, Vector3.up)      * cur).eulerAngles;
-                case Rotation.YCounterClockwise: return (Quaternion.AngleAxis(-90, Vector3.up)      * cur).eulerAngles;
-                case Rotation.ZClockwise:        return (Quaternion.AngleAxis(+90, Vector3.forward) * cur).eulerAngles;
-                case Rotation.ZCounterClockwise: return (Quaternion.AngleAxis(-90, Vector3.forward) * cur).eulerAngles;
+                case XClockwise:        return (Quaternion.AngleAxis(+amount, Vector3.right)   * cur).eulerAngles;
+                case XCounterClockwise: return (Quaternion.AngleAxis(-amount, Vector3.right)   * cur).eulerAngles;
+                case YClockwise:        return (Quaternion.AngleAxis(+amount, Vector3.up)      * cur).eulerAngles;
+                case YCounterClockwise: return (Quaternion.AngleAxis(-amount, Vector3.up)      * cur).eulerAngles;
+                case ZClockwise:        return (Quaternion.AngleAxis(+amount, Vector3.forward) * cur).eulerAngles;
+                case ZCounterClockwise: return (Quaternion.AngleAxis(-amount, Vector3.forward) * cur).eulerAngles;
             }
 
             return current;
         }
     }
 
-    internal enum Rotation
+    internal enum RotationDirection
     {
         XClockwise,
         XCounterClockwise,
@@ -85,5 +120,17 @@ namespace StlVault.ViewModels
         YCounterClockwise,
         ZClockwise,
         ZCounterClockwise
+    }
+
+    internal class Rotation
+    {
+        public RotationDirection Direction { get; set; }
+        public RotationKind Kind { get; set; }
+    }
+
+    internal enum RotationKind
+    {
+        Big,
+        Small
     }
 }

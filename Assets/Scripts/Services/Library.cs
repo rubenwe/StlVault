@@ -143,6 +143,18 @@ namespace StlVault.Services
             return false;
         }
 
+        public Vector3 GetImportRotation(ItemPreviewModel previewModel)
+        {
+            var rotation = Vector3.zero;
+            ReadLocked(() =>
+            {
+                var (source, _) = _previewModels.TryGetFileSource(previewModel);
+                rotation = source.Config.Rotation ?? Vector3.zero;
+            });
+
+            return rotation;
+        }
+
         private enum TagAction
         {
             Add,

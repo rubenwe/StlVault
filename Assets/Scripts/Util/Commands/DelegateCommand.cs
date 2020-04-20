@@ -39,7 +39,7 @@ namespace StlVault.Util.Commands
         }
     }
 
-    public class DelegateCommand<T> : ICommand, ICanExecuteChange
+    public class DelegateCommand<T> : ICommand<T>, ICanExecuteChange
     {
         public event EventHandler CanExecuteChanged;
 
@@ -56,21 +56,23 @@ namespace StlVault.Util.Commands
             _canExecuteFunc = canExecuteFunc;
         }
 
-        public bool CanExecute(object parameter)
-        {
-            return _canExecuteFunc?.Invoke((T) parameter) ?? true;
-        }
-
-        public void Execute(object parameter)
-        {
-            Debug.Assert(CanExecute(parameter));
-
-            _executeAction((T) parameter);
-        }
+        public bool CanExecute(object parameter) => CanExecute((T) parameter);
+        public void Execute(object parameter) => Execute((T) parameter);
 
         public void OnCanExecuteChanged()
         {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public bool CanExecute(T parameter)
+        {
+            return _canExecuteFunc?.Invoke(parameter) ?? true;
+        }
+
+        public void Execute(T parameter)
+        {
+            Debug.Assert(CanExecute(parameter));
+            _executeAction(parameter);
         }
     }
 }

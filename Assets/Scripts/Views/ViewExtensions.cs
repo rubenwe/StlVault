@@ -33,6 +33,17 @@ namespace StlVault.Views
             button.Clicked += OnButtonOnClicked;
         }
         
+        public static void BindTo<T>(this SimpleButton button, ICommand command, Func<T> param)
+        {
+            void OnChange(object sender, EventArgs args) => button.Enabled.Value = command.CanExecute(param());
+            void OnButtonOnClicked() => command.Execute(param());
+            
+            command.CanExecuteChanged += OnChange;
+            button.Enabled.Value = command.CanExecute(param());
+
+            button.Clicked += OnButtonOnClicked;
+        }
+        
         public static void BindTo(this SimpleButton button, ICommand command)
         {
             void OnChange(object sender, EventArgs args) => button.Enabled.Value = command.CanExecute();
