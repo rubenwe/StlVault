@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using StlVault.Messages;
 using StlVault.Services;
 using StlVault.Util.Logging;
@@ -8,6 +9,7 @@ using StlVault.Util.Messaging;
 using StlVault.Util.Unity;
 using StlVault.ViewModels;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 #pragma warning disable 0649
@@ -179,7 +181,7 @@ namespace StlVault.Views
                 
                 rt.UiScalePercent.ValueChanged += factor =>
                 {
-                    foreach (var canvas in FindObjectsOfType<Canvas>())
+                    foreach (var canvas in FindObjectsOfTypeAll<CanvasScaler>())
                     {
                         canvas.scaleFactor = applicationSettingsModel.UiScalePercent / 125f;
                     }
@@ -203,6 +205,13 @@ namespace StlVault.Views
                 await importFoldersViewModel.InitializeAsync();
                 await collectionsViewModel.InitializeAsync();
             }
+        }
+
+        private static List<T> FindObjectsOfTypeAll<T>()
+        {
+            return SceneManager.GetActiveScene().GetRootGameObjects()
+                .SelectMany(g => g.GetComponentsInChildren<T>(true))
+                .ToList();
         }
     }
 }
