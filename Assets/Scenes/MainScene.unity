@@ -98,7 +98,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 0
+  m_UseShadowmask: 1
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -1498,6 +1498,25 @@ MonoBehaviour:
   _tagsPanel: {fileID: 1255487039}
   _rotatePanel: {fileID: 1440984815}
   _viewPanel: {fileID: 1601059655}
+--- !u!1 &772528140 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8800045600676933238, guid: b0d40be13caed10489d299b95944c835,
+    type: 3}
+  m_PrefabInstance: {fileID: 8800045599258229012}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &772528142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 772528140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92d5a272ee664ceeafdac88ddbb39914, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _minHandleSize: 0.04
 --- !u!224 &776981211 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 305968625924909174, guid: 7e33cda9a5d8c3e478c6888db2b484ea,
@@ -1745,6 +1764,7 @@ GameObject:
   - component: {fileID: 1053598237}
   - component: {fileID: 1053598239}
   - component: {fileID: 1053598238}
+  - component: {fileID: 1053598240}
   m_Layer: 5
   m_Name: Scrollbar
   m_TagString: Untagged
@@ -1829,6 +1849,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1053598236}
   m_CullTransparentMesh: 0
+--- !u!114 &1053598240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1053598236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92d5a272ee664ceeafdac88ddbb39914, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _minHandleSize: 0.04
 --- !u!224 &1064647096 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3411188335892180774, guid: ee851bb7947d7994f9c316527ec011ec,
@@ -5639,7 +5672,7 @@ PrefabInstance:
     - target: {fileID: 2746333758154926288, guid: 7e33cda9a5d8c3e478c6888db2b484ea,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.000061035156
+      value: 0.000030517578
       objectReference: {fileID: 0}
     - target: {fileID: 2746333758154926288, guid: 7e33cda9a5d8c3e478c6888db2b484ea,
         type: 3}
@@ -5649,7 +5682,7 @@ PrefabInstance:
     - target: {fileID: 2746333758174583497, guid: 7e33cda9a5d8c3e478c6888db2b484ea,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000038146973
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2746333758174583497, guid: 7e33cda9a5d8c3e478c6888db2b484ea,
         type: 3}
@@ -6624,6 +6657,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: User Feedback Dialog
       objectReference: {fileID: 0}
+    - target: {fileID: 1906985219845438905, guid: 4e5154a5469abe94db28b8c9a0d34f84,
+        type: 3}
+      propertyPath: m_Alpha
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1906985219845438907, guid: 4e5154a5469abe94db28b8c9a0d34f84,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -7130,6 +7168,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1650116382262819503, guid: 28e382e1867961b4891bf5a60f09c3aa,
+        type: 3}
+      propertyPath: m_Alpha
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1724399531303703385, guid: 28e382e1867961b4891bf5a60f09c3aa,
         type: 3}
