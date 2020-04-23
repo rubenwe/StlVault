@@ -11,7 +11,7 @@ using ILogger = StlVault.Util.Logging.ILogger;
 
 namespace StlVault.Services
 {
-    public class UpdateChecker
+    internal class UpdateChecker
     {
         private static readonly ILogger Logger = UnityLogger.Instance;
         
@@ -60,13 +60,6 @@ namespace StlVault.Services
             {
                 Logger.Error(ex, "Error while getting {0} from stlvault.com", channelFile);
             }
-        }
-        
-        public class UpdateInfo
-        {
-            public string Version { get; set; }
-            public string UpdateUrl { get; set; }
-            public string Changes { get; set; }
         }
     }
 }
