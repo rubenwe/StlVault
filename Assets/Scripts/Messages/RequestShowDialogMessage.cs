@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using StlVault.ViewModels;
 
 namespace StlVault.Messages
@@ -19,6 +20,14 @@ namespace StlVault.Messages
         internal class EditScreen
         {
             public IReadOnlyList<ItemPreviewModel> SelectedItems { get; set; }
+        }
+
+        internal class UpdateAvailable
+        {
+            public Version Version { get; set; }
+            public string Changes { get; set; }
+            public string DownloadUrl { get; set; }
+            public bool UserRequested { get; set; }
         }
     }
 }

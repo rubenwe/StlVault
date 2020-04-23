@@ -43,8 +43,16 @@ namespace StlVault.ViewModels
             Reset(true);
         }
 
-        public void Receive(TShowMessage message) => Show(message);
+        public void Receive(TShowMessage message)
+        {
+            if (ShouldShow(message))
+            {
+                Show(message);
+            }
+        }
 
+        protected virtual bool ShouldShow(TShowMessage message) => true;
+        
         protected virtual void OnShown(TShowMessage message)
         {
         }

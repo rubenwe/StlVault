@@ -36,6 +36,7 @@ namespace StlVault.Views
         [SerializeField] private AddImportFolderDialog _addImportFolderDialog;
         [SerializeField] private ApplicationSettingsDialog _applicationSettingsDialog;
         [SerializeField] private UserFeedbackDialog _userFeedbackDialog;
+        [SerializeField] private UpdateNotificationDialog _updateNotificationDialog;
         [SerializeField] private ExitingDialog _exitingDialog;
         [SerializeField] private EditScreen _editScreen;
 
@@ -43,6 +44,7 @@ namespace StlVault.Views
         [SerializeField] private PreviewCam _previewBuilder;
         [SerializeField] private ApplicationView _applicationView;
         [SerializeField] private ProgressView _progressView;
+        [SerializeField] private AppVersionButton _versionButton;
         
         private readonly List<IDisposable> _disposables = new List<IDisposable>();
         private MessageAggregator _relay;
@@ -89,7 +91,11 @@ namespace StlVault.Views
             
             _library = new Library(configStore, _previewBuilder, previewStore, _relay);
             var factory = new ImportFolderFactory(_library);
-
+            
+            // Misc
+            var checker = new UpdateChecker(_relay);
+            var appVersionModel = new AppVersionDisplayModel(_relay);
+            
             // Main View
             var progressModel = new ProgressModel();
             var applicationModel = new ApplicationModel(_relay);
@@ -109,6 +115,7 @@ namespace StlVault.Views
             var addImportFolderViewModel = new AddImportFolderModel(_relay);
             var applicationSettingsModel = new ApplicationSettingsModel(configStore);
             var userFeedbackModel = new UserFeedbackModel();
+            var updateNotificationModel = new UpdateNotificationModel(configStore);
             var exitingModel = new ExitingModel(_library, OnShutdownComplete);
             var editScreenModel = new EditScreenModel(_library);
             
@@ -139,11 +146,15 @@ namespace StlVault.Views
                 // DetailMenu
                 detailMenuModel,
 
+                // Misc
+                appVersionModel,
+                
                 // Dialogs
                 addSavedSearchViewModel,
                 addImportFolderViewModel,
                 applicationSettingsModel,
                 userFeedbackModel,
+                updateNotificationModel,
                 exitingModel,
                 editScreenModel);
 
@@ -163,11 +174,15 @@ namespace StlVault.Views
                 // Detail Menu
                 _detailMenu.BindTo(detailMenuModel);
                 
+                // Misc
+                _versionButton.BindTo(appVersionModel);
+                
                 // Dialogs
                 _addImportFolderDialog.BindTo(addImportFolderViewModel);
                 _addSavedSearchDialog.BindTo(addSavedSearchViewModel);
                 _applicationSettingsDialog.BindTo(applicationSettingsModel);
                 _userFeedbackDialog.BindTo(userFeedbackModel);
+                _updateNotificationDialog.BindTo(updateNotificationModel);
                 _exitingDialog.BindTo(exitingModel);
                 _editScreen.BindTo(editScreenModel);
             }
@@ -204,6 +219,10 @@ namespace StlVault.Views
                 await savedSearchesViewModel.InitializeAsync();
                 await importFoldersViewModel.InitializeAsync();
                 await collectionsViewModel.InitializeAsync();
+                await updateNotificationModel.InitializeAsync();
+                
+                // run update checks
+                await checker.CheckForUpdatesAsync();
             }
         }
 
