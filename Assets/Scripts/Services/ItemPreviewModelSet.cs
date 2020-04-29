@@ -65,6 +65,10 @@ namespace StlVault.Services
                 
                 _models.Add(model);
             }
+            else
+            {
+                model.Tags.AddRange(info.Tags);
+            }
 
             _sources[source.DisplayName] = source;
             model.AddSourceFile(source.DisplayName, file);
