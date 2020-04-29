@@ -49,8 +49,14 @@ namespace StlVault.ViewModels
                 AutoTagMode = AutoTagMode.ExplodeResourcePath
             };
 
+            if (SavedFolders.Any(dir => dir.DisplayName == newConfig.FullPath))
+            {
+                _relay.Send(this, new ProgressMessage{Text = $"The folder `{newConfig.FullPath}` can not be added a second time!"});
+                return;
+            }
+            
             var folder = _importFolderFactory.Create(newConfig);
-
+            
             var folders = SavedFolders
                 .Append(folder)
                 .OrderBy(f => f.DisplayName)

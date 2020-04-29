@@ -14,7 +14,6 @@ namespace StlVault.Services
 
         public static HashSet<string> GenerateTags(ImportFolderConfig folderConfig, string resourcePath)
         {
-            var rootPath = folderConfig.FullPath;
             var fileName = Path.GetFileNameWithoutExtension(resourcePath);
 
             var tags = BuildDumbTags(GetTagGenerationString(folderConfig.AutoTagMode));
@@ -24,7 +23,7 @@ namespace StlVault.Services
                 tags.Add(tag);
             }
             
-            tags.Add("folder: " + rootPath.ToLowerInvariant());
+            tags.Add(GetFolderTag(folderConfig));
             
             return tags;
 
@@ -50,5 +49,10 @@ namespace StlVault.Services
         
         private static bool IsOnBlackList(string tag) => 
             tag == "repaired" || tag == "stl" || tag == "the" || tag == "for" || tag == "and";
+
+        public static string GetFolderTag(ImportFolderConfig config)
+        {
+            return "folder: " + config.FullPath.ToLowerInvariant();
+        }
     }
 }

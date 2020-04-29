@@ -96,7 +96,12 @@ namespace StlVault.Services
                     _modelsByHash.Remove(model.FileHash);
                     model.Selected.Value = false;
                 }
-
+                else if (source.Config is ImportFolderConfig config)
+                {
+                    var tag = ImportFolderTagHelper.GetFolderTag(config);
+                    model.Tags.Remove(tag);
+                }
+                
                 return model;
             }
 
