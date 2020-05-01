@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace StlVault.ViewModels
 {
-    internal sealed class ItemPreviewModel
+    internal sealed class ItemPreviewModel : ITagged
     {
         private readonly IPreviewImageStore _previewImageStore;
 
