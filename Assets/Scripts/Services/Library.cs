@@ -13,6 +13,7 @@ using StlVault.Util.FileSystem;
 using StlVault.Util.Logging;
 using StlVault.Util.Messaging;
 using StlVault.Util.Stl;
+using StlVault.Util.Tags;
 using StlVault.ViewModels;
 using UnityEngine;
 using ILogger = StlVault.Util.Logging.ILogger;
@@ -22,15 +23,16 @@ namespace StlVault.Services
     internal class Library : ILibrary, IFileSourceSubscriber
     {
         private static readonly ILogger Logger = UnityLogger.Instance;
-        private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-        private readonly List<PreviewList> _previewStreams = new List<PreviewList>();
-        private readonly ItemPreviewModelSet _previewModels;
+        
+        [NotNull] private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+        [NotNull] private readonly List<PreviewList> _previewStreams = new List<PreviewList>();
+        [NotNull] private readonly TagManager _tagManager = new TagManager();
+        [NotNull] private readonly ItemPreviewModelSet _previewModels;
 
+        [NotNull] private readonly IMessageRelay _relay;
         [NotNull] private readonly IConfigStore _configStore;
         [NotNull] private readonly IPreviewBuilder _previewBuilder;
         [NotNull] private readonly IPreviewImageStore _previewStore;
-        [NotNull] private readonly IMessageRelay _relay;
-        [NotNull] private readonly ArrayTrie _trie = new ArrayTrie();
 
         public ushort Parallelism { get; set; } = 1;
 
@@ -51,27 +53,19 @@ namespace StlVault.Services
         public IPreviewList GetItemPreviewMetadata(IReadOnlyList<string> filters)
         {
             var lowerFilters = filters.Select(f => f.ToLowerInvariant()).ToList();
-            bool MatchesFilters(ItemPreviewModel m) => lowerFilters.All(m.Tags.Contains);
 
             var previewList = new PreviewList(
-                list => WriteLocked(() => _previewStreams.Remove(list)),
-                items => items.Where(MatchesFilters).ToList());
+                list => _lock.Write(() => _previewStreams.Remove(list)),
+                items => _tagManager.Filter(items, filters));
 
-            ReadLocked(() => previewList.AddFiltered(_previewModels));
-            WriteLocked(() => _previewStreams.Add(previewList));
+            _lock.Read(() => previewList.AddFiltered(_previewModels));
+            _lock.Write(() => _previewStreams.Add(previewList));
 
             return previewList;
         }
 
-        public void AddTag(IEnumerable<string> hashes, string tag)
-        {
-            UpdateTags(TagAction.Add, hashes, tag);
-        }
-
-        public void RemoveTag(IEnumerable<string> hashes, string tag)
-        {
-            UpdateTags(TagAction.Remove, hashes, tag);
-        }
+        public void AddTag(IEnumerable<string> hashes, string tag) => UpdateTags(TagAction.Add, hashes, tag);
+        public void RemoveTag(IEnumerable<string> hashes, string tag) => UpdateTags(TagAction.Remove, hashes, tag);
 
         public async Task RotateAsync(ItemPreviewModel previewModel, Vector3 newRotation)
         {
@@ -79,7 +73,7 @@ namespace StlVault.Services
             {
                 IFileSource source = null;
                 string filePath = null;
-                ReadLocked(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
+                _lock.Read(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
             
                 if (source == null || filePath == null) return;
                 var (_, geoInfo, resolution) = await RebuildPreview(
@@ -87,7 +81,7 @@ namespace StlVault.Services
                     newRotation, previewModel.GeometryInfo.Value.Scale,
                     previewModel.FileHash);
 
-                WriteLocked(() =>
+                _lock.Write(() =>
                 {
                     previewModel.PreviewResolution = resolution;
                     previewModel.GeometryInfo.Value = geoInfo;
@@ -107,7 +101,7 @@ namespace StlVault.Services
         {
             IFileSource source = null;
             string filePath = null;
-            ReadLocked(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
+            _lock.Read(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
             
             if (source == null || filePath == null) return null;
             
@@ -130,7 +124,7 @@ namespace StlVault.Services
             {
                 IFileSource source = null;
                 string filePath = null;
-                ReadLocked(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
+                _lock.Read(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
 
                 localPath = Path.Combine(source.Id, filePath);
                 return File.Exists(localPath);
@@ -146,7 +140,7 @@ namespace StlVault.Services
         public Vector3 GetImportRotation(ItemPreviewModel previewModel)
         {
             var rotation = Vector3.zero;
-            ReadLocked(() =>
+            _lock.Read(() =>
             {
                 var (source, _) = _previewModels.TryGetFileSource(previewModel);
                 rotation = source.Config.Rotation ?? Vector3.zero;
@@ -163,7 +157,7 @@ namespace StlVault.Services
 
         private void UpdateTags(TagAction action, IEnumerable<string> hashes, string tag)
         {
-            WriteLocked(() =>
+            _lock.Write(() =>
             {
                 foreach (var hash in hashes)
                 {
@@ -172,7 +166,7 @@ namespace StlVault.Services
                         if (action == TagAction.Add)
                         {
                             item.Tags.Add(tag);
-                            _trie.Insert(tag);
+                            _tagManager.Add(tag);
                         }
                         else item.Tags.Remove(tag);
                     }
@@ -190,27 +184,16 @@ namespace StlVault.Services
             var metaData = await _configStore.LoadAsyncOrDefault<MetaData>()
                 .Timed("Loading metadata file");
             
-            _trie.Insert(metaData.SelectMany(info => info.Tags).ToList());
+            _tagManager.Add(metaData.SelectMany(info => info.Tags).ToList());
             _previewModels.Initialize(metaData);
         }
 
         public IReadOnlyList<TagSearchResult> GetRecommendations(IEnumerable<string> currentFilters, string search)
         {
-            List<TagSearchResult> recommendations = null;
-
-            ReadLocked(() =>
-            {
-                var known = new HashSet<string>(currentFilters);
-
-                recommendations = _trie.Find(search.ToLowerInvariant())
-                    .Select(rec => new TagSearchResult(rec.word, _previewModels.Matching(known.Append(rec.word).ToList()).Count))
-                    .Where(result => result.MatchingItemCount > 0)
-                    .Where(result => !known.Contains(result.SearchTag))
-                    .OrderByDescending(result => result.MatchingItemCount)
-                    .ToList();
-            });
-
-            return recommendations;
+            var filters = currentFilters.Select(filter => filter.ToLowerInvariant()).ToList();
+            var newFilter = search.ToLowerInvariant();
+            
+            return _lock.Read(() => _tagManager.GetRecommendations(_previewModels, filters, newFilter));
         }
 
         public async Task OnItemsAddedAsync(
@@ -222,7 +205,7 @@ namespace StlVault.Services
 
             List<IFileInfo> itemsForImport = null;
 
-            ReadLocked(() =>
+            _lock.Read(() =>
             {
                 var currentSourceFiles = _previewModels.GetKnownFiles(source);
                 itemsForImport = addedFiles.Where(file =>
@@ -283,11 +266,11 @@ namespace StlVault.Services
                     Resolution = resolution
                 };
 
-                WriteLocked(() =>
+                _lock.Write(() =>
                 { 
                     if (token.IsCancellationRequested) return;
                     
-                    _trie.Insert(tags);
+                    _tagManager.Add(tags);
                     var model = _previewModels.AddOrUpdate(source, file, previewInfo, geoInfo);
                     _previewStreams.ForEach(stream => stream.AddFiltered(model));
                     _relay.Send(this, new ProgressMessage {Text = $"Imported `{fileName}`"});
@@ -332,7 +315,7 @@ namespace StlVault.Services
 
         public void OnItemsRemoved(IFileSource source, IReadOnlyCollection<string> removedItems)
         {
-            WriteLocked(() =>
+            _lock.Write(() =>
             {
                 var itemsToRemove = new HashSet<ItemPreviewModel>();
                 using (NotifyMassSelection())
@@ -340,7 +323,7 @@ namespace StlVault.Services
                     foreach (var removedItem in removedItems)
                     {
                         var model = _previewModels.RemoveOrUpdate(source, removedItem);
-                        if(model != null) itemsToRemove.Add(model);
+                        if (model != null) itemsToRemove.Add(model);
                     }
                 }
 
@@ -372,32 +355,6 @@ namespace StlVault.Services
                     _lock.ExitReadLock();
                 }
             });
-        }
-
-        private void WriteLocked(Action writingAction)
-        {
-            try
-            {
-                _lock.EnterWriteLock();
-                writingAction.Invoke();
-            }
-            finally
-            {
-                _lock.ExitWriteLock();
-            }
-        }
-
-        private void ReadLocked(Action readingAction)
-        {
-            try
-            {
-                _lock.EnterReadLock();
-                readingAction.Invoke();
-            }
-            finally
-            {
-                _lock.ExitReadLock();
-            }
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace StlVault.Services
+﻿namespace StlVault.Util.Tags
 {
     public struct TagSearchResult
     {

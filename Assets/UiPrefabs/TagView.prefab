@@ -173,6 +173,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _partialColor: {r: 0.6132076, g: 0.6132076, b: 0.6132076, a: 1}
+  _notColor: {r: 0.8018868, g: 0.19796552, b: 0.17399429, a: 1}
 --- !u!1 &5080665750155977869
 GameObject:
   m_ObjectHideFlags: 0

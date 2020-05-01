@@ -14,11 +14,11 @@ namespace StlVault.ViewModels
         public ObservableList<TagModel> Tags { get; } = new ObservableList<TagModel>();
         public ICommand PinCurrentInputCommand { get; }
      
-        private readonly ITagIndex _tagIndex;
+        private readonly ILibrary _library;
 
-        protected TagInputModelBase(ITagIndex tagIndex)
+        protected TagInputModelBase(ILibrary library)
         {
-            _tagIndex = tagIndex;
+            _library = library;
             
             PinCurrentInputCommand = new DelegateCommand(CanPinCurrentInput, PinCurrentInput);
             CurrentInput.ValueChanged += UpdateAutoCompleteSuggestions;
@@ -32,7 +32,7 @@ namespace StlVault.ViewModels
                 searchTerm = searchTerm?.Trim();
                 if (string.IsNullOrEmpty(searchTerm)) return;
 
-                var newSuggestions = _tagIndex
+                var newSuggestions = _library
                     .GetRecommendations(Tags.Select(t => t.Text), searchTerm)
                     .Select(result => new SuggestionModel(result.SearchTag, SuggestionChosen))
                     .Take(10);

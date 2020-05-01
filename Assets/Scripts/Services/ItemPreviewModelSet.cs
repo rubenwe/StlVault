@@ -41,11 +41,6 @@ namespace StlVault.Services
 
         public bool TryGetValue(string hash, out ItemPreviewModel model) => _modelsByHash.TryGetValue(hash, out model);
 
-        public IReadOnlyList<ItemPreviewModel> Matching(IReadOnlyList<string> tags)
-        {
-            return this.Where(model => tags.All(model.Tags.Contains)).ToList();
-        }
-
         public Dictionary<string, ImportedFileInfo> GetKnownFiles(IFileSource source)
         {
             _sources[source.Id] = source;
