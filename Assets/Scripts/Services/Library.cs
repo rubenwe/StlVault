@@ -132,7 +132,7 @@ namespace StlVault.Services
                 string filePath = null;
                 ReadLocked(() => (source, filePath) = _previewModels.TryGetFileSource(previewModel));
 
-                localPath = Path.Combine(source.DisplayName, filePath);
+                localPath = Path.Combine(source.Id, filePath);
                 return File.Exists(localPath);
             }
             catch

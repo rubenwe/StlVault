@@ -12,7 +12,8 @@ namespace StlVault.ViewModels
     internal class AddImportFolderModel : DialogModelBase<RequestShowDialogMessage.AddImportFolder>
     {
         private readonly IMessageRelay _relay;
-
+        
+        public BindableProperty<string> Alias { get; } = new BindableProperty<string>();
         public BindableProperty<string> FolderPath { get; } = new BindableProperty<string>();
         public BindableProperty<bool> ScanSubDirectories { get; } = new BindableProperty<bool>();
 
@@ -52,6 +53,7 @@ namespace StlVault.ViewModels
         {
             _relay.Send(this, new AddImportFolderMessage
             {
+                Alias = string.IsNullOrWhiteSpace(Alias) ? null : Alias.Value.Trim(),
                 FolderPath = FolderPath,
                 ScanSubDirectories = ScanSubDirectories,
                 Rotation = Rotation,
@@ -68,6 +70,7 @@ namespace StlVault.ViewModels
 
         protected override void Reset(bool closing)
         {
+            Alias.Value = string.Empty;
             FolderPath.Value = string.Empty;
             ScanSubDirectories.Value = true;
             Tags.Value = string.Empty;
