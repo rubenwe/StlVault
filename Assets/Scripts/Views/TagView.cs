@@ -18,6 +18,7 @@ namespace StlVault.Views
         public bool PlayIntroAnimation { private get; set; } = true;
 
         [SerializeField] private Color _partialColor;
+        [SerializeField] private Color _notColor;
         
         private const float TagFadeDuration = 0.2f;
 
@@ -47,6 +48,7 @@ namespace StlVault.Views
             _button.onClick.AddListener(OnButtonClick);
             
             if (ViewModel.IsPartial) _image.color = _partialColor;
+            if (ViewModel.Text.StartsWith("-")) _image.color = _notColor;
             
             StartCoroutine(DisableFitter());
         }

@@ -9,7 +9,7 @@ namespace StlVault.ViewModels
     {
         private readonly IMessageRelay _relay;
         
-        public SearchModel(ITagIndex tagIndex, IMessageRelay relay) : base(tagIndex)
+        public SearchModel(ILibrary library, IMessageRelay relay) : base(library)
         {
             _relay = relay;
         }

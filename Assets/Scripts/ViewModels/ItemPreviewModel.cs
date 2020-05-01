@@ -9,6 +9,7 @@ using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.FileSystem;
 using StlVault.Util.Messaging;
+using StlVault.Util.Tags;
 using UnityEngine;
 
 namespace StlVault.ViewModels

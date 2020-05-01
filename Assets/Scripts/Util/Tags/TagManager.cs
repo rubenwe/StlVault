@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using StlVault.Util;
-using StlVault.Util.Collections;
 
-namespace StlVault.Services
+namespace StlVault.Util.Tags
 {
     internal class TagManager
     {
@@ -12,7 +10,6 @@ namespace StlVault.Services
 
         public void Add(string tag) => _trie.Insert(tag);
         public void Add(IReadOnlyCollection<string> tags) => _trie.Insert(tags);
-        public void AddFrom(ITagged tagged) => _trie.Insert(tagged.Tags);
         public void AddFrom(IEnumerable<ITagged> tagged) => _trie.Insert(tagged.SelectMany(t => t.Tags).ToList());
         
         public IReadOnlyList<TagSearchResult> GetRecommendations(
@@ -22,18 +19,27 @@ namespace StlVault.Services
         {
             IEnumerable<TagSearchResult> Search()
             {
-                var currentSet = currentFilters.ToHashSet();
+                if(string.IsNullOrWhiteSpace(search)) yield break;
                 
-                var possibleTags = _trie.Find(search)
+                var currentSet = currentFilters.ToHashSet();
+
+                var positiveSearch = search.TrimStart('-', ' ');
+                var isNotSearch = search.StartsWith("-");
+                
+                var possibleTags = _trie.Find(positiveSearch)
                     .Select(result => result.word)
                     .Where(tag => !currentSet.Contains(tag));
                 
-                var currentModels = GetMatching(previewModels, currentSet);
+                var currentModels = Filter(previewModels, currentSet);
 
                 foreach (var tag in possibleTags)
                 {
                     var matching = currentModels.Count(model => model.Tags.Contains(tag));
-                    if(matching > 0) yield return new TagSearchResult(tag, matching);
+                    if (matching > 0)
+                    {
+                        var rebuiltTag = isNotSearch ? "-" + tag : tag;
+                        yield return new TagSearchResult(rebuiltTag, matching);
+                    }
                 }
             }
 
@@ -42,24 +48,12 @@ namespace StlVault.Services
                 .ToList();
         }
 
-        private static IReadOnlyList<ITagged> GetMatching(
-            IEnumerable<ITagged> models, 
-            IReadOnlyCollection<string> filters)
-        {
-            return models.Where(model => filters.All(model.Tags.Contains)).ToList();
-        }
-
-        public IReadOnlyCollection<T> Filter<T>(
-            IReadOnlyCollection<T> items, 
-            IReadOnlyList<string> filters) 
+        
+        public IReadOnlyCollection<T> Filter<T>(IEnumerable<T> items, IReadOnlyCollection<string> filters) 
             where T : ITagged
         {
-            return items.Where(item => filters.All(item.Tags.Contains)).ToList();
+            var filter = FilterFactory.Create(filters);
+            return items.Where(item => filter.Matches(item)).ToList();
         }
-    }
-
-    internal interface ITagged
-    {
-        ObservableSet<string> Tags { get; }
     }
 }

@@ -13,6 +13,7 @@ using StlVault.Util.FileSystem;
 using StlVault.Util.Logging;
 using StlVault.Util.Messaging;
 using StlVault.Util.Stl;
+using StlVault.Util.Tags;
 using StlVault.ViewModels;
 using UnityEngine;
 using ILogger = StlVault.Util.Logging.ILogger;

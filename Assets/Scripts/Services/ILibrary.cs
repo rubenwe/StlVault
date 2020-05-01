@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using StlVault.Util.Tags;
 using StlVault.ViewModels;
 using UnityEngine;
 
 
 namespace StlVault.Services
 {
-    internal interface ILibrary : ITagIndex
+    internal interface ILibrary
     {
         IPreviewList GetItemPreviewMetadata(IReadOnlyList<string> filters);
 
@@ -17,5 +18,6 @@ namespace StlVault.Services
         Task<Mesh> GetMeshAsync(ItemPreviewModel model);
         bool TryGetLocalPath(ItemPreviewModel model, out string localPath);
         Vector3 GetImportRotation(ItemPreviewModel previewModel);
+        IReadOnlyList<TagSearchResult> GetRecommendations(IEnumerable<string> currentFilters, string search);
     }
 }
