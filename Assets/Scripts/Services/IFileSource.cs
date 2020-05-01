@@ -8,6 +8,7 @@ namespace StlVault.Services
 {
     internal interface IFileSource : IDisposable
     {
+        string Id { get; }
         string DisplayName { get; }
         FileSourceConfig Config { get; }
         BindableProperty<FileSourceState> State { get; }

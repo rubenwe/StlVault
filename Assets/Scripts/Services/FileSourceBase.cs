@@ -9,6 +9,8 @@ namespace StlVault.Services
     {
         public BindableProperty<FileSourceState> State { get; } = new BindableProperty<FileSourceState>();
         public abstract FileSourceConfig Config { get; }
+        
+        public abstract string Id { get; }
         public abstract string DisplayName { get; }
         
         protected IFileSourceSubscriber Subscriber { get; private set; }

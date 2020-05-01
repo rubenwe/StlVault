@@ -13,24 +13,25 @@ namespace StlVault.Views
 {
     internal class AddImportFolderDialog : DialogView<AddImportFolderModel>
     {
-        [Header("Folder Path")] [SerializeField]
-        private TMP_InputField _importPathField;
-
+        [Header("FolderAlias")] 
+        [SerializeField] private TMP_InputField _aliasField;
+        
+        [Header("Folder Path")] 
+        [SerializeField] private TMP_InputField _importPathField;
         [SerializeField] private Button _browseButton;
         [SerializeField] private Toggle _scanSubDirsToggle;
 
-        [Header("Tags")] [SerializeField] private TMP_InputField _tagsField;
+        [Header("Tags")] 
+        [SerializeField] private TMP_InputField _tagsField;
 
-        [Header("Auto Rotate")] [SerializeField]
-        private Toggle _rotateFilesToggle;
-
+        [Header("Auto Rotate")] 
+        [SerializeField] private Toggle _rotateFilesToggle;
         [SerializeField] private TMP_InputField _xRotationField;
         [SerializeField] private TMP_InputField _yRotationField;
         [SerializeField] private TMP_InputField _zRotationField;
 
-        [Header("Auto Scale")] [SerializeField]
-        private Toggle _scaleFilesToggle;
-
+        [Header("Auto Scale")] 
+        [SerializeField] private Toggle _scaleFilesToggle;
         [SerializeField] private TMP_InputField _xScaleField;
         [SerializeField] private TMP_InputField _yScaleField;
         [SerializeField] private TMP_InputField _zScaleField;
@@ -38,7 +39,9 @@ namespace StlVault.Views
         protected override void OnViewModelBound()
         {
             base.OnViewModelBound();
-
+            // Alias 
+            _aliasField.BindTo(ViewModel.Alias);
+            
             // Folder Path
             _importPathField.BindTo(ViewModel.FolderPath);
             _browseButton.onClick.AddListener(BrowseButtonClicked);

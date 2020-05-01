@@ -24,7 +24,8 @@ namespace StlVault.Services
         [NotNull] private readonly IFileSystem _fileSystem;
         [NotNull] private readonly ImportFolderConfig _config;
         [NotNull] public override FileSourceConfig Config => _config;
-        [NotNull] public override string DisplayName => _config.FullPath;
+        [NotNull] public override string DisplayName => _config.Alias ?? _config.FullPath;
+        [CanBeNull] public override string Id => _config.FullPath;
 
         private CancellationTokenSource _tokenSource;
         

@@ -48,10 +48,10 @@ namespace StlVault.Services
 
         public Dictionary<string, ImportedFileInfo> GetKnownFiles(IFileSource source)
         {
-            _sources[source.DisplayName] = source;
+            _sources[source.Id] = source;
             
             return _models
-                .SelectMany(model => model.Sources.Where(info => info.SourceId == source.DisplayName))
+                .SelectMany(model => model.Sources.Where(info => info.SourceId == source.Id))
                 .ToDictionary(info => info.FilePath);
         }
 
@@ -65,19 +65,23 @@ namespace StlVault.Services
                 
                 _models.Add(model);
             }
+            else
+            {
+                model.Tags.AddRange(info.Tags);
+            }
 
-            _sources[source.DisplayName] = source;
-            model.AddSourceFile(source.DisplayName, file);
+            _sources[source.Id] = source;
+            model.AddSourceFile(source.Id, file);
 
             return model;
         }
 
         public ItemPreviewModel RemoveOrUpdate(IFileSource source, string relativePath)
         {
-            _sources[source.DisplayName] = source;
+            _sources[source.Id] = source;
             bool IsFile(ImportedFileInfo info)
             {
-                return info.FilePath == relativePath && info.SourceId == source.DisplayName;
+                return info.FilePath == relativePath && info.SourceId == source.Id;
             }
 
             foreach (var model in _models)
@@ -92,7 +96,12 @@ namespace StlVault.Services
                     _modelsByHash.Remove(model.FileHash);
                     model.Selected.Value = false;
                 }
-
+                else if (source.Config is ImportFolderConfig config)
+                {
+                    var tag = ImportFolderTagHelper.GetFolderTag(config);
+                    model.Tags.Remove(tag);
+                }
+                
                 return model;
             }
 

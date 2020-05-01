@@ -41,6 +41,7 @@ namespace StlVault.ViewModels
         {
             var newConfig = new ImportFolderConfig
             {
+                Alias = message.Alias,
                 FullPath = Path.GetFullPath(message.FolderPath),
                 ScanSubDirectories = message.ScanSubDirectories,
                 AdditionalTags = message.Tags.OrderBy(tag => tag).Distinct().ToList(),
@@ -49,8 +50,14 @@ namespace StlVault.ViewModels
                 AutoTagMode = AutoTagMode.ExplodeResourcePath
             };
 
+            if (SavedFolders.Any(dir => dir.Id == newConfig.FullPath))
+            {
+                _relay.Send(this, new ProgressMessage{Text = $"The folder `{newConfig.FullPath}` can not be added a second time!"});
+                return;
+            }
+            
             var folder = _importFolderFactory.Create(newConfig);
-
+            
             var folders = SavedFolders
                 .Append(folder)
                 .OrderBy(f => f.DisplayName)
@@ -100,7 +107,7 @@ namespace StlVault.ViewModels
 
             void LoadItem(FileSourceModel model)
             {
-                var msg = new SearchChangedMessage {SearchTags = new[] {"folder: " + model.Path.Value.ToLowerInvariant()}};
+                var msg = new SearchChangedMessage {SearchTags = new[] {"folder: " + model.FileSource.Id.ToLowerInvariant()}};
                 _relay.Send(this, msg);
             }
 
