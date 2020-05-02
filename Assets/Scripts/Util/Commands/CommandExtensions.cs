@@ -1,7 +1,7 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using INotifyCollectionChanged = System.Collections.Specialized.INotifyCollectionChanged;
 
 namespace StlVault.Util.Commands
 {
@@ -35,7 +35,13 @@ namespace StlVault.Util.Commands
             return command;
         }
         
-        
+        public static TCommand UpdateOn<TCommand>(this TCommand command, ICommand other)
+            where TCommand : ICanExecuteChange
+        {
+            other.CanExecuteChanged += (s, e) => command.OnCanExecuteChanged();
+            return command;
+        }
+
         public static TCommand UpdateOn<TCommand>(this TCommand command, INotifyCollectionChanged property)
             where TCommand : ICanExecuteChange
         {

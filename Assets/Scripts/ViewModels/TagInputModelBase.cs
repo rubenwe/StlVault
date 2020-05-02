@@ -4,6 +4,7 @@ using StlVault.Services;
 using StlVault.Util;
 using StlVault.Util.Collections;
 using StlVault.Util.Commands;
+using StlVault.Util.Tags;
 
 namespace StlVault.ViewModels
 {
@@ -23,6 +24,8 @@ namespace StlVault.ViewModels
             PinCurrentInputCommand = new DelegateCommand(CanPinCurrentInput, PinCurrentInput);
             CurrentInput.ValueChanged += UpdateAutoCompleteSuggestions;
         }
+        
+        protected abstract RecommendationMode RecommendationMode { get; }
 
         private void UpdateAutoCompleteSuggestions(string searchTerm)
         {
@@ -33,13 +36,16 @@ namespace StlVault.ViewModels
                 if (string.IsNullOrEmpty(searchTerm)) return;
 
                 var newSuggestions = _library
-                    .GetRecommendations(Tags.Select(t => t.Text), searchTerm)
+                    .GetRecommendations(Tags.Select(t => t.Text), searchTerm, RecommendationMode)
+                    .Where(IsValidSuggestion)
                     .Select(result => new SuggestionModel(result.SearchTag, SuggestionChosen))
                     .Take(10);
 
                 AutoCompletionSuggestions.AddRange(newSuggestions);
             }
         }
+
+        protected virtual bool IsValidSuggestion(TagSearchResult result) => true;
 
         private void SuggestionChosen(SuggestionModel suggestion)
         {

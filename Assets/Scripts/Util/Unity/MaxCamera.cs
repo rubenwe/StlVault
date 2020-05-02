@@ -66,14 +66,14 @@ namespace StlVault.Util.Unity
                 {
                     _desiredDistance -= Input.GetAxis("Mouse Y") * Time.deltaTime * _zoomRate * 0.125f * Mathf.Abs(_desiredDistance);
                 }
-                // If middle mouse and left alt are selected? ORBIT
-                else if (Input.GetMouseButton(2) && (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.LeftShift)))
+                // If right mouse selected
+                else if (Input.GetMouseButton(1))
                 {
                     _xDeg += Input.GetAxis("Mouse X") * _xSpeed * 0.02f;
                     _yDeg -= Input.GetAxis("Mouse Y") * _ySpeed * 0.02f;
                 }
                 // otherwise if middle mouse is selected, we pan by way of transforming the target in screenspace
-                else if (Input.GetMouseButton(2))
+                else if (Input.GetMouseButton(0) || Input.GetMouseButton(2))
                 {
                     //grab the rotation of the camera so we can move in a psuedo local XY space
                     _target.rotation = transform.rotation;

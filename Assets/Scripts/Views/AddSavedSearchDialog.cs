@@ -21,6 +21,7 @@ namespace StlVault.Views
         protected override void OnViewModelBound()
         {
             base.OnViewModelBound();
+            
             _aliasField.BindTo(ViewModel.Alias);
         }
 

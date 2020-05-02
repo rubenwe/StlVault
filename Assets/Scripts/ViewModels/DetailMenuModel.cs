@@ -79,8 +79,8 @@ namespace StlVault.ViewModels
             }
             else
             {
-                Current.Value = null;
                 Selection.Remove(sender);
+                Current.Value = Selection.LastOrDefault();
                 if (Selection.Count == 1) Mode.Value = SelectionMode.Current;
             }
         }
