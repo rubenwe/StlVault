@@ -73,7 +73,7 @@ namespace StlVault.Util.Unity
                     _yDeg -= Input.GetAxis("Mouse Y") * _ySpeed * 0.02f;
                 }
                 // otherwise if middle mouse is selected, we pan by way of transforming the target in screenspace
-                else if (Input.GetMouseButton(2))
+                else if (Input.GetMouseButton(0) || Input.GetMouseButton(2))
                 {
                     //grab the rotation of the camera so we can move in a psuedo local XY space
                     _target.rotation = transform.rotation;
