@@ -26,10 +26,13 @@ This version is currently under development
   - [x] Allow editing of tags
   - [x] Non-Destructive Editing
     - [x] Rotate
-- [ ] User defined collections of items
+- [x] User defined collections of items
 - [ ] Export for printing
 
 ### Version 2.0 (Q2/Q3 2020)
+- [ ] Allow Hierarchies
+  - [ ] Nested Collections
+  - [ ] File System Structure
 - [ ] Automatic backups
   - [ ] Denser storage format .vault
   - [ ] Define folder structure based on tags
