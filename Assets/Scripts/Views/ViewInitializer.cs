@@ -32,6 +32,7 @@ namespace StlVault.Views
         [SerializeField] private LibraryView _libraryView;
         
         [Header("Dialogs")] 
+        [SerializeField] private AddCollectionDialog _addCollectionDialog;
         [SerializeField] private AddSavedSearchDialog _addSavedSearchDialog;
         [SerializeField] private AddImportFolderDialog _addImportFolderDialog;
         [SerializeField] private ApplicationSettingsDialog _applicationSettingsDialog;
@@ -49,6 +50,9 @@ namespace StlVault.Views
         private readonly List<IDisposable> _disposables = new List<IDisposable>();
         private MessageAggregator _relay;
         private Library _library;
+        
+        // Must be field or GC will reclaim it
+        private SelectionTracker _tracker;
 
         private void Awake()
         {
@@ -95,6 +99,7 @@ namespace StlVault.Views
             // Misc
             var checker = new UpdateChecker(_relay);
             var appVersionModel = new AppVersionDisplayModel(_relay);
+            _tracker = new SelectionTracker(_library);
             
             // Main View
             var progressModel = new ProgressModel();
@@ -105,12 +110,13 @@ namespace StlVault.Views
             // Main Menu
             var importFoldersViewModel = new ImportFoldersModel(configStore, factory, _relay);
             var savedSearchesViewModel = new SavedSearchesModel(configStore, _relay);
-            var collectionsViewModel = new CollectionsModel(configStore, _relay);
+            var collectionsViewModel = new CollectionsModel(configStore, _library, _relay);
 
             // Detail Menu
             var detailMenuModel = new DetailMenuModel(_library, _relay);
 
             // Dialogs
+            var addCollectionModel = new AddCollectionModel(_relay);
             var addSavedSearchViewModel = new AddSavedSearchModel(_relay);
             var addImportFolderViewModel = new AddImportFolderModel(_relay);
             var applicationSettingsModel = new ApplicationSettingsModel(configStore);
@@ -148,8 +154,10 @@ namespace StlVault.Views
 
                 // Misc
                 appVersionModel,
+                _tracker,
                 
                 // Dialogs
+                addCollectionModel,
                 addSavedSearchViewModel,
                 addImportFolderViewModel,
                 applicationSettingsModel,
@@ -178,6 +186,7 @@ namespace StlVault.Views
                 _versionButton.BindTo(appVersionModel);
                 
                 // Dialogs
+                _addCollectionDialog.BindTo(addCollectionModel);
                 _addImportFolderDialog.BindTo(addImportFolderViewModel);
                 _addSavedSearchDialog.BindTo(addSavedSearchViewModel);
                 _applicationSettingsDialog.BindTo(applicationSettingsModel);

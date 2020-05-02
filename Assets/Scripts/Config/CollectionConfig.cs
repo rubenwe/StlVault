@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace StlVault.Config
+﻿namespace StlVault.Config
 {
-    public class CollectionConfig : List<CollectionConfig>
+    public class CollectionConfig
     {
         public string Name { get; set; }
     }

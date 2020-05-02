@@ -11,13 +11,13 @@ namespace StlVault.Services
     {
         IPreviewList GetItemPreviewMetadata(IReadOnlyList<string> filters);
 
-        void AddTag(IEnumerable<string> hashes, string tag);
-        void RemoveTag(IEnumerable<string> hashes, string tag);
+        void AddTag(IReadOnlyCollection<string> hashes, string tag);
+        void RemoveTag(IReadOnlyCollection<string> hashes, string tag);
         Task RotateAsync(ItemPreviewModel previewModel, Vector3 newRotation);
         IEnumerable<ItemPreviewModel> GetAllItems();
         Task<Mesh> GetMeshAsync(ItemPreviewModel model);
         bool TryGetLocalPath(ItemPreviewModel model, out string localPath);
         Vector3 GetImportRotation(ItemPreviewModel previewModel);
-        IReadOnlyList<TagSearchResult> GetRecommendations(IEnumerable<string> currentFilters, string search);
+        IReadOnlyList<TagSearchResult> GetRecommendations(IEnumerable<string> currentFilters, string search, RecommendationMode mode);
     }
 }

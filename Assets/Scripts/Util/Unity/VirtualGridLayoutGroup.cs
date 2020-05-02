@@ -60,7 +60,10 @@ namespace StlVault.Util.Unity
             _slider.minValue = _minSize;
             _slider.maxValue = _maxSize;
             _slider.onValueChanged.AddListener(OnSliderValueChanged);
-            _slider.value = (_maxSize - _minSize) / 2 + _minSize;
+            
+            var startSize = (_maxSize - _minSize) / 3.5f + _minSize;
+            _slider.value = startSize;
+            OnSliderValueChanged(startSize);
         }
 
         private void OnSliderValueChanged(float value)

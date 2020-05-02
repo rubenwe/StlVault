@@ -4,12 +4,15 @@ using System.Linq;
 using JetBrains.Annotations;
 using StlVault.Services;
 using StlVault.Util;
+using StlVault.Util.Tags;
 using static StlVault.ViewModels.SelectionMode;
 
 namespace StlVault.ViewModels
 {
     internal class TagEditorModel : TagInputModelBase
     {
+        protected override RecommendationMode RecommendationMode => RecommendationMode.Tagging;
+        
         private readonly DetailMenuModel _detailMenu;
         private readonly ILibrary _library;
         private SelectionMode Mode => _detailMenu.Mode;
@@ -72,20 +75,16 @@ namespace StlVault.ViewModels
             Tags.ChangeTo(targetTags);
         }
 
-        private HashSet<string> Filter(IReadOnlyCollection<string> tags)
-        {
-            var filtered = tags
-                .Where(t => !t.StartsWith("folder:"));
-
-            return new HashSet<string>(filtered);
-        }
+        protected override bool IsValidSuggestion(TagSearchResult result) => IsValidEditorTag(result.SearchTag);
+        private static bool IsValidEditorTag(string tag) => !tag.StartsWith("folder:") && !tag.StartsWith("collection:");
+        private static HashSet<string> Filter(IReadOnlyCollection<string> tags) => tags.Where(IsValidEditorTag).ToHashSet();
 
         private IEnumerable<string> Hashes => Mode == Current
             ? new[] {_detailMenu.Current.Value.FileHash}
             : _detailMenu.Selection.Select(pi => pi.FileHash);
 
         protected override bool CanPinCurrentInput() => _detailMenu.AnythingSelected.Value;
-        protected override void OnTagAdded(string tag) => _library.AddTag(Hashes, tag);
-        protected override void OnTagRemoved(string tag) => _library.RemoveTag(Hashes, tag);
+        protected override void OnTagAdded(string tag) => _library.AddTag(Hashes.ToList(), tag);
+        protected override void OnTagRemoved(string tag) => _library.RemoveTag(Hashes.ToList(), tag);
     }
 }

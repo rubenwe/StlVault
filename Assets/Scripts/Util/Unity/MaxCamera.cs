@@ -66,8 +66,8 @@ namespace StlVault.Util.Unity
                 {
                     _desiredDistance -= Input.GetAxis("Mouse Y") * Time.deltaTime * _zoomRate * 0.125f * Mathf.Abs(_desiredDistance);
                 }
-                // If middle mouse and left alt are selected? ORBIT
-                else if (Input.GetMouseButton(2) && (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.LeftShift)))
+                // If right mouse selected
+                else if (Input.GetMouseButton(1))
                 {
                     _xDeg += Input.GetAxis("Mouse X") * _xSpeed * 0.02f;
                     _yDeg -= Input.GetAxis("Mouse Y") * _ySpeed * 0.02f;

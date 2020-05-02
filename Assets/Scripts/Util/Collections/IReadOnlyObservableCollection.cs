@@ -4,7 +4,9 @@ using INotifyCollectionChanged = System.Collections.Specialized.INotifyCollectio
 
 namespace StlVault.Util.Collections
 {
-    public interface IReadOnlyObservableCollection<out T> : IReadOnlyCollection<T>, INotifyPropertyChanged,
+    public interface IReadOnlyObservableCollection<out T> : 
+        IReadOnlyCollection<T>,
+        INotifyPropertyChanged,
         INotifyCollectionChanged
     {
     }

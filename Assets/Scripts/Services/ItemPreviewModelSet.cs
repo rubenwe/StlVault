@@ -107,26 +107,29 @@ namespace StlVault.Services
         {
             var metaData = new MetaData();
 
-            metaData.AddRange(_models.Select(model =>
-                new PreviewInfo
-                {
-                    ItemName = model.Name,
-                    Sources = model.Sources.ToList(),
-                    Tags = model.Tags.ToHashSet(),
-                    FileHash = model.FileHash,
-                    Resolution = model.PreviewResolution,
-                    
-                    Volume = model.GeometryInfo.Value.Volume,
-                    Size = model.GeometryInfo.Value.Size,
-                    VertexCount = model.GeometryInfo.Value.VertexCount,
-                    
-                    Rotation = model.GeometryInfo.Value.Rotation == Vector3.zero 
-                        ? (ConfigVector3?) null 
-                        : model.GeometryInfo.Value.Rotation,
-                    Scale = model.GeometryInfo.Value.Scale == Vector3.one 
-                        ? (ConfigVector3?) null 
-                        : model.GeometryInfo.Value.Scale
-                }));
+            var previewInfos = _models
+                .Where(model => model.Sources.Any(file => _sources.ContainsKey(file.SourceId)))
+                .Select(model => new PreviewInfo
+                    {
+                        ItemName = model.Name,
+                        Sources = model.Sources.ToList(),
+                        Tags = model.Tags.Where(t => t != "collection: selected").ToHashSet(),
+                        FileHash = model.FileHash,
+                        Resolution = model.PreviewResolution,
+
+                        Volume = model.GeometryInfo.Value.Volume,
+                        Size = model.GeometryInfo.Value.Size,
+                        VertexCount = model.GeometryInfo.Value.VertexCount,
+
+                        Rotation = model.GeometryInfo.Value.Rotation == Vector3.zero
+                            ? (ConfigVector3?) null
+                            : model.GeometryInfo.Value.Rotation,
+                        Scale = model.GeometryInfo.Value.Scale == Vector3.one
+                            ? (ConfigVector3?) null
+                            : model.GeometryInfo.Value.Scale
+                    });
+            
+            metaData.AddRange(previewInfos);
 
             return metaData;
         }

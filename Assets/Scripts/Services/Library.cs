@@ -56,7 +56,7 @@ namespace StlVault.Services
 
             var previewList = new PreviewList(
                 list => _lock.Write(() => _previewStreams.Remove(list)),
-                items => _tagManager.Filter(items, filters));
+                items => _tagManager.Filter(items, lowerFilters));
 
             _lock.Read(() => previewList.AddFiltered(_previewModels));
             _lock.Write(() => _previewStreams.Add(previewList));
@@ -64,8 +64,8 @@ namespace StlVault.Services
             return previewList;
         }
 
-        public void AddTag(IEnumerable<string> hashes, string tag) => UpdateTags(TagAction.Add, hashes, tag);
-        public void RemoveTag(IEnumerable<string> hashes, string tag) => UpdateTags(TagAction.Remove, hashes, tag);
+        public void AddTag(IReadOnlyCollection<string> hashes, string tag) => UpdateTags(TagAction.Add, hashes, tag);
+        public void RemoveTag(IReadOnlyCollection<string> hashes, string tag) => UpdateTags(TagAction.Remove, hashes, tag);
 
         public async Task RotateAsync(ItemPreviewModel previewModel, Vector3 newRotation)
         {
@@ -155,10 +155,11 @@ namespace StlVault.Services
             Remove
         }
 
-        private void UpdateTags(TagAction action, IEnumerable<string> hashes, string tag)
+        private void UpdateTags(TagAction action, IReadOnlyCollection<string> hashes, string tag)
         {
             _lock.Write(() =>
             {
+                var touched = new List<ItemPreviewModel>();
                 foreach (var hash in hashes)
                 {
                     if (_previewModels.TryGetValue(hash, out var item))
@@ -169,8 +170,12 @@ namespace StlVault.Services
                             _tagManager.Add(tag);
                         }
                         else item.Tags.Remove(tag);
+
+                        touched.Add(item);
                     }
                 }
+
+                _previewStreams.ForEach(s => s.Update(touched));
             });
         }
 
@@ -188,12 +193,15 @@ namespace StlVault.Services
             _previewModels.Initialize(metaData);
         }
 
-        public IReadOnlyList<TagSearchResult> GetRecommendations(IEnumerable<string> currentFilters, string search)
+        public IReadOnlyList<TagSearchResult> GetRecommendations(
+            IEnumerable<string> currentFilters, 
+            string search, 
+            RecommendationMode mode)
         {
             var filters = currentFilters.Select(filter => filter.ToLowerInvariant()).ToList();
             var newFilter = search.ToLowerInvariant();
             
-            return _lock.Read(() => _tagManager.GetRecommendations(_previewModels, filters, newFilter));
+            return _lock.Read(() => _tagManager.GetRecommendations(_previewModels, filters, newFilter, mode));
         }
 
         public async Task OnItemsAddedAsync(

@@ -7,6 +7,8 @@ namespace StlVault.ViewModels
 {
     internal class SearchModel : TagInputModelBase, IMessageReceiver<SearchChangedMessage>
     {
+        protected override RecommendationMode RecommendationMode => RecommendationMode.Search;
+        
         private readonly IMessageRelay _relay;
         
         public SearchModel(ILibrary library, IMessageRelay relay) : base(library)
@@ -21,6 +23,7 @@ namespace StlVault.ViewModels
         {
             _relay.Send(this, new SearchChangedMessage {SearchTags = Tags.Select(tag => tag.Text).ToList()});
         }
+
 
         protected override string OnAddingTag(string tagText)
         {

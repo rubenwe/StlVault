@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using StlVault.Services;
 
 namespace StlVault.Util.Tags
 {
@@ -12,10 +13,9 @@ namespace StlVault.Util.Tags
         public void Add(IReadOnlyCollection<string> tags) => _trie.Insert(tags);
         public void AddFrom(IEnumerable<ITagged> tagged) => _trie.Insert(tagged.SelectMany(t => t.Tags).ToList());
         
-        public IReadOnlyList<TagSearchResult> GetRecommendations(
-            IEnumerable<ITagged> previewModels, 
-            IEnumerable<string> currentFilters, 
-            string search)
+        public IReadOnlyList<TagSearchResult> GetRecommendations(IEnumerable<ITagged> previewModels,
+            IEnumerable<string> currentFilters,
+            string search, RecommendationMode mode)
         {
             IEnumerable<TagSearchResult> Search()
             {
@@ -34,11 +34,10 @@ namespace StlVault.Util.Tags
 
                 foreach (var tag in possibleTags)
                 {
-                    var matching = currentModels.Count(model => model.Tags.Contains(tag));
-                    if (matching > 0)
+                    if (mode == RecommendationMode.Tagging || currentModels.Count(model => model.Tags.Contains(tag)) > 0)
                     {
                         var rebuiltTag = isNotSearch ? "-" + tag : tag;
-                        yield return new TagSearchResult(rebuiltTag, matching);
+                        yield return new TagSearchResult(rebuiltTag, currentModels.Count(model => model.Tags.Contains(tag)));
                     }
                 }
             }

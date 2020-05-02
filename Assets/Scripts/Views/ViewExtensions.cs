@@ -16,7 +16,18 @@ namespace StlVault.Views
     {
         public static void BindTo(this Button button, ICommand command)
         {
-            command.CanExecuteChanged += (sender, args) => button.interactable = command.CanExecute();
+            void OnCommandOnCanExecuteChanged(object sender, EventArgs args)
+            {
+                if (button == null)
+                {
+                    command.CanExecuteChanged -= OnCommandOnCanExecuteChanged;
+                    return;
+                }
+                
+                button.interactable = command.CanExecute();
+            }
+
+            command.CanExecuteChanged += OnCommandOnCanExecuteChanged;
             button.interactable = command.CanExecute();
 
             button.onClick.AddListener(command.Execute);
@@ -65,10 +76,10 @@ namespace StlVault.Views
             void OnDisplayValueChanged(string newValue) => property.Value = (T) Convert.ChangeType(newValue, typeof(T));
         }
 
-        public static void BindTo<T>(this TMP_Text text, BindableProperty<T> property, string formatString = null)
+        public static void BindTo<T>(this TMP_Text text, IBindableProperty<T> property, string formatString = null)
         {
             property.ValueChanged += OnPropertyChanged;
-            OnPropertyChanged(property);
+            OnPropertyChanged(property.Value);
 
             void OnPropertyChanged(T newValue) => text.text = formatString != null 
                 ? string.Format(formatString, newValue)

@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using StlVault.Util.Collections;
 using StlVault.Util.Tags;
+using static StlVault.Services.RecommendationMode;
 
 namespace StlVault.Tests
 {
@@ -27,7 +28,7 @@ namespace StlVault.Tests
             var tagManager = new TagManager();
             tagManager.AddFrom(tagged);
 
-            var results = tagManager.GetRecommendations(tagged, previous, search);
+            var results = tagManager.GetRecommendations(tagged, previous, search, Search);
             Assert.IsTrue(expected.SequenceEqual(results.Select(r => r.SearchTag)));
         }
 
@@ -47,7 +48,7 @@ namespace StlVault.Tests
             var tagManager = new TagManager();
             tagManager.AddFrom(tagged);
 
-            var results = tagManager.GetRecommendations(tagged, previous, search);
+            var results = tagManager.GetRecommendations(tagged, previous, search, Search);
             Assert.IsTrue(expected.SequenceEqual(results.Select(r => r.SearchTag)));
         }
 
@@ -66,7 +67,7 @@ namespace StlVault.Tests
             var tagManager = new TagManager();
             tagManager.AddFrom(tagged);
 
-            var results = tagManager.GetRecommendations(tagged, previous, search);
+            var results = tagManager.GetRecommendations(tagged, previous, search, Search);
             Assert.IsTrue(expected.SequenceEqual(results.Select(r => r.SearchTag)));
         }
 
@@ -155,7 +156,46 @@ namespace StlVault.Tests
             var tagManager = new TagManager();
             tagManager.AddFrom(tagged);
 
-            var results = tagManager.GetRecommendations(tagged, previous, search);
+            var results = tagManager.GetRecommendations(tagged, previous, search, Search);
+            Assert.IsTrue(expected.SequenceEqual(results.Select(r => r.SearchTag)));
+        }
+
+        [Test]
+        public void RecommendationsForTaggingShouldNotIncludeExisting()
+        {
+            var search = "test";
+            var previous = new[] {"test1"};
+            var expected = new[] {"test2"};
+
+            var tagged = new[]
+            {
+                new Tagged {Tags = {"test1", "test2"}}
+            };
+
+            var tagManager = new TagManager();
+            tagManager.AddFrom(tagged);
+
+            var results = tagManager.GetRecommendations(tagged, previous, search, Tagging);
+            Assert.IsTrue(expected.SequenceEqual(results.Select(r => r.SearchTag)));
+        }
+        
+        [Test]
+        public void RecommendationsForTaggingShouldIncludeUnmatched()
+        {
+            var search = "test";
+            var previous = new[] {"test1"};
+            var expected = new[] {"test2"};
+
+            var tagged = new[]
+            {
+                new Tagged {Tags = {"test1"}}
+            };
+
+            var tagManager = new TagManager();
+            tagManager.AddFrom(tagged);
+            tagManager.Add("test2");
+
+            var results = tagManager.GetRecommendations(tagged, previous, search, Tagging);
             Assert.IsTrue(expected.SequenceEqual(results.Select(r => r.SearchTag)));
         }
     }
