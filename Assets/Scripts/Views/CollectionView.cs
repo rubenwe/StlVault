@@ -17,7 +17,7 @@ namespace StlVault.Views
 
         protected override void OnViewModelBound()
         {
-            _text.BindTo(ViewModel.Label);
+            _text.BindTo(ViewModel.Label, "- {0}");
             
             _addButton.BindTo(ViewModel.AddCommand);
             _button.BindTo(ViewModel.SelectCommand);
