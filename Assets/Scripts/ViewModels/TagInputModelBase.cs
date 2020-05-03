@@ -60,15 +60,24 @@ namespace StlVault.ViewModels
         private bool AddTag(string tagText)
         {
             tagText = tagText?.Trim().ToLowerInvariant();
-            if (!string.IsNullOrEmpty(tagText) && Tags.All(tag => tag.Text != tagText))
+            if (IsValidTag(tagText))
             {
                 tagText = OnAddingTag(tagText);
+                
+                var sameTag = Tags.FirstOrDefault(t => t.Text == tagText);
+                if (sameTag != null) Tags.Remove(sameTag);
+                
                 Tags.Add(new TagModel(tagText, RemoveTag));
                 
                 return true;
             }
 
             return false;
+        }
+
+        protected virtual bool IsValidTag(string tagText)
+        {
+            return !string.IsNullOrEmpty(tagText) && Tags.All(tag => tag.Text != tagText);
         }
 
         protected virtual string OnAddingTag(string tagText) => tagText;

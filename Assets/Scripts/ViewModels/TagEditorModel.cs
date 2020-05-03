@@ -79,6 +79,11 @@ namespace StlVault.ViewModels
         private static bool IsValidEditorTag(string tag) => !tag.StartsWith("folder:") && !tag.StartsWith("collection:");
         private static HashSet<string> Filter(IReadOnlyCollection<string> tags) => tags.Where(IsValidEditorTag).ToHashSet();
 
+        protected override bool IsValidTag(string tagText) =>
+            !string.IsNullOrWhiteSpace(tagText) 
+            && IsValidEditorTag(tagText) 
+            && Tags.Where(t => !t.IsPartial).All(tag => tag.Text != tagText);
+
         private IEnumerable<string> Hashes => Mode == Current
             ? new[] {_detailMenu.Current.Value.FileHash}
             : _detailMenu.Selection.Select(pi => pi.FileHash);
