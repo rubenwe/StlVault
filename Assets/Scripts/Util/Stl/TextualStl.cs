@@ -169,7 +169,7 @@ namespace StlVault.Util.Stl
             SeekOverWhitespace(ref posInFile);
 
             var stringStart = posInFile;
-            while (*posInFile > 0x20) posInFile++;
+            while (*posInFile > 0x0D) posInFile++;
 
             solidName = Encoding.ASCII.GetString(stringStart, (int) (posInFile - stringStart));
         }
