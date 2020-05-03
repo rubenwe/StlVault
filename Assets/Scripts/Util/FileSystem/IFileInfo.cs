@@ -6,5 +6,6 @@ namespace StlVault.Util.FileSystem
     {
         string Path { get; }
         DateTime LastChange { get; }
+        long Size { get; }
     }
 }

@@ -31,7 +31,8 @@ namespace StlVault.Util.FileSystem
                 yield return new FileInfo
                 {
                     LastChange = Max(info.CreationTime, info.LastWriteTime),
-                    Path = file.Substring(_rootPath.Length).Trim(Path.DirectorySeparatorChar)
+                    Path = file.Substring(_rootPath.Length).Trim(Path.DirectorySeparatorChar),
+                    Size = info.Length
                 };
             }
         }
@@ -48,6 +49,7 @@ namespace StlVault.Util.FileSystem
         {
             public string Path { get; set; }
             public DateTime LastChange { get; set; }
+            public long Size { get; set; }
         }
     }
 }

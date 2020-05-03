@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -8,6 +9,8 @@ using StlVault.Util;
 using StlVault.Util.Commands;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
+using Directory = System.IO.Directory;
+using File = System.IO.File;
 
 namespace StlVault.ViewModels
 {
@@ -35,15 +38,16 @@ namespace StlVault.ViewModels
             try
             {
                 var tempPath = Path.GetTempPath();
-                var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-                var configPath = Path.Combine(appData, "StlVault", "Config");
-                var logPath = Path.Combine(appData, "..", "LocalLow", "StlVault", "StlVault");
+                var appPath = Application.persistentDataPath;
+                var configPath = Path.Combine(appPath, "Config");
+                
                 var crashPath = Path.Combine(tempPath, "StlVault", "StlVault", "Crashes");
-                var newestCrash = Directory.GetDirectories(crashPath)
-                    .Select(dir => new DirectoryInfo(dir))
-                    .OrderByDescending(dir => dir.CreationTime)
-                    .FirstOrDefault();
+                var newestCrash = Directory.Exists(crashPath)
+                    ? Directory.GetDirectories(crashPath)
+                        .Select(dir => new DirectoryInfo(dir))
+                        .OrderByDescending(dir => dir.CreationTime)
+                        .FirstOrDefault()
+                    : null;
 
                 var zipPath = Path.Combine(tempPath, $"STLVault-{DateTime.Now:yy-MM-dd-HH-mm-ss}.zip");
 
@@ -61,8 +65,8 @@ namespace StlVault.ViewModels
                     {
                         Add(file, configPath, "MetaData.zip");
                         Add(file, configPath, "ImportFolders.json");
-                        Add(file, logPath, "Player.log");
-                        Add(file, logPath, "Player-prev.log");
+                        Add(file, appPath, "Player.log");
+                        Add(file, appPath, "Player-prev.log");
                         if (newestCrash != null)
                         {
                             Add(file, crashPath, Path.Combine(newestCrash.Name, "Player.log"));
@@ -78,6 +82,8 @@ namespace StlVault.ViewModels
             }
         }
 
+        [Conditional("UNITY_STANDALONE_WIN")]
+        [Conditional("UNITY_EDITOR_WIN")]
         private static void ShowInExplorer(string zipPath)
         {
             NativeMethods.BrowseTo(zipPath);

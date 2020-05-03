@@ -1,20 +1,26 @@
 using System;
 using System.IO;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using StlVault.Services;
-using StlVault.Util.Logging;
 using System.IO.Compression;
+using System.Threading.Tasks;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
+using StlVault.Util.Logging;
 
-namespace StlVault.Views
+namespace StlVault.Services
 {
-    internal class AppDataConfigStore : IConfigStore
+    internal class ConfigStore : IConfigStore
     {
+        private readonly string _dataPath;
         private static readonly ILogger Logger = UnityLogger.Instance;
 
         private static readonly JsonSerializerSettings JsonSerializerSettings 
             = new JsonSerializerSettings {DefaultValueHandling = DefaultValueHandling.Ignore};
 
+        public ConfigStore([NotNull] string dataPath)
+        {
+            _dataPath = dataPath ?? throw new ArgumentNullException(nameof(dataPath));
+        }
+        
         // ReSharper disable once UnusedTypeParameter
         private static class Lock<T>
         {
@@ -59,11 +65,10 @@ namespace StlVault.Views
             });
         }
 
-        private static string GetFileNameForConfig<T>()
+        private string GetFileNameForConfig<T>()
         {
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var typeName = typeof(T).Name.Replace("ConfigFile", string.Empty);
-            return Path.Combine(appData, "StlVault", "Config", typeName + ".json");
+            return Path.Combine(_dataPath, "Config", typeName + ".json");
         }
 
         public Task StoreAsync<T>(T config, bool compress = false)

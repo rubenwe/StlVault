@@ -20,6 +20,7 @@ namespace StlVault.ViewModels
 
         public string Name { get; }
         public string FileHash { get; }
+        public long FileSize { get; }
 
         public event Action PreviewChanged;
         public BindableProperty<GeometryInfo> GeometryInfo { get; } = new BindableProperty<GeometryInfo>();
@@ -44,6 +45,7 @@ namespace StlVault.ViewModels
 
           Name = previewInfo.ItemName;
           FileHash = previewInfo.FileHash;
+          FileSize = previewInfo.FileSize;
           
           GeometryInfo.Value = new GeometryInfo
           {

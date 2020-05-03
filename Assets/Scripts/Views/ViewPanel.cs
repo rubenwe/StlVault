@@ -1,5 +1,6 @@
 ﻿using StlVault.Util.Unity;
 using StlVault.ViewModels;
+using TMPro;
 using UnityEngine;
 
 #pragma warning disable 0649
@@ -15,6 +16,8 @@ namespace StlVault.Views
         {
             _showInExplorerButton.BindTo(ViewModel.ShowInExplorerCommand);
             _openIn3DViewButton.BindTo(ViewModel.OpenIn3DViewCommand);
+            
+            _showInExplorerButton.GetComponentInChildren<TMP_Text>().BindTo(ViewModel.LauncherName, "Show in {0}");
         }
     }
 }

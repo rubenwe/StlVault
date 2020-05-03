@@ -76,6 +76,7 @@ namespace StlVault.Services
                 {
                     var matchedFiles = _fileSystem
                         .GetFiles(SupportedFilePattern, _config.ScanSubDirectories)
+                        .Where(file => file.Size > 112)
                         .ToDictionary(item => item.Path);
 
                     foreach (var (filePath, fileInfo) in matchedFiles)

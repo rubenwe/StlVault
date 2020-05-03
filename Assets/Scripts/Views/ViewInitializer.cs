@@ -11,6 +11,7 @@ using StlVault.ViewModels;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 
 #pragma warning disable 0649
 
@@ -58,6 +59,8 @@ namespace StlVault.Views
         {
             Texture.allowThreadedTextureCreation = true;
             Application.wantsToQuit += OnQuitRequested;
+
+            Migrator.Run();
         }
 
         #if UNITY_EDITOR
@@ -90,8 +93,8 @@ namespace StlVault.Views
             var aggregator = new MessageAggregator();
 
             _relay = aggregator;
-            IConfigStore configStore = new AppDataConfigStore();
-            IPreviewImageStore previewStore = new AppDataPreviewImageStore();
+            IConfigStore configStore = new ConfigStore(Application.persistentDataPath);
+            IPreviewImageStore previewStore = new PreviewImageStore(Application.persistentDataPath);
             
             _library = new Library(configStore, _previewBuilder, previewStore, _relay);
             var factory = new ImportFolderFactory(_library);

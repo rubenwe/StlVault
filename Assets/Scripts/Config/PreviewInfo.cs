@@ -10,6 +10,7 @@ namespace StlVault.Config
     {
         public string ItemName { get; set; }
         public string FileHash { get; set; }
+        public long FileSize { get; set; }
         public int Resolution { get; set; }
         public HashSet<string> Tags { get; set; }
         public List<ImportedFileInfo> Sources { get; set; }

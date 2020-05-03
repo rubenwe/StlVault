@@ -115,6 +115,7 @@ namespace StlVault.Services
                         Sources = model.Sources.ToList(),
                         Tags = model.Tags.Where(t => t != "collection: selected").ToHashSet(),
                         FileHash = model.FileHash,
+                        FileSize = model.FileSize,
                         Resolution = model.PreviewResolution,
 
                         Volume = model.GeometryInfo.Value.Volume,

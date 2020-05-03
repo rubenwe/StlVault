@@ -1,24 +1,24 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using StlVault.Util.Logging;
 
 namespace StlVault.Services
 {
-    internal class AppDataPreviewImageStore : IPreviewImageStore
+    internal class PreviewImageStore : IPreviewImageStore
     {
+        private readonly string _dataPath;
         private static readonly ILogger Logger = UnityLogger.Instance;
 
-        private static string PreviewImagePath
+        public PreviewImageStore([NotNull] string dataPath)
         {
-            get
-            {
-                var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                return Path.Combine(appData, "StlVault", "PreviewImages");
-            }
+            _dataPath = dataPath ?? throw new ArgumentNullException(nameof(dataPath));
         }
+        
+        private string PreviewImagePath => Path.Combine(_dataPath, "PreviewImages");
 
-        private static string GetFileName(string fileHash)
+        private string GetFileName(string fileHash)
         {
             // var (x, y, z) = rotation.GetRoundedValues();
             // var fileName = $"{fileHash}_{x}_{y}_{z}.jpg";
