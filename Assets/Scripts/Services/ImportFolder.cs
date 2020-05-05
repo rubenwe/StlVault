@@ -17,6 +17,8 @@ namespace StlVault.Services
     [DebuggerDisplay("{" + nameof(DisplayName) + "}")]
     internal sealed class ImportFolder : FileSourceBase, IImportFolder
     {
+        private static readonly ILogger Logger = UnityLogger.Instance;
+        
         private readonly Dictionary<string, IFileInfo> _knownFiles = new Dictionary<string, IFileInfo>();
         
         // [CanBeNull] private IFolderWatcher _watcher;
@@ -74,10 +76,14 @@ namespace StlVault.Services
                 
                 await Task.Run(() =>
                 {
+                    Logger.Debug("Rescan of Import Folder `{0}` triggered", _config.FullPath);
+                    
                     var matchedFiles = _fileSystem
                         .GetFiles(SupportedFilePattern, _config.ScanSubDirectories)
                         .Where(file => file.Size > 112)
                         .ToDictionary(item => item.Path);
+                    
+                    Logger.Trace("Found {0} matching files in folder.", matchedFiles.Count, _config.FullPath);
 
                     foreach (var (filePath, fileInfo) in matchedFiles)
                     {
@@ -109,12 +115,14 @@ namespace StlVault.Services
                 var token = _tokenSource.Token;
                 if (token.IsCancellationRequested) return;
 
+                Logger.Debug("Found {0} new file(s) and {1} removed file(s) since last folder scan.", importFiles.Count, removeFiles.Count);
+                
                 if (removeFiles.Any()) Subscriber.OnItemsRemoved(this, removeFiles);
                 if (importFiles.Any()) await Subscriber.OnItemsAddedAsync(this, importFiles, token);
             }
             catch (Exception ex)
             {
-                UnityLogger.Instance.Error(ex.Message);
+                Logger.Error(ex.Message);
             }
 
             if(State == Refreshing) State.Value = Ok;

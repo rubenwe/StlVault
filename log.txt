@@ -1,0 +1,27 @@
+<b>New Features</b>
+* Initial version of STLVault for Mac OSX
+  * Limitation: "Open in Finder" is not working
+* Initial Support for Collections (#40)
+  * Group your files however you want!
+* Extended filtering (#20)
+  * Searching for `tag*` will match all files with tags starting with `tag`
+  * Searching for `-tag` will match all files that don't have the tag `tag`
+  * These can be combined
+* Mechanism to check for updates (#29)
+* Option to specify an alias for an import folder (#37)
+
+<b>BugFixes</b>
+* Scroll handles now have a minimum size
+* Simpler Mouse bindings for 3D View
+* Deselecting items will now set "current" item to the last selected item
+* Add tags of all import folders to models (Fixes #36)
+* Prevent duplicate import folders and remove folder tags on delete (Fixes #30)
+* Fix typos in save dialog
+* Support Whitespace in "solid name" of ASCII STLs (Fixes #45)
+* Allow adding of a tag, when some models already have that tag
+
+<b>Misc</b>
+* We added some developer documentation (#27 - Thanks to @bc3!)
+* Changes for cross platform compatibility
+  * Application files are now stored in `%USERPROFILE%\AppData\LocalLow\StlVault\StlVault`
+  * Your configuration files of previous versions should be moved there automatically

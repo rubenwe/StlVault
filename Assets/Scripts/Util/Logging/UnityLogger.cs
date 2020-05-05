@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace StlVault.Util.Logging
 {
@@ -19,7 +20,7 @@ namespace StlVault.Util.Logging
         {
             if (LogLevel >= LogLevel.Debug)
             {
-                _unityLogger.Log(string.Format(message, args));
+                _unityLogger.Log(GetFormattedMessage(message, args));
             }
         }
 
@@ -27,7 +28,7 @@ namespace StlVault.Util.Logging
         {
             if (LogLevel >= LogLevel.Trace)
             {
-                _unityLogger.Log(string.Format(message, args));
+                _unityLogger.Log(GetFormattedMessage(message, args));
             }
         }
 
@@ -35,7 +36,7 @@ namespace StlVault.Util.Logging
         {
             if (LogLevel >= LogLevel.Info)
             {
-                _unityLogger.Log(string.Format(message, args));
+                _unityLogger.Log(GetFormattedMessage(message, args));
             }
         }
 
@@ -43,16 +44,25 @@ namespace StlVault.Util.Logging
         {
             if (LogLevel >= LogLevel.Warn)
             {
-                var formatted = string.Format(message, args);
+                var formatted = GetFormattedMessage(message, args);
                 _unityLogger.LogWarning(formatted, formatted);
             }
         }
 
+        public void Warn(Exception ex, string message, params object[] args)
+        {
+            if (LogLevel >= LogLevel.Warn)
+            {
+                var formatted = GetFormattedMessage(message, args);
+                _unityLogger.LogError(formatted, ex.Message);
+            }
+        }
+        
         public void Error(string message, params object[] args)
         {
             if (LogLevel >= LogLevel.Error)
             {
-                var formatted = string.Format(message, args);
+                var formatted = GetFormattedMessage(message, args);
                 _unityLogger.LogError(formatted, formatted);
             }
         }
@@ -61,9 +71,17 @@ namespace StlVault.Util.Logging
         {
             if (LogLevel >= LogLevel.Error)
             {
-                var formatted = string.Format(message, args);
+                var formatted = GetFormattedMessage(message, args);
                 _unityLogger.LogError(formatted, ex.Message);
             }
+        }
+
+        private static string GetFormattedMessage(string message, object[] args)
+        {
+            var formatted = string.Format(message, args);
+            var logString = $"Thread {Thread.CurrentThread.ManagedThreadId:0000} | {formatted}";
+
+            return logString;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace StlVault.Util.FileSystem
         IFolderWatcher CreateWatcher(string filter, bool scanSubDirectories);
 
         bool FileExists(string filePath);
-        IEnumerable<IFileInfo> GetFiles(string pattern, bool recursive);
+        IReadOnlyList<IFileInfo> GetFiles(string pattern, bool recursive);
         Task<byte[]> ReadAllBytesAsync(string filePath);
     }
 }

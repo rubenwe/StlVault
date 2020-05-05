@@ -16,7 +16,10 @@ namespace StlVault.Util.Logging
         
         [StringFormatMethod("message")]
         void Warn(string message, params object[] args);
-
+        
+        [StringFormatMethod("message")]
+        void Warn(Exception ex, string message, params object[] args);
+        
         [StringFormatMethod("message")]
         void Error(string message, params object[] args);
         
