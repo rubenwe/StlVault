@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using StlVault.Config;
 using StlVault.Messages;
 using StlVault.Services;
 using StlVault.Util.Logging;
@@ -51,6 +52,7 @@ namespace StlVault.Views
         private readonly List<IDisposable> _disposables = new List<IDisposable>();
         private MessageAggregator _relay;
         private Library _library;
+        private IConfigStore _configStore;
         
         // Must be field or GC will reclaim it
         private SelectionTracker _tracker;
@@ -61,12 +63,22 @@ namespace StlVault.Views
             Application.wantsToQuit += OnQuitRequested;
 
             Migrator.Run();
+
+            _configStore = new ConfigStore(Application.persistentDataPath);
+            
+            // Restore layout
+            var layout = _configStore.LoadAsyncOrDefault<LayoutSettings>().Result;
+            ApplyLayout(layout);
+
         }
 
         #if UNITY_EDITOR
         private async void OnDestroy()
         {
+            var layout = GatherLayoutSettings();
+            await _configStore.StoreAsync(layout);
             await _library.StoreChangesAsync();
+            
             Debug.Log("Saved");
         }
         #endif
@@ -79,6 +91,12 @@ namespace StlVault.Views
             {
                 disposable.Dispose();
             }
+            
+            GuiCallbackQueue.Enqueue(async () =>
+            {
+                var layout = GatherLayoutSettings();
+                await _configStore.StoreAsync(layout);
+            });
             
             GuiCallbackQueue.Enqueue(() => _relay.Send<RequestShowDialogMessage.ExitingDialog>(this));
             
@@ -93,10 +111,9 @@ namespace StlVault.Views
             var aggregator = new MessageAggregator();
 
             _relay = aggregator;
-            IConfigStore configStore = new ConfigStore(Application.persistentDataPath);
             IPreviewImageStore previewStore = new PreviewImageStore(Application.persistentDataPath);
             
-            _library = new Library(configStore, _previewBuilder, previewStore, _relay);
+            _library = new Library(_configStore, _previewBuilder, previewStore, _relay);
             var factory = new ImportFolderFactory(_library);
             
             // Misc
@@ -111,9 +128,9 @@ namespace StlVault.Views
             var itemsViewModel = new ItemsModel(_library, _relay);
 
             // Main Menu
-            var importFoldersViewModel = new ImportFoldersModel(configStore, factory, _relay);
-            var savedSearchesViewModel = new SavedSearchesModel(configStore, _relay);
-            var collectionsViewModel = new CollectionsModel(configStore, _library, _relay);
+            var importFoldersViewModel = new ImportFoldersModel(_configStore, factory, _relay);
+            var savedSearchesViewModel = new SavedSearchesModel(_configStore, _relay);
+            var collectionsViewModel = new CollectionsModel(_configStore, _library, _relay);
 
             // Detail Menu
             var detailMenuModel = new DetailMenuModel(_library, _relay);
@@ -122,9 +139,9 @@ namespace StlVault.Views
             var addCollectionModel = new AddCollectionModel(_relay);
             var addSavedSearchViewModel = new AddSavedSearchModel(_relay);
             var addImportFolderViewModel = new AddImportFolderModel(_relay);
-            var applicationSettingsModel = new ApplicationSettingsModel(configStore);
+            var applicationSettingsModel = new ApplicationSettingsModel(_configStore);
             var userFeedbackModel = new UserFeedbackModel();
-            var updateNotificationModel = new UpdateNotificationModel(configStore);
+            var updateNotificationModel = new UpdateNotificationModel(_configStore);
             var exitingModel = new ExitingModel(_library, OnShutdownComplete);
             var editScreenModel = new EditScreenModel(_library);
             
@@ -134,7 +151,7 @@ namespace StlVault.Views
             // Wire up misc items
             _disposables.Add(importFoldersViewModel);
             _editScreen.MainView = _mainGroup;
-            
+
             // Also restores app settings for import etc.
             await applicationSettingsModel.InitializeAsync();
             
@@ -236,6 +253,26 @@ namespace StlVault.Views
                 // run update checks
                 await checker.CheckForUpdatesAsync();
             }
+        }
+
+        private void ApplyLayout(LayoutSettings layout)
+        {
+            _importFoldersView.Expanded = layout.MainMenu.ImportFoldersExpanded;
+            _savedSearchesView.Expanded = layout.MainMenu.SavedSearchesExpanded;
+            _collectionsView.Expanded = layout.MainMenu.CollectionsExpanded;
+        }
+
+        private LayoutSettings GatherLayoutSettings()
+        {
+            return new LayoutSettings
+            {
+                MainMenu =
+                {
+                    ImportFoldersExpanded = _importFoldersView.Expanded,
+                    SavedSearchesExpanded = _savedSearchesView.Expanded,
+                    CollectionsExpanded = _collectionsView.Expanded,
+                }
+            };
         }
 
         private static List<T> FindObjectsOfTypeAll<T>()

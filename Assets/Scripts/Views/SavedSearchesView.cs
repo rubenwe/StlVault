@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace StlVault.Views
 {
-    internal class SavedSearchesView : ContainerView<SavedSearchesModel, SavedSearchView, SavedSearchModel>
+    internal class SavedSearchesView : MainMenuView<SavedSearchesModel, SavedSearchView, SavedSearchModel>
     {
         [SerializeField] private Button _addButton;
 

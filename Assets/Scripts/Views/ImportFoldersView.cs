@@ -7,9 +7,10 @@ using UnityEngine.UI;
 
 namespace StlVault.Views
 {
-    internal class ImportFoldersView : ContainerView<ImportFoldersModel, ImportFolderView, FileSourceModel>
+    internal class ImportFoldersView : MainMenuView<ImportFoldersModel, ImportFolderView, FileSourceModel>
     {
         [SerializeField] private Button _addButton;
+        
         protected override IReadOnlyObservableList<FileSourceModel> ChildModels => ViewModel.Folders;
 
         protected override void OnViewModelBound()

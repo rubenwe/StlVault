@@ -23,10 +23,25 @@ namespace StlVault.Util.Unity
         [SerializeField] private float _slideDuration = 1f;
 
         private bool _isExpanded;
+        private bool _initialized;
         private float _initialSize;
         private Tween _tween;
 
-        // Start is called before the first frame update
+        public bool IsExpanded
+        {
+            get => _initialized ? _isExpanded : _startExpanded;
+            set
+            {
+                if (!_initialized)
+                {
+                    _startExpanded = value;
+                    return;
+                }
+
+                if (_isExpanded != value) TogglePanel();
+            }
+        }
+
         void Start()
         {
             SetInitialSize();
@@ -38,6 +53,8 @@ namespace StlVault.Util.Unity
                 if (_orientation == Horizontal) _panel.flexibleWidth = 0;
                 if (_orientation == Vertical) _panel.flexibleHeight = 0;
             }
+
+            _initialized = true;
         }
 
         private void SetInitialSize()
