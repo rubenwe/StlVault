@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace StlVault.Views
 {
-    internal class CollectionsView : ContainerView<CollectionsModel, CollectionView, CollectionModel>
+    internal class CollectionsView : MainMenuView<CollectionsModel, CollectionView, CollectionModel>
     {
         protected override IReadOnlyObservableList<CollectionModel> ChildModels => ViewModel.Collections;
 
